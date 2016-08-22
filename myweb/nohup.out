@@ -1,0 +1,65 @@
+/rd/pystudy/myweb/myweb/urls.py:25: RemovedInDjango110Warning: Support for string view arguments to url() is deprecated and will be removed in Django 1.10 (got admin.site.urls). Pass the callable instead.
+  url(r'^admin/', "admin.site.urls"),
+
+/rd/pystudy/myweb/myweb/urls.py:27: RemovedInDjango110Warning: Support for string view arguments to url() is deprecated and will be removed in Django 1.10 (got blog.views.index). Pass the callable instead.
+  url(r'^index/', "blog.views.index"),
+
+/rd/pystudy/myweb/myweb/urls.py:28: RemovedInDjango110Warning: Support for string view arguments to url() is deprecated and will be removed in Django 1.10 (got blog.views.login). Pass the callable instead.
+  url(r'^login/', "blog.views.login"),
+
+/rd/pystudy/myweb/myweb/urls.py:29: RemovedInDjango110Warning: Support for string view arguments to url() is deprecated and will be removed in Django 1.10 (got blog.views.login_action). Pass the callable instead.
+  url(r'^login_action/', "blog.views.login_action"),
+
+/rd/pystudy/myweb/myweb/urls.py:30: RemovedInDjango110Warning: Support for string view arguments to url() is deprecated and will be removed in Django 1.10 (got blog.views.logout). Pass the callable instead.
+  url(r'^logout/', "blog.views.logout"),
+
+/rd/pystudy/myweb/myweb/urls.py:31: RemovedInDjango110Warning: Support for string view arguments to url() is deprecated and will be removed in Django 1.10 (got blog.views.login). Pass the callable instead.
+  url(r'^accounts/login/', "blog.views.login"),
+
+/rd/pystudy/myweb/myweb/urls.py:33: RemovedInDjango110Warning: Support for string view arguments to url() is deprecated and will be removed in Django 1.10 (got tyblog.views.tyreport). Pass the callable instead.
+  url(r'^tyreport/', "tyblog.views.tyreport"),
+
+/rd/pystudy/myweb/myweb/urls.py:34: RemovedInDjango110Warning: Support for string view arguments to url() is deprecated and will be removed in Django 1.10 (got tyblog.views.tyindex). Pass the callable instead.
+  url(r'^tyindex/', "tyblog.views.tyindex"),
+
+/rd/pystudy/myweb/myweb/urls.py:36: RemovedInDjango110Warning: Support for string view arguments to url() is deprecated and will be removed in Django 1.10 (got intest.views.intest). Pass the callable instead.
+  url(r'^intest/', "intest.views.intest"),
+
+[22/Aug/2016 04:20:34] "GET /tyreport/ HTTP/1.1" 200 312144
+[22/Aug/2016 04:21:21] "GET /tyreport/ HTTP/1.1" 200 312144
+Not Found: /favicon.ico
+[22/Aug/2016 04:21:21] "GET /favicon.ico HTTP/1.1" 404 2816
+Internal Server Error: /admin/
+Traceback (most recent call last):
+  File "/root/.pyenv/versions/3.5.1/lib/python3.5/site-packages/django/core/urlresolvers.py", line 115, in get_callable
+    mod = import_module(mod_name)
+  File "/root/.pyenv/versions/3.5.1/lib/python3.5/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 986, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 969, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 944, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 222, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 986, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 969, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 956, in _find_and_load_unlocked
+ImportError: No module named 'admin'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/.pyenv/versions/3.5.1/lib/python3.5/site-packages/django/core/handlers/base.py", line 134, in get_response
+    resolver_match = resolver.resolve(request.path_info)
+  File "/root/.pyenv/versions/3.5.1/lib/python3.5/site-packages/django/core/urlresolvers.py", line 376, in resolve
+    sub_match = pattern.resolve(new_path)
+  File "/root/.pyenv/versions/3.5.1/lib/python3.5/site-packages/django/core/urlresolvers.py", line 248, in resolve
+    return ResolverMatch(self.callback, args, kwargs, self.name)
+  File "/root/.pyenv/versions/3.5.1/lib/python3.5/site-packages/django/core/urlresolvers.py", line 255, in callback
+    self._callback = get_callable(self._callback_str)
+  File "/root/.pyenv/versions/3.5.1/lib/python3.5/site-packages/django/core/urlresolvers.py", line 121, in get_callable
+    if submod and not module_has_submodule(import_module(parentmod), submod):
+  File "/root/.pyenv/versions/3.5.1/lib/python3.5/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 986, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 969, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 956, in _find_and_load_unlocked
+ImportError: No module named 'admin'

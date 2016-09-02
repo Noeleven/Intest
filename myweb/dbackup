@@ -1,0 +1,4 @@
+python manage.py dumpdata intest > intest/intest.json
+
+#导入
+#python manage.py loaddata intest/intest.json

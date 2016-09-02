@@ -1,3 +1,0 @@
-/rd/pystudy/Intest/myweb/myweb/urls.py:24: RemovedInDjango110Warning: Support for string view arguments to url() is deprecated and will be removed in Django 1.10 (got tyblog.views.tyreport). Pass the callable instead.
-  url(r'^tyreport/$', "tyblog.views.tyreport"),
-

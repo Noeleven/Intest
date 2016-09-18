@@ -2,90 +2,162 @@
 {% block content %}
 {% load myfilter %}
 
-<div class="panel panel-lvmm table-responsive">
-	<div class="panel-heading">接口性能自动化报表</div>
+<div class="panel panel-lvmm">
 	<div class="panel-body">
-		<p>以下默认展示的是今日的测试结果</p>
-		<p>可自定义查询某段时间范围内的接口数据</p>
 		<div class="row">
-			<form method="get">
-				<div class="form-group">
-					<div class="col-md-3">
-						<label for="dtp_input2" class="col-md-2 control-label">开始时间</label>
-						<div class="input-group date form_date col-md-5" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+			<div class="col-xs-3">
+				<div class="alert alert-warning" role="alert">默认是昨日的测试结果</div>
+				<form class="form-horizontal" role="form" method="get">
+					<div class="form-group">
+						<label for="dtp_input2" class="col-sm-4 control-label">开始时间</label>
+						<div class="col-sm-8 input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
 							<input name="from_date" class="form-control" size="16" type="text" value="" readonly>
 							<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
-						</div>
-						<input type="hidden" id="dtp_input2" value="" />
+						</div><input type="hidden" id="dtp_input2" value="" />
 					</div>
-					<div class="col-md-3"><label for="dtp_input2" class="col-md-2 control-label">结束时间</label>
-						<div class="input-group date form_date col-md-5" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+					<div class="form-group">
+						<label for="dtp_input2" class="col-sm-4 control-label">结束时间</label>
+						<div class="col-sm-8 input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
 							<input name="to_date" class="form-control" size="16" type="text" value="" readonly>
 							<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
 						</div>
 						<input type="hidden" id="dtp_input2" value="" />
 					</div>
-					<div class="col-md-2"><button class="btn btn-primary" type="submit">开始生成数据</button></div>
+					<div class="form-group">
+						<div class="col-sm-offset-4 col-sm-8">
+							<button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span> 查询</button>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="col-xs-5">
+				<table class="table table-hover table-condensed table-responsive table-bordered"><thead>
+				<tr class="info"><th>接口响应占比</th><th>毫秒级</th><th>1~2秒</th><th>2~3秒</th><th>3~4秒</th><th>4~5秒</th><th>5秒以上</th></tr></thead><tbody>
+				{% for x,y in show_rate.items %}
+				<tr><th class="info">{{ x }}</th><td>{{ y.ms }}%</td><td>{{ y.os }}%</td><td>{{ y.ts }}%</td><td>{{ y.tts }}%</td><td>{{ y.fs }}%</td><td>{{ y.ffs }}%</td></tr>
+				{% endfor %}
+				</tbody></table>	
+				<div class="alert alert-info" role="alert">首包时间：经历过DNS解析和TCP3次握手后，从客户端开始发送请求到接收到服务器响应的第一个包的时间。包含NG的队列时间、首包的传输时间、服务端处理时间。由于NG队列和首包时间仅从客户端处无法取得，近似认为首包时间就是服务器的响应时间</div>				
+			</div>
+			<div class="col-xs-4">
+				<div id="canvas-holder">
+					<canvas id="chart-area1" /></canvas>
 				</div>
-			</form>
+			</div>
 		</div>
 	</div>
-	<table class="table table-bordered table-hover table-condensed">
-	<tr class=""><td >服务器响应<td ><span class="label label-danger">毫秒占比</span></td>
-	<td ><span class="label label-danger">1秒占比</span></td>
-	<td ><span class="label label-danger">2秒占比</span></td>
-	<td ><span class="label label-danger">3秒占比</span></td>
-	<td ><span class="label label-danger">4秒占比</span></td>
-	<td ><span class="label label-danger">5秒以上</span></td></tr>
-	<tr class=""><td >用户响应<td ><span class="label label-danger">毫秒占比</span></td>
-	<td ><span class="label label-danger">1秒占比</span></td>
-	<td ><span class="label label-danger">2秒占比</span></td>
-	<td ><span class="label label-danger">3秒占比</span></td>
-	<td ><span class="label label-danger">4秒占比</span></td>
-	<td ><span class="label label-danger">5秒以上</span></td></tr>
-	</table>
-	
-{% for k,v in show_dict.items %}
-	<table class="table table-bordered table-hover table-condensed">
-		<div class="row">
-			<tr class="info">
-			<td class="col-md-3"><span class="label label-danger">名称</span> <strong>{{ v.name }}</strong></td>
-			<td class="col-md-3"><span class="label label-danger">接口</span> <strong>{{ k }}</strong></td>
-			<td class="col-md-2"><span class="label label-default">平均总耗时</span>	{{ v.total_time_avg }}s</td>
-			<td class="col-md-2"><span class="label label-default">总耗时95%line</span> {{ v.total_time_95line }}s</td>
-			<td class="col-md-2"><span class="label label-default">总耗时范围</span> {{ v.total_time_range }}s</td></tr>
-			<tr><td class="col-md-12" colspan=4 style="word-break:break-all"><span class="label label-info">URL</span> {{ v.url }}</td></tr>
-	</div></table>
-	<table class="table table-bordered table-hover table-condensed">
-		<div class="row">
-			<tr><td class="col-md-2"><span class="label label-default">HTTP错误率</span>	{{ v.error_rate }}%</td>
-			<td class="col-md-2"><span class="label label-default">Debug平均耗时</span>	{{ v.log_time_avg }}s</td>
-			<td class="col-md-2"><span class="label label-default">DNS平均耗时</span>	{{ v.dns_time_avg }}s</td>
-			<td class="col-md-2"><span class="label label-default">建联平均耗时</span>	{{ v.tcp_time_avg }}s</td>
-			<td class="col-md-2"><span class="label label-default">服务处理平均耗时</span> {{ v.server_time_avg }}s</td>
-			<td class="col-md-1"><span class="label label-default">下载平均耗时</span> {{ v.download_time_avg }}s</td>
-			<td class="col-md-1"><span class="label label-default">下载大小</span> {{ v.download_size }}KB</td></tr>
-			
-			<tr><td rowspan=2><span class="label label-default">Debug错误率</span> {{ v.log_error_rate }}%</td>
-			<td><span class="label label-default">Debug耗时范围</span> {{ v.log_time_range }}s</td>
-			<td><span class="label label-default">DNS耗时范围</span> {{ v.dns_time_range }}s</td>
-			<td><span class="label label-default">建联耗时范围</span> {{ v.tcp_time_range }}s</td>
-			<td><span class="label label-default">服务处理耗时范围</span> {{ v.server_time_range }}s</td>
-			<td colspan=2><span class="label label-default">下载耗时范围</span> {{ v.download_time_range }}s</td></tr>
-			
-			<tr>
-			<td><span class="label label-default">Debug95%line</span> {{ v.log_time_95line }}s</td>
-			<td><span class="label label-default">DNS95%line</span> {{ v.dns_time_95line }}s</td>
-			<td><span class="label label-default">建联95%line</span> {{ v.tcp_time_95line }}s</td>
-			<td><span class="label label-default">服务处理95%line</span> {{ v.server_time_95line }}s</td>
-			<td><span class="label label-default">下载95%line</span> {{ v.download_time_95line }}s</td></tr>
-		</div></table>
-{% endfor %}
 </div>
 
-<!-- <script type="text/javascript">
-    var show_dict = {{ show_dict|safe }};
-	
-</script> -->
- 
+<div class="panel panel-lvmm">
+	<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> 接口性能检测报告</div>
+</div>
+
+<ul class="nav nav-pills nav-justified" role="tablist">
+	<li role="presentation" class="active"><a href="#autoint" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-tasks"></span> 接口(以平均总耗时排序)<span class="badge"> {{ ints_dict|length}}</span></a></li>
+	<li role="presentation"><a href="#autoerror" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-remove"></span> 错误<span class="badge"> {{ show_errs|length}}</span></a></li>
+</ul>
+<div class="tab-content">
+	<div role="tabpanel" class="tab-pane fade in active" id="autoint"><br />
+{% for k,v in ints_dict %}
+		<div class="panel panel-lvmm">
+			<div class="panel-body">
+				<table class="table  table-hover table-condensed">
+					<tr class="info">
+					<td class="col-sm-4"><span class="label sr-only">名称</span> <strong>{{ v.name }}</strong></td>
+					<td class="col-sm-8"><span class="label sr-only">接口及版本</span> <strong>{{ k }}</strong></td></tr>
+					<tr class="info"><td colspan=2 style="word-break:break-all"><span class="label label-primary">URL</span> {{ v.url }}</td></tr>
+				</table>
+				<div class="row">
+					<div class="col-sm-3">
+						<span class="label label-warning">DNS解析</span>
+						<span class="label label-info">建连</span>
+						<span class="label label-success">首包</span>
+						<span class="label label-danger">下载</span>
+					</div>
+					<div class="col-sm-9">
+						<div class="progress">
+							<div class="progress-bar progress-bar-warning" style="width: {{ v.dns_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="{{ v.dns_time_avg }}">
+								<span>{{ v.dns_time_avg }}s</span>
+							</div>
+							<div class="progress-bar progress-bar-info" style="width: {{ v.tcp_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="{{ v.tcp_time_avg }}">
+								<span>{{ v.tcp_time_avg }}s</span>
+							</div>
+							<div class="progress-bar progress-bar-success" style="width:{{ v.server_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="{{ v.server_time_avg }}">
+								<span>{{ v.server_time_avg }}s</span>
+							</div>
+							<div class="progress-bar progress-bar-danger" style="width: {{ v.download_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="{{ v.download_time_avg }}">
+								<span>{{ v.download_time_avg }}s</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-8">
+					<table class="table table-bordered table-hover table-condensed">
+						<div class="row">
+							<tr class="info"><td>#</td><td>DNS</td><td>建联</td><td>首包时间</td><td>下载</td><td class="warning">总耗时</td><td class="warning">日志时间</td></tr>
+							<tr><td class="info">平均耗时</td><td> {{ v.dns_time_avg }}s</td><td>{{ v.tcp_time_avg }}s</td><td>{{ v.server_time_avg }}s</td><td>{{ v.download_time_avg }}s</td><td>{{ v.total_time_avg }}s</td><td>{{ v.log_time_avg }}s</td></tr>
+							<tr><td class="info">95%Line</td><td> {{ v.dns_time_95line }}s</td><td>{{ v.tcp_time_95line }}s</td><td>{{ v.server_time_95line }}s</td><td>{{ v.download_time_95line }}s</td><td>{{ v.total_time_95line }}s</td><td>{{ v.log_time_95line }}s</td></tr>
+							<tr><td class="info">耗时范围</td><td>{{ v.dns_time_range }}s</td><td>{{ v.tcp_time_range }}s</td><td>{{ v.server_time_range }}s</td><td>{{ v.download_time_range }}s</td><td>{{ v.total_time_range }}s</td><td>{{ v.log_time_range }}s</td></tr>
+						</div></table>
+				</div>
+				
+				<div class="col-sm-4">
+					<table class="table  table-bordered table-hover table-condensed">
+						<div class="row">
+							<tr><td class="info">平均总耗时</td><td>{{ v.total_time_avg }}s</td></tr>
+							<tr><td class="info">HTTP错误</td><td>{{ v.error_rate }}%</td></tr>
+							<tr><td class="info">debugCode错误</td><td>{{ v.log_error_rate }}%</td></tr>
+							<tr><td class="info">下载大小 </td><td>{{ v.download_size }}KB</td></tr>
+						</div></table>
+				</div>
+				
+			</div>
+		</div>
+{% endfor %}
+	</div>
+
+	<div role="tabpanel" class="tab-pane fade" id="autoerror"><br />
+			<div class="panel panel-default">
+				<div class="panel-heading">错误汇总</div>
+				<div class="panel-body">
+					<table class="table table-hover table-condensed ">
+					<thead><tr class="info"><th class="col-sm-0.5">HTTPCode</th><th class="col-sm-0.5">LogCode</th><th class="col-sm-1.5">接口</th><th class="col-sm-1.5">描述</th><th class="col-sm-3">URL</th><th class="col-sm-2.5">Error</th><th class="col-sm-2.5">Message</th></tr></thead>
+					{% for v in show_errs %}
+					<tr><th>{{ v.httpcode }}</th><th>{{ v.log_code }}</th><th style="word-break:break-all">{{ v.method_version }}</th><th>{{ v.name }}</th><th style="word-break:break-all">{{ v.url }}</th><th>{{ v.error }}</th><th>{{ v.message }}</th></tr>
+					{% endfor %}
+					</table>
+				</div>
+			</div>
+	</div>
+</div>
+
+<script>
+	var succ_dict = {{ succ_dict|safe }};
+    var config = {
+        type: 'pie',
+        data: {
+            datasets: [{
+                data: [succ_dict['su_r']  ,  succ_dict['er_r']],
+                backgroundColor: [
+                    "#1BC98E",
+                    "#E64759",
+                ],
+            }],
+            labels: [
+                "成功率",
+                "失败率",
+            ]
+        },
+        options: {
+            responsive: true,
+            legend: {
+                display: true
+            }
+        }
+    };
+    window.onload = function() {
+        var ctx1 = document.getElementById("chart-area1").getContext("2d");
+        window.myPie = new Chart(ctx1, config);
+    };
+</script>
 {% endblock %}

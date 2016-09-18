@@ -1,4 +1,6 @@
-python manage.py dumpdata intest > intest/intest.json
+cd /rd/pystudy/myweb/
+python manage.py dumpdata intest > /rd/pystudy/Intest/myweb/intest/db/intest.json
+python manage.py dumpdata intest > /rd/pystudy/myweb/intest/db/intest.json
 
 #导入
-#python manage.py loaddata intest/intest.json
+#python manage.py loaddata /rd/pystudy/myweb/intest/db/intest.json

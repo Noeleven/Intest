@@ -32,7 +32,6 @@ def do_curl(req_url, url_method="GET", method_name="未定义名称", url_api="�
 	c.perform() #执行上述访问网址的操作
 	#解析返回的json数据
 	htmlString = b.getvalue().decode('UTF-8')
-	html_json = json.loads(htmlString)
 	p = Sdata(method_version = url_api)
 	p.name = method_name
 	p.url = req_url
@@ -45,9 +44,9 @@ def do_curl(req_url, url_method="GET", method_name="未定义名称", url_api="�
 	p.download_size = round(((c.getinfo(c.SIZE_DOWNLOAD) / 8 ) / 1024), 2)
 	p.total_time = round(c.getinfo(c.TOTAL_TIME), 2)
 	if c.getinfo(c.HTTP_CODE) == 200:
+		html_json = json.loads(htmlString)
 		p.log_code =  html_json['code']
 		if p.log_code is '1':
-			print ('+++')
 			debug_msg = html_json['debugMsg']
 			if debug_msg == '':
 				p.log_time = 0
@@ -55,7 +54,7 @@ def do_curl(req_url, url_method="GET", method_name="未定义名称", url_api="�
 				p.log_time = round((int((debug_msg.split('costTime:',1)[1]).split('ms',1)[0]) / 1000), 2)
 		else:
 			#保存接口保存信息
-			e = Error(method_version = url_api)
+			e = Errs(method_version = url_api)
 			e.name = method_name
 			e.url = req_url
 			e.httpcode = c.getinfo(c.HTTP_CODE)
@@ -68,7 +67,7 @@ def do_curl(req_url, url_method="GET", method_name="未定义名称", url_api="�
 		c.close()
 	else:
 		#存一个新表，记录bug
-		e = Error(method_version = url_api)
+		e = Errs(method_version = url_api)
 		e.name = method_name
 		e.url = req_url
 		e.httpcode = c.getinfo(c.HTTP_CODE)
@@ -103,7 +102,7 @@ def do_db(task):
 
 if __name__ == '__main__':
 	print ("parent process is %s" % os.getpid()) 
-	for t in range(10):
+	for t in range(1):
 		j = Pool(4)
 		do_db(t)
 		j.close()

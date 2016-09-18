@@ -32,6 +32,8 @@ class Sdata(models.Model):
 	download_time = models.DecimalField(max_digits=5, decimal_places=2)
 	download_size = models.DecimalField(max_digits=5, decimal_places=2)
 	total_time = models.DecimalField(max_digits=5, decimal_places=2)
+	error = models.CharField(max_length=200, null=True,blank=True)
+	message = models.CharField(max_length=200, null=True,blank=True)
 	timestamp = models.DateTimeField(auto_now=True)
 
 class Errs(models.Model):
@@ -46,6 +48,5 @@ class Errs(models.Model):
 	
 class IntsAdmin(admin.ModelAdmin):
 	list_display = ('name', 'method_version', 'ishttp', 'isget', 'inwhere', 'timestamp')
-
 
 admin.site.register(Ints, IntsAdmin)

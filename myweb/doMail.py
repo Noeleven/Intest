@@ -5,6 +5,7 @@ import os, sys, io, json, pycurl, time, datetime, multiprocessing
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myweb.settings')
 django.setup()
 import string,smtplib,os
+import configparser
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
@@ -22,15 +23,15 @@ def err_list():
 	error_list = Errs.objects.all().filter(timestamp__range=(date_from,date_to))
 	# error_list = Errs.objects.all().filter(timestamp__range=(datetime.datetime(2016,9,1,0,0),datetime.datetime(2016,9,1,23,59)))
 	if error_list:	#没有错误就跳出程序吧
-		print (error_list)
+	#	print (error_list)
 		return error_list
 	else:
-		print ("+++")
+#		print ("+++")
 		sys.exit(0)
 	
 def do_contents():
 	error_list = err_list()
-	html_string0 = "<table border=1><tr><th>名称</th><th>接口</th><th>HTTP响应码</th><th>code</th><th>error</th><th>message</th></tr>"
+	html_string0 = "<h3>以下是昨天产生的错误列表，请根据错误内容调整接口参数，保证测试有效性。</h3><table border=1><tr><th>名称</th><th>接口</th><th>HTTP响应码</th><th>code</th><th>error</th><th>message</th></tr>"
 	html_string1 = ""
 	for x in error_list:
 		html_string1 += ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>" %(x.name, x.method_version, x.httpcode, x.log_code, x.error, x.message))
@@ -39,26 +40,29 @@ def do_contents():
 	return html_string
 	
 def do_mail():
-	sender = 'zhangqiang@lvmama.com'
-	receiverlist = ["zhangqiang@lvmama.com"]
-	subject = "接口性能--报错列表"
-	smtpserver = 'smtp.exmail.qq.com'
-	username = 'zhangqiang@lvmama.com'
-	password = '851206Sqq'
+	cf = configparser.ConfigParser()
+	cf.read("/rd/pystudy/conf")
+	sender = cf.get('mail', 'username')
+	receiverlist = [x for x in cf.get('mail', 'receiverlist').split(',')] 
+	subject = "接口性能自动化--接口待维护列表"
+	smtpserver = cf.get('mail','smtpserver') 
+	username = cf.get('mail','username') 
+	password = cf.get('mail','password') 
 
 	html_string = do_contents()
 	
 	msg=MIMEText(html_string,'html','utf-8')
 	msg['From'] = 'zhangqiang@lvmama.com'
-	msg['to'] = ','.join(receiverlist)
+	#msg['to'] = ','.join(receiverlist)
 	msg['Subject'] = subject
 
 	smtp = smtplib.SMTP()
 	smtp.connect(smtpserver)
 	smtp.ehlo()
-	# smtp.set_debuglevel(1)
+	#smtp.set_debuglevel(1)
 	smtp.login(username, password)
-	smtp.sendmail(msg['From'],msg['to'],msg.as_string())
+	#smtp.sendmail(msg['From'],msg['to'],msg.as_string())
+	smtp.sendmail(msg['From'],receiverlist,msg.as_string())
 	smtp.quit()
 	
 if __name__ == '__main__':

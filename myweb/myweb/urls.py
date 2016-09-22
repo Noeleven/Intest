@@ -24,5 +24,6 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^tyblog/', include('tyblog.urls')),
     url(r'^tyreport/', RedirectView.as_view(url="/tyblog/tyreport/")),
+    url(r'^tt/', RedirectView.as_view(url="/tyblog/tt/")),
     url(r'^intest/', include('intest.urls')),
 ]

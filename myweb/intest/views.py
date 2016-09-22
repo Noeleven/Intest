@@ -33,7 +33,7 @@ def home(request):
 		m =  int(request.GET['to_date'].split('-')[1])
 		d =  int(request.GET['to_date'].split('-')[2])
 		date_to = datetime.datetime(y,m,d, 23, 59)
-	else:
+	else:#today
 		date_from = datetime.datetime(time.localtime().tm_year,time.localtime().tm_mon,time.localtime().tm_mday, 0, 0)
 		date_to = datetime.datetime(time.localtime().tm_year,time.localtime().tm_mon,time.localtime().tm_mday, 23, 59)
 		

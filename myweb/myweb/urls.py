@@ -21,9 +21,10 @@ from  django.views.generic.base import RedirectView
 
 urlpatterns = [
 #managepage
+    url(r'^$', RedirectView.as_view(url="/tyblog/index/")),
     url(r'^admin/', admin.site.urls),
+    url(r'^intest/', include('intest.urls')),
     url(r'^tyblog/', include('tyblog.urls')),
     url(r'^tyreport/', RedirectView.as_view(url="/tyblog/tyreport/")),
-    url(r'^tt/', RedirectView.as_view(url="/tyblog/tt/")),
-    url(r'^intest/', include('intest.urls')),
+    #url(r'^tt/', RedirectView.as_view(url="/tyblog/tt/")),
 ]

@@ -52,6 +52,7 @@ def home(request):
 	succ_dict['su_r'] = round((success_value *100 / total_value),2)
 	succ_dict['er_r'] = round((err_value *100 / total_value),2)
 	
+	start = time.time()
 	show_dict = {}	#接口性能数据字典
 	for p in method_list:
 		# 准备好时间范围内指定方法的所有数据列表
@@ -84,9 +85,12 @@ def home(request):
 		pp_value['server_time_rate'] = round(( pp_value['server_time_avg'] * 100) / pp_value['total_time_avg'] , 2)
 		pp_value['download_time_rate'] = round(( pp_value['download_time_avg'] * 100) / pp_value['total_time_avg'] , 2)
 		show_dict[p] = pp_value
+	end = time.time()
+	print ("show dict %.2fs" % (end - start))
 	ints_dict = sorted(show_dict.items(), key = lambda aab:aab[1]['total_time_avg'], reverse = True)	#变成列表
 
 	show_errs = []	#接口错误数据字典
+	#todo 去重
 	for e in error_list:
 		pp_error = {}	#如果没错误，下面是空的，可能会报错
 		pp_error['name'] = e.name
@@ -96,6 +100,7 @@ def home(request):
 		pp_error['log_code'] = e.log_code
 		pp_error['error'] = e.error
 		pp_error['message'] = e.message
+		pp_error['timestamp'] = e.timestamp
 		show_errs.append(pp_error)
 		
 	#计算接口占比

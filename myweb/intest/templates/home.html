@@ -63,9 +63,9 @@
 			<div class="panel-body">
 				<table class="table  table-hover table-condensed">
 					<tr class="info">
+					<td class="col-sm-2"><a type="button" class="btn btn-sm btn-primary" href='{{ v.url }}' target='_blank' data-toggle="tooltip" data-placement="right" title="{{ v.url }}">URL</a></td>
 					<td class="col-sm-4"><span class="label sr-only">名称</span> <strong>{{ v.name }}</strong></td>
-					<td class="col-sm-8"><span class="label sr-only">接口及版本</span> <strong>{{ k }}</strong></td></tr>
-					<tr class="info"><td colspan=2 style="word-break:break-all"><span class="label label-primary">URL</span> {{ v.url }}</td></tr>
+					<td class="col-sm-6"><span class="label sr-only">接口及版本</span> <strong>{{ k }}</strong></td></tr>
 				</table>
 				<div class="row">
 					<div class="col-sm-3">
@@ -123,7 +123,7 @@
 					<table class="table table-hover table-condensed ">
 					<thead><tr class="info"><th class="col-sm-0.5">HTTPCode</th><th class="col-sm-0.5">LogCode</th><th class="col-sm-2">接口</th><th class="col-sm-2">描述</th><th class="col-sm-1">URL</th><th class="col-sm-2">Error</th><th class="col-sm-2">Message</th><th class="col-sm-2">Time</th></tr></thead>
 					{% for v in show_errs %}
-					<tr><th>{{ v.httpcode }}</th><th>{{ v.log_code }}</th><th style="word-break:break-all">{{ v.method_version }}</th><th>{{ v.name }}</th><th><a href="{{ v.url }}">http://api3g...</a></th><th>{{ v.error }}</th><th>{{ v.message }}</th><th>{{ v.timestamp|date:"Y-m-d H:i" }}</th></tr>
+					<tr><th>{{ v.httpcode }}</th><th>{{ v.log_code }}</th><th style="word-break:break-all">{{ v.method_version }}</th><th>{{ v.name }}</th><th><a href="{{ v.url }}" target="_blank">http://api3g...</a></th><th>{{ v.error }}</th><th>{{ v.message }}</th><th>{{ v.timestamp|date:"Y-m-d H:i" }}</th></tr>
 					{% endfor %}
 					</table>
 				</div>

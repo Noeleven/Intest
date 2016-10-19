@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'tyblog',
 	'intest',
+	'fz',
 ]
 
 MIDDLEWARE_CLASSES = [

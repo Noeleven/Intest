@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from  django.views.generic.base import RedirectView
+from django.views.generic.base import RedirectView
 
 
 urlpatterns = [
@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^$', RedirectView.as_view(url="/tyblog/index/")),
     url(r'^admin/', admin.site.urls),
     url(r'^intest/', include('intest.urls')),
+    url(r'^fz/', include('fz.urls')),
     url(r'^tyblog/', include('tyblog.urls')),
     url(r'^tyreport/', RedirectView.as_view(url="/tyblog/tyreport/")),
     #url(r'^tt/', RedirectView.as_view(url="/tyblog/tt/")),

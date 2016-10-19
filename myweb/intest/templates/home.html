@@ -1,12 +1,11 @@
 {% extends "intbase.html" %}
 {% block content %}
-{% load myfilter %}
 
 <div class="panel panel-lvmm">
 	<div class="panel-body">
 		<div class="row">
 			<div class="col-xs-3">
-				<div class="alert alert-warning" role="alert">默认是今日的测试结果</div>
+				<!-- <div class="alert alert-warning" role="alert">默认是今日的测试结果</div> -->
 				<form class="form-horizontal" role="form" method="get">
 					<div class="form-group">
 						<label for="dtp_input2" class="col-sm-4 control-label">开始时间</label>
@@ -54,6 +53,7 @@
 
 <ul class="nav nav-pills nav-justified" role="tablist">
 	<li role="presentation" class="active"><a href="#autoint" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-tasks"></span> 接口(以平均总耗时排序)<span class="badge"> {{ ints_dict|length}}</span></a></li>
+	<li role="presentation"><a href="#firstint" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-star"></span> 接口(以首包耗时排序)<span class="badge"> {{ ints_dict|length}}</span></a></li>
 	<li role="presentation"><a href="#autoerror" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-remove"></span> 错误<span class="badge"> {{ show_errs|length}}</span></a></li>
 </ul>
 <div class="tab-content">
@@ -115,7 +115,66 @@
 		</div>
 {% endfor %}
 	</div>
-
+	
+	<div role="tabpanel" class="tab-pane fade in active" id="firstint"><br />
+{% for k,v in ints_server %}
+		<div class="panel panel-lvmm">
+			<div class="panel-body">
+				<table class="table  table-hover table-condensed">
+					<tr class="info">
+					<td class="col-sm-2"><a type="button" class="btn btn-sm btn-primary" href='{{ v.url }}' target='_blank' data-toggle="tooltip" data-placement="right" title="{{ v.url }}">URL</a></td>
+					<td class="col-sm-4"><span class="label sr-only">名称</span> <strong>{{ v.name }}</strong></td>
+					<td class="col-sm-6"><span class="label sr-only">接口及版本</span> <strong>{{ k }}</strong></td></tr>
+				</table>
+				<div class="row">
+					<div class="col-sm-3">
+						<span class="label label-warning">DNS解析</span>
+						<span class="label label-info">建连</span>
+						<span class="label label-success">首包</span>
+						<span class="label label-danger">下载</span>
+					</div>
+					<div class="col-sm-9">
+						<div class="progress">
+							<div class="progress-bar progress-bar-warning" style="width: {{ v.dns_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="{{ v.dns_time_avg }}">
+								<span>{{ v.dns_time_avg }}s</span>
+							</div>
+							<div class="progress-bar progress-bar-info" style="width: {{ v.tcp_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="{{ v.tcp_time_avg }}">
+								<span>{{ v.tcp_time_avg }}s</span>
+							</div>
+							<div class="progress-bar progress-bar-success" style="width:{{ v.server_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="{{ v.server_time_avg }}">
+								<span>{{ v.server_time_avg }}s</span>
+							</div>
+							<div class="progress-bar progress-bar-danger" style="width: {{ v.download_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="{{ v.download_time_avg }}">
+								<span>{{ v.download_time_avg }}s</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-8">
+					<table class="table table-bordered table-hover table-condensed">
+						<div class="row">
+							<tr class="info"><td>#</td><td>DNS</td><td>建联</td><td>首包时间</td><td>下载</td><td class="warning">总耗时</td><td class="warning">日志时间</td></tr>
+							<tr><td class="info">平均耗时</td><td> {{ v.dns_time_avg }}s</td><td>{{ v.tcp_time_avg }}s</td><td>{{ v.server_time_avg }}s</td><td>{{ v.download_time_avg }}s</td><td>{{ v.total_time_avg }}s</td><td>{{ v.log_time_avg }}s</td></tr>
+							<tr><td class="info">95%Line</td><td> {{ v.dns_time_95line }}s</td><td>{{ v.tcp_time_95line }}s</td><td>{{ v.server_time_95line }}s</td><td>{{ v.download_time_95line }}s</td><td>{{ v.total_time_95line }}s</td><td>{{ v.log_time_95line }}s</td></tr>
+							<tr><td class="info">耗时范围</td><td>{{ v.dns_time_range }}s</td><td>{{ v.tcp_time_range }}s</td><td>{{ v.server_time_range }}s</td><td>{{ v.download_time_range }}s</td><td>{{ v.total_time_range }}s</td><td>{{ v.log_time_range }}s</td></tr>
+						</div></table>
+				</div>
+				
+				<div class="col-sm-4">
+					<table class="table  table-bordered table-hover table-condensed">
+						<div class="row">
+							<tr><td class="info">平均总耗时</td><td>{{ v.total_time_avg }}s</td></tr>
+							<tr><td class="info">HTTP错误</td><td>{{ v.error_rate }}%</td></tr>
+							<tr><td class="info">debugCode错误</td><td>{{ v.log_error_rate }}%</td></tr>
+							<tr><td class="info">下载大小 </td><td>{{ v.download_size }}KB</td></tr>
+						</div></table>
+				</div>
+				
+			</div>
+		</div >
+{% endfor %}
+	</div>
+	
 	<div role="tabpanel" class="tab-pane fade" id="autoerror"><br />
 			<div class="panel panel-default">
 				<div class="panel-heading">错误汇总</div>

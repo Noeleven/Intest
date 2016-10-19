@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>LVMAMA 仿真接口测试</title>
+    <!-- Bootstrap -->
+    <!-- 新 Bootstrap 核心 CSS 文件 -->
+	{% load staticfiles %}
+    <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<link href="{% static 'css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet" media="screen">
+	<script type="text/javascript" src="{% static 'js/Chart.bundle.min.js' %}" charset="UTF-8"></script>
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="http://cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="http://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+<style>.panel-lvmm {border-color: #e38;}.panel-heading {background-color: #e38;	color: #FFF;}.table>tbody>tr.fives>td, .table>tbody>tr.fives>th, .table>tbody>tr>td.fives, .table>tbody>tr>th.fives {background-color: #FF6600;}.table>tbody>tr.fours>td, .table>tbody>tr.fours>th, .table>tbody>tr>td.fours, .table>tbody>tr>th.fours {background-color: #FF9900;}.table>tbody>tr.threes>td, .table>tbody>tr.threes>th, .table>tbody>tr>td.threes, .table>tbody>tr>th.threes {background-color: #FFCC00;}.table>tbody>tr.twos>td, .table>tbody>tr.twos>th, .table>tbody>tr>td.twos, .table>tbody>tr>th.twos {background-color: #FFFF00;}.table>tbody>tr.ones>td, .table>tbody>tr.ones>th, .table>tbody>tr>td.ones, .table>tbody>tr>th.ones {background-color: #CCFF00;}.table>tbody>tr.ms>td, .table>tbody>tr.ms>th, .table>tbody>tr>td.ms, .table>tbody>tr>th.ms {background-color: #99FF00;}
+</style>
+<style>
+.x-goto-top{opacity:.9;z-index:999999;position:fixed;bottom:113px;right:1%;margin-left:40px;width:38px;height:38px;border-radius:3px;cursor:pointer;background-color:#f5f5f5;border:1px solid #0593d3}.x-goto-top:hover{background-color:#fafafa;border-color:#0482ba}.x-goto-top:hover div.x-arrow{border-bottom-color:#0482ba}.x-goto-top:hover div.x-stick{background-color:#0482ba}.x-goto-top div.x-arrow{position:absolute;left:10px;top:-1px;width:0;height:0;border:9px solid transparent;border-bottom-color:#0593d3}.x-goto-top div.x-stick{position:absolute;left:15px;top:15px;width:8px;height:14px;display:block;border-radius:1px;background-color:#0593d3}
+</style>
+<style>
+    #canvas-holder {
+        width: 100%;
+        text-align: center;
+    }
+	.tooltip-inner {
+    text-align:left;
+	word-break:break-all;
+	}
+    canvas {
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+    }
+</style>
+
+  </head>
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">
+            <img src="http://m.lvmama.com/my/static/img/aboutLv.png" class=" img-rounded" alt="Responsive image" style="height:30px"></a>
+          <p class="navbar-text">
+            <span class="label label-success">仿真接口测试</span></p>
+        </div>
+		<ul class="nav navbar-nav">
+			<li></li>
+	    </ul>
+        <div id="navbar" class="navbar-collapse collapse">	
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="http://10.113.1.35:8000/admin/fz/ints/" target=_blank><span class="glyphicon glyphicon-cog"></span> 接口数据管理</a></li>
+			<!-- <li><a href="#">OTHER</a></li> -->
+          </ul>
+        </div>
+        <!--/.nav-collapse -->
+	</div>
+    </nav>
+	
+    <div  id="top" style="padding:80px">
+      <div class="row" style="padding-left:20px;padding-right:20px">
+{% block content %}
+{% endblock %}
+        </div>
+    </div>
+	
+	<a class="x-goto-top" style="display: block;">
+        <div class="x-arrow"></div>
+        <div class="x-stick"></div>
+    </a>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="http://cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.2.2/Chart.min.js"></script> -->
+	<script type="text/javascript" src="{% static 'js/bootstrap-datetimepicker.min.js' %}" charset="UTF-8"></script>
+    <script type="text/javascript" src="{% static 'js/locales/bootstrap-datetimepicker.zh-CN.js' %}"  charset="UTF-8"></script>
+	<script type="text/javascript">
+		$(".form_date").datetimepicker({
+			language:  'zh-CN',
+			minView: 'month',
+			format: "yyyy-mm-dd ",
+			autoclose: true,
+			todayBtn: true,
+			startDate: "2016-08-14",
+			minuteStep: 10
+		});
+	</script>
+	<script>
+	$(document).ready(function(){
+		$('.x-goto-top').click(function(){$('html,body').animate({scrollTop: '0px'}, 800);}); 
+	})
+	</script>
+	<script>$(function() {
+	$('[data-toggle="tooltip"]').tooltip()
+  })</script>
+  </body>
+
+</html>

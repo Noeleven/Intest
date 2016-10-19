@@ -20,13 +20,13 @@ def _format_addr(s):
 
 def err_list():
 	#yesday = time.strftime('%Y-%m-%d',time.localtime(time.time() - 24*60*60) )
-	yesday = time.strftime('%Y-%m-%d',time.localtime(time.time()) )
-	y = int(yesday.split('-')[0])
-	m = int(yesday.split('-')[1])
-	d = int(yesday.split('-')[2])
+	today = time.strftime('%Y-%m-%d',time.localtime(time.time()) )
+	y = int(today.split('-')[0])
+	m = int(today.split('-')[1])
+	d = int(today.split('-')[2])
 	date_from = datetime.datetime(y,m,d, 0, 0)
 	date_to = datetime.datetime(y,m,d, 23, 59)
-	error_list = Errs.objects.all().filter(timestamp__range=(date_from,date_to))
+	error_list = Errs.objects.all().filter(timestamp__range=(date_from,date_to)).order_by('method_version')
 	if error_list:	#没有错误就跳出程序吧
 		return error_list
 	else:
@@ -34,8 +34,9 @@ def err_list():
 	
 def do_contents():
 	my_lists = err_list()
-	html_string0 = "<h3>以下是今天产生的错误列表，测试组童鞋 还请查看有日志返回的错误异常信息，验证线上产品是否有异常</h3><br /><h4>响应码非200的接口说明线上服务有几率会挂。参数错误（如产品下架等）导致的，可以访问<a href='http://10.113.1.35:8000/admin/intest/ints/' target=_blank>接口管理地址</a>修改参数，也可以等管理员修改。</h4><table border=1 width=100%><tr style='background-color:cadetblue'><th>HttpCode</th><th>Name</th><th>Method</th><th>LogCode</th><th>Error</th><th>Message</th><th>ProductId</th><th>URL</th></tr>\n\r"
+	html_string0 = "<h3>以下是今天产生的错误列表，测试组童鞋 还请查看有日志返回的错误异常信息，验证线上产品是否有异常</h3><br /><h4>响应码非200的接口说明线上服务有几率会挂。参数错误（如产品下架等）导致的，可以访问<a href='http://10.113.1.35:8000/admin/intest/ints/' target=_blank>接口管理地址</a>修改参数，也可以等管理员修改。</h4><table border=1 width=100%><tr style='background-color:cadetblue'><th>HttpCode</th><th>Name</th><th>Method</th><th>LogCode</th><th>Error</th><th>Message</th><th>ProductId</th><th>URL</th><th>Time</th></tr>\n\r"
 	html_string1 = ""
+	
 	for x in my_lists:
 		temp_list = x.url.split('&')
 		for z in temp_list:
@@ -44,15 +45,16 @@ def do_contents():
 				break
 			else:
 				pId = 'null'
-		html_string1 += ("<tr><td>%s</td><td>%s</td><td style='word-break:break-all'>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href='%s'>url</a></td></tr>\n\r" %( x.httpcode, x.name, x.method_version, x.log_code, x.error, x.message, pId, x.url))
+		html_string1 += ("<tr><td>%s</td><td>%s</td><td style='word-break:break-all'>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href='%s'>url</a></td><td>%s</td></tr>\n\r" %( x.httpcode, x.name, x.method_version, x.log_code, x.error, x.message, pId, x.url, x.timestamp.strftime("%Y-%m-%d %H:%M:%S")))
 	patterns = []
 	#去重
 	for line in html_string1.split("\n\r"):
 		if line not in patterns:
 			patterns.append(line)
 	html_string2 = "".join(patterns)
-	html_string3="</table><h4><a href='http://10.113.1.35:8000/intest/' target=_blank>接口性能监控平台</a></h4>"
+	html_string3="</table><h4><a href='http://10.113.1.35:8000/' target=_blank>性能监控平台</a></h4>"
 	html_string = html_string0 + html_string2 + html_string3
+	#print (html_string)
 	return html_string
 	
 def do_mail():

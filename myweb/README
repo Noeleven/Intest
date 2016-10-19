@@ -1,0 +1,9 @@
+INTEST 项目
+	dbackup intest数据库备份
+	dbrebuild intest数据库恢复
+	doCheck intest检查清扬自动化账号下添加的联系人等，动态删除
+	doIntest intest测试接口的脚本
+	doMail intest每日发送错误的邮件脚本
+	run intest自启动脚本
+FZ 项目
+	doFZtest 仿真每日测试脚本

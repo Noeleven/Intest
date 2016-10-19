@@ -65,9 +65,9 @@ def home(request):
 		m =  int(request.GET['to_date'].split('-')[1])
 		d =  int(request.GET['to_date'].split('-')[2])
 		date_to = datetime.datetime(y,m,d, 23, 59)
-	else:#today
+	else:#today 用户并不关心当天的结果，不如取空数据，加快首页展示
 		date_from = datetime.datetime(time.localtime().tm_year,time.localtime().tm_mon,time.localtime().tm_mday, 0, 0)
-		date_to = datetime.datetime(time.localtime().tm_year,time.localtime().tm_mon,time.localtime().tm_mday, 23, 59)
+		date_to = datetime.datetime(time.localtime().tm_year,time.localtime().tm_mon,time.localtime().tm_mday, 0, 0)
 	start = time.time()
 	range_list = Sdata.objects.all().filter(timestamp__range=(date_from, date_to)) #包含日志错误的原数据
 	error_list = Errs.objects.all().filter(timestamp__range=(date_from, date_to)) #错误表中的数据，仅http和log错误
@@ -95,6 +95,7 @@ def home(request):
 	p.join()
 	
 	ints_dict = sorted(show_dict.items(), key = lambda aab:aab[1]['total_time_avg'], reverse = True)	#变成列表
+	ints_server = sorted(show_dict.items(), key = lambda aab:aab[1]['server_time_avg'], reverse = True)	#变成列表
 
 	show_errs = []	#接口错误数据字典
 	#todo 去重,如果去重则忽略发生的时间，错误数量会减少，这是不合理的
@@ -133,4 +134,4 @@ def home(request):
 	
 	end = time.time()
 	print ('Time: %s' % (end - start))
-	return render_to_response('home.html', {'show_errs': show_errs, 'show_rate':show_rate, 'succ_dict':json.dumps(succ_dict),'ints_dict':ints_dict})
+	return render_to_response('home.html', {'show_errs': show_errs, 'show_rate':show_rate, 'succ_dict':json.dumps(succ_dict),'ints_dict':ints_dict,'ints_server':ints_server})

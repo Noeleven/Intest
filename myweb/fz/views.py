@@ -33,7 +33,7 @@ def fz_home(request):
 		date_from = datetime.datetime(time.localtime().tm_year,time.localtime().tm_mon,time.localtime().tm_mday, 0, 0)
 		date_to = datetime.datetime(time.localtime().tm_year,time.localtime().tm_mon,time.localtime().tm_mday, 23, 59)
 	start = time.time()
-	range_list = Sdata.objects.all().filter(timestamp__range=(date_from, date_to))
+	range_list = Sdata.objects.values('name', 'method_version', 'url', 'code', 'log_code', 'debugmsg', 'error', 'message').filter(timestamp__range=(date_from, date_to))
 	
 	#请求成功的比例 分为200的1成功比例，和500的比例
 	code_500 = range_list.filter(code="500").count()
@@ -53,9 +53,13 @@ def fz_home(request):
 		succ_dict = {'code500':0, 'code404':0, 'code1':0, 'codenot1':0, 'other':0}
 	
 	# 分别统计500错误列表、log错误列表、404错误列表
-	err_500 = range_list.filter(code="500").distinct().order_by('method_version')
-	err_404 = range_list.filter(code="404").distinct().order_by('method_version')
-	err_200 = range_list.exclude(log_code="1").distinct().order_by('method_version')
+	err_500 = range_list.filter(code="500").distinct().order_by('name')
+	err_404 = range_list.filter(code="404").distinct().order_by('name')
+	err_200 = range_list.exclude(log_code="1").distinct().order_by('name')
+	succ_200 = Sdata.objects.values('name', 'method_version', 'url', 'code', 'log_code',  'error', 'message').filter(timestamp__range=(date_from, date_to)).filter(log_code="1").distinct().order_by('name')
 	end = time.time()
 	print ('Time: %s' % (end - start))
-	return render_to_response('fz_home.html', {'err_500': err_500,'err_404': err_404,'err_200': err_200, 'succ_dict':json.dumps(succ_dict),})
+	return render_to_response('fz_home.html', {'succ_200':succ_200,'err_500': err_500,'err_404': err_404,'err_200': err_200, 'succ_dict':json.dumps(succ_dict),})
+
+def fz_notin(request):
+	return render(request, 'fz_notin.html')

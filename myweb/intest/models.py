@@ -47,6 +47,8 @@ class Errs(models.Model):
 	timestamp = models.DateTimeField(auto_now=True)
 	
 class IntsAdmin(admin.ModelAdmin):
-	list_display = ('name', 'method_version', 'ishttp', 'isget', 'inwhere', 'timestamp')
+    list_display = ('name', 'method_version', 'ishttp', 'isget', 'inwhere', 'timestamp')
+    list_per_page = 30
+    search_fields = ['name', 'method_version',]
 
 admin.site.register(Ints, IntsAdmin)

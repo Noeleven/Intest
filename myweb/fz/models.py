@@ -6,11 +6,11 @@ from django.contrib import admin
 # Create your models here.
 #数据录入表method+version,name,http,get,args,insertime
 class Ints(models.Model):
-    name = models.CharField(max_length=100, default='接口描述')
-    method_version = models.CharField(max_length=100, default='api.com.xxx&version=x.0.0')
+    name = models.CharField(max_length=100, default='品类-接口描述')
+    method_version = models.CharField(max_length=100, default='api.com.route.creatOrder&version=1.0.0')
     ishttp = models.CharField(max_length=10, default="HTTP")
     isget = models.CharField(max_length=10,default="GET")
-    params = models.TextField(default="URL里接口&之后的内容")
+    params = models.TextField(default="&firstChannel=LVMM&secondChannel=...")
     inwhere = models.TextField(default="该接口的出现页面位置")
     timestamp = models.DateField(auto_now=True)
 
@@ -31,6 +31,10 @@ class Sdata(models.Model):
 	
 class IntsAdmin(admin.ModelAdmin):
 	list_display = ('name', 'method_version', 'ishttp', 'isget', 'inwhere', 'timestamp')
+	list_per_page = 30
+	search_fields = ['name', 'method_version',]
+#	list_editable = [('name'),]
+	# list_filter = ['method_version',]
 
 admin.site.register(Ints, IntsAdmin)
 

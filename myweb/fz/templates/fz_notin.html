@@ -1,0 +1,163 @@
+{% extends "fz_intbase.html" %}
+{% block content %}
+
+<div class="panel panel-success">
+	<div class="panel-body">
+		<div class="row">
+			<h3>仿真环境/线上 仍未录入的接口</h3>
+			<h4>====确认不行的====</h4>
+			<p>门票</p>
+<p>api.com.ticket.order.createOrder 提交门票订单 （下单跳过）</p>
+<p>api.com.ticket.order.getRelateTicketGoods 获取门票关联销售商品列表 未找到</p>
+<p>api.com.ticket.order.checkTimePrice 未找到</p>
+<p>线路&大交通</p>
+<p>api.com.route.order.showContract 显示合同 未找到</p>
+<p>api.com.route.product.getRouteProductNearestGroupDate 线路最近一天可订（未找到）</p>
+</p><p>api.com.route.order.createOrder 线路提交订单 （下单跳过）
+</p><p>api.com.route.order.checkRouteOrder 线路下单校验 （下单跳过）
+</p><p>api.com.route.order.commitIntentionOrder 提交意向订单 （下单跳过）
+</p><p>api.com.route.lvf.createOrder 线路交通自动打包产品-创建订单（下单跳过）
+</p><p>api.com.route.lvf.lvfhotel.bookinglvfHotel 线路交通机酒动态打包-创建订单（下单跳过）
+</p><p>api.com.route.lvf.countRoutePrice  (shopuuid动态更新，无法测试)
+</p>特卖
+</p><p>api.com.groupbuy.route.order.createOrder 提交线路订单（下单跳过）
+</p><p>api.com.groupbuy.ticket.order.createOrder 提交门票订单（下单跳过）
+</p>邮轮
+</p><p>api.com.ship.getTimePrice 获取邮轮时间价格表（未找到）
+</p><p>api.com.ship.commitShipOrder 提交邮轮订单
+</p>联系人信息相关接口
+</p><p>api.com.user.addOrderContact 订单内游玩人保存（国内、线路）未找到
+</p><p>api.com.user.addShipOrderContact 订单内游玩人保存（游轮）未找到
+</p>优惠券相关接口
+</p><p>api.com.user.getCouponSend 根据批次号发送优惠券
+</p><p>api.com.user.couponBinding 优惠券绑定
+</p>用户个人信息相关接
+</p><p>api.com.user.updateImage 更新用户头像
+</p><p>api.com.user.gift.giftCreateOrder 会员礼品-创建订单接口
+</p><p>api.com.user.gift.giftProductList 会员礼品-获取产品列表
+</p><p>api.com.user.gift.giftProductDetail 会员礼品-产品详情
+</p>登录注册验证码相关接口
+</p><p>api.com.validateCode.register 发送【注册】短信验证码接口
+</p><p>api.com.validateCode.resendMsgCode 重发【注册】短信验证码接口
+</p><p>api.com.user.sso.validate.msgauthcode.register 校验【注册】短信验证码
+</p><p>api.com.user.sso.register 客户端【普通注册】接口
+</p><p>api.com.user.sso.login 客户端【普通登录】接口
+</p><p>api.com.user.sso.fastlogin.getMsgAuthCode 【快速登录】获取短信验证码
+</p><p>api.com.user.sso.fastlogin 客户端【短信验证码快速登陆】接口
+</p><p>api.com.login.union.alipay.getRequestMsg 支付宝SDK登录报文生成
+</p><p>api.com.login.union.alipay 支付宝联合登录接口
+</p><p>api.com.user.sso.activity.getMsgAuthCode 发送短信验证码接口(报告教练)
+</p><p>api.com.user.sso.activity.register 提交注册领优惠券接口(报告教练)
+</p><p>api.com.user.activity.checkAuthSendMobileMsg 检查是否可以发短信-接口(专题通用)
+</p><p>api.com.user.activity.sendMobileMsg 发普通短信接口(专题通用)
+</p><p>api.com.user.activity.sendAuthCodeMsg 发短信验证码接口(专题通用)
+</p><p>api.com.user.sso.usual.activity.register 专题注册发优惠券发短信(专题通用)
+</p>点评
+</p><p>api.com.cmt.insertPic 上传点评图片
+</p>电子票
+</p><p>api.com.user.geteTicket 没电子票直接返回错误
+</p><p>api.com.user.geteTicketDetail 未找到
+</p><p>api.com.user.geteTicketCount 未找到
+</p>其他
+</p><p>api.com.order.createOrder 创建酒店订单
+</p><p>api.com.order.cancelOrder 取消酒店订单
+</p><p>api.com.common.getCurrentTime 未找到
+</p><p>api.com.other.jedis.getValue 未找到
+</p><p>api.com.other.jedis.setValue 未找到
+</p><p>api.com.other.getSessionId 未找到
+</p><p>api.com.user.geteTicket v2.0.0 分页获取电子票列表 未找到
+</p><p>api.com.markchannel.createChannel 自动创建站外渠道(O2O二期使用接口)
+</p><p>api.com.file.getIcon 图片压缩
+</p><p>api.com.file.uploadImg 上传图片接口
+</p><p>api.com.pass.getVstPassPdf 获得vst通关码图片（未找到）
+</p><p>api.com.other.subSuggest 意见反馈提交（需要验证码）
+</p><p>api.com.comment.getCmtComment 获取新系统点评 未找到
+</p><p>api.com.advertise.behavior 广告投放用户行为收集 未找到
+</p><p>api.com.markchannel.createChannel 自动创建站外渠道 未找到
+</p><p>api.com.pass.getVstPassImage 获得vst通关码图片
+</p><p>api.com.pass.getPassImage 获得super通关码图片
+</p><p>api.com.version.redirectUrl 版本号跳转重定向(无返回结果)
+</p>免登陆快捷下单
+</p><p>api.com.route.order.createOrderQuickOrder 创建订单
+</p><p>api.com.ticket.quickorder.createQuickOrder 门票快捷下单创建订单
+</p><p>api.com.route.order.countRoutePriceOuickOrder 未找到
+</p><p>api.com.route.order.registerQuickOrder 未找到
+</p><p>api.com.ticket.quickorder.checkTicketQuickOrder 1.0.0 获取下单填写项及静默注册(要短信)
+</p>演出
+</p><p>api.com.show.order.countTicketPrice 计算价格 未找到
+</p><p>api.com.show.quickorder.countQuickShowPrice 匿名下单计算价格 未找到
+</p><p>api.com.show.order.checkTicketOrder 下单校验 未找到
+</p><p>api.com.show.quickorder.checkShowQuickOrder 匿名下单校验 未找到
+</p><p>api.com.show.order.createOrder 提交订单 未找到
+</p><p>api.com.show.product.getGoodsTimePrice 可售日期表 未找到
+</p>定制
+</p><p>api.com.customizaion.createCustomization v2.0.0 产品定制 (定制产品跳过)
+</p>酒店
+</p><p>api.com.resorthotel.createHotelQuickOrder 度假酒店快捷下单创建订单接口
+</p><p>api.com.ticket.order.checkTicketOrder 门票下单校验（需要创建订单）酒店
+</p><p>api.com.order.createOrder 创建酒店订单（下单跳过）
+</p><p>api.com.order.cancelOrder 取消酒店订单（下单跳过）
+</p><p>api.com.resorthotel.createHotelQuickOrder 度假酒店快捷下单创建订单接口（下单跳过）
+</p>小驴白条
+</p><p>api.com.order.getBTPayMsgAuthCode 小驴白条支付验证码
+</p>预售
+</p><p>api.com.presell.stamp.createStampOrder version 7.6.3 预售券提交订单
+</p><p>api.com.presell.stamp.createStampQuickOrder 预售券免登录提交订单
+</p><p>api.com.presell.stampRedeemList version 7.6.3 获取产品下的用户预售券列表（线路/酒店）（没购买没有）
+</p>wifi/电话卡
+</p><p>api.com.wifi.order.checkWifiOrder wifi/电话卡校验订单接口 (需要订单号)
+</p><p>api.com.wifi.order.createWifiOrder wifi/电话卡创建订单接口(需要下单)</p>
+			<h4>====待确认的====</h4>
+			<p>预售券酒店
+</p><p>api.com.presell.getHotelCalendar version 7.6.3 获取酒店兑换日历
+</p><p>api.com.presell.inputHotelOrder version 7.6.3 兑换酒店填写订单页
+</p><p>api.com.presell.createHotelOrder version 7.6.3 兑换酒店下单
+</p>预售券线路
+</p><p>api.com.presell.product.getRouteCalendar version 7.6.3 获取线路兑换日历
+</p><p>api.com.presell.product.getRouteProductDetails version 7.6.3 预售券关联的产品信息
+</p><p>api.com.presell.product.getRouteOptionalGoods version 7.6.3 兑换线路填写订单页可选产品
+</p><p>api.com.presell.product.countRoutePrice version 7.6.3 兑换线路计算价格
+</p><p>api.com.presell.product.getRouteTravellerRequire version 7.6.3 兑换线路游玩人
+</p><p>api.com.presell.product.createRouteOrder version 7.6.3 兑换线路下单
+</p>线路大交通自动打包
+</p><p>api.com.route.lvf.lvfhotel.countRoutePrice 线路交通机酒动态打包-计算价格 since7.7.2
+</p><p>api.com.route.lvf.lvfhotel.getContract 线路交通机酒动态打包-合约
+</p><p>api.com.route.lvfhotel.loadRecommendGoods 线路交通机酒动态打包-查询默认推荐商品 since7.7.2
+</p><p>api.com.route.lvfhotel.changeFlight 线路交通机酒动态打包-更换航班 since7.7.2
+</p><p>api.com.route.lvf.lvfhotel.changeHotel 线路交通机酒动态打包-更换酒店
+</p>邮轮
+</p><p>api.com.ship.checkTimePrice 检查邮轮订单时间价格表
+</p>特卖
+</p><p>api.com.groupbuy.getAllPackageSnapshots 获取多出发地线路的特卖产品中某个出发地下的所有套餐的概要信息(多出发地详情页
+</p><p>api.com.groupbuy.queryAllGroupbuyList 特卖首页列表(7.8.0版本)
+</p><p>api.com.groupbuy.queryTypeGroupbuyList 特卖首页点击更多列表(7.8.0版本)
+</p>订单
+</p><p>api.com.user.getOrderCmtLatitudes 获得订单点评维度（需要登录）
+</p><p>api.com.order.getRefundReasons 获取退款原因（需要登录）
+</p><p>api.com.order.commitRefundOnline 提交在线退款（需要登录）
+</p><p>api.com.order.cancellOrder 取消订单（需要登录）
+</p><p>api.com.order.bonusPay 奖金支付（需要登录）
+</p><p>api.com.order.cashPay 现金支付（需要登录）
+</p><p>api.com.order.reSendVstOrderSms 重发短信凭证（需要登录）
+</p><p>api.com.order.commitOrdRefundOnline 提交退款申请（需要登录）
+</p><p>api.com.order.getIntentionOrder 意向单详情（需要登录）
+</p><p>api.com.order.cancelIntentionOrder 取消意向单（需要登录）
+</p><p>api.com.order.getSplitPayChannel 获取分单支付渠道（需要登录）
+</p><p>api.com.order.getRefundProgressDetails 获取退款详情接口（需要登录）
+</p><p>api.com.order.paySuccess 订单成功页面（需要登录）
+</p><p>api.com.order.guessEnjoy 支付完成页面，猜你喜欢（需要登录）
+</p><p>api.com.order.activityShareSuccess订单支付完成页活动-分享完成记录（需要登录）
+</p><p>api.com.order.onlineSign下单在线签约（@version 7.4.1 接口迁移）（需要登录）
+</p><p>api.com.order.getDesBuRefundReasons目的地事业部酒店订单获取退款原因（@version 7.5）（需要登录）
+</p><p>api.com.order.desBuHotelRefundProgressDetails目的地事业部酒店订单退款处理进程(7.5)（需要登录）
+</p><p>api.com.order.commitDesBuOrdRefundOnline目的地事业部酒店订单提交退款申请(7.5)（需要登录）
+</p><p>api.com.order.getInstalment小驴分期获取订单分期信息(7.6.1)（需要登录）
+</p><p>api.com.order.canclePreSellOrder预授券订单取消(7.6.3)（需要登录）
+</p><p>api.com.order.commitPreSellOrdRefundOnline预授券订单退款信息提交(7.6.3)（需要登录）
+</p><p>api.com.order.getRefundDetailByTicketCode预授券已退款券对应退款详情(7.6.3)（需要登录）
+</p><p>api.com.user.sso.sendMsgPreSale预授券重发短信(7.6.3)（需要登录）
+</p><p>api.com.order.getOrderTrackingInfo 订单追踪信息（需要登录）</p>
+		</div>
+	</div>
+</div>
+{% endblock %}

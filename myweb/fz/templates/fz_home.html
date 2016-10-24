@@ -6,28 +6,25 @@
 		<div class="row">
 			<div class="col-xs-4">
 			<div class="alert alert-warning" role="alert">默认结果是当天生成的<br>测试时间：每天下午3点到4点，一共测试5次</div>
-				<form class="form-horizontal" role="form" method="get">
+				<form role="form" method="get">
 					<div class="form-group">
-						<label for="dtp_input2" class="col-sm-4 control-label">开始时间</label>
-						<div class="col-sm-8 input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
-							<input name="from_date" class="form-control" size="16" type="text" value="" readonly>
-							<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
-						</div><input type="hidden" id="dtp_input2" value="" />
-					</div>
-					<div class="form-group">
-						<label for="dtp_input2" class="col-sm-4 control-label">结束时间</label>
-						<div class="col-sm-8 input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
-							<input name="to_date" class="form-control" size="16" type="text" value="" readonly>
+						<label for="dtp_input2">开始时间</label>
+						<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+							<input name="from_date" size="16"  class="form-control" type="text" value="" readonly>
 							<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
 						</div>
 						<input type="hidden" id="dtp_input2" value="" />
 					</div>
 					<div class="form-group">
-						<div class="col-sm-offset-4 col-sm-8">
-							<button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span> 查询</button>
+						<label for="dtp_input2">结束时间</label>
+						<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+							<input name="to_date" size="16"  class="form-control" type="text" value="" readonly>
+							<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
 						</div>
+						<input type="hidden" id="dtp_input2" value="" />
 					</div>
-				</form>
+					<button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span> 查询</button>
+				</form>	
 			</div>
 			<div class="col-xs-8">
 				<div id="canvas-holder">
@@ -46,6 +43,7 @@
 	<li role="presentation" class="active"><a href="#auto200" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-remove"></span> code返回非1<span class="badge"> {{ err_200|length}}</span></a></li>
 	<li role="presentation"><a href="#auto500" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-tasks"></span> 500错误<span class="badge"> {{ err_500|length}}</span></a></li>
 	<li role="presentation"><a href="#auto404" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-star"></span> 404错误<span class="badge"> {{ err_404|length}}</span></a></li>
+	<li role="presentation"><a href="#auto1" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-flag"></span> 请求成功<span class="badge"> {{ succ_200|length}}</span></a></li>
 </ul>
 <div class="tab-content">
 
@@ -54,9 +52,17 @@
 				<div class="panel-heading">错误汇总</div>
 				<div class="panel-body">
 					<table class="table table-hover table-condensed ">
-					<thead><tr class="info"><th class="col-sm-1">HTTPCode</th><th class="col-sm-1">LogCode</th><th class="col-sm-2">接口</th><th class="col-sm-1">描述</th><th class="col-sm-1">URL</th><th class="col-sm-2">DebugMsg</th><th class="col-sm-1">Error</th><th class="col-sm-1">Message</th><th class="col-sm-1">Time</th></tr></thead>
+					<thead><tr class="info"><th class="col-sm-1">HTTPCode</th><th class="col-sm-1">LogCode</th><th class="col-sm-2">接口</th><th class="col-sm-2">描述</th><th class="col-sm-1">URL</th><th class="col-sm-1">DebugMsg</th><th class="col-sm-2">Error</th><th class="col-sm-2">Message</th></tr></thead>
 					{% for v in err_200 %}
-					<tr><th>{{ v.code }}</th><th>{{ v.log_code }}</th><th style="word-break:break-all">{{ v.method_version }}</th><th>{{ v.name }}</th><th><a href="{{ v.url }}" target="_blank">URL</a></th><th  style="word-break:break-all">{{ v.debugmsg }}</th><th  style="word-break:break-all">{{ v.error }}</th><th  style="word-break:break-all">{{ v.message }}</th><th  style="word-break:break-all">{{ v.timestamp|date:"Y-m-d H:i" }}</th></tr>
+					<tr>
+					<th>{{ v.code }}</th>
+					<th>{{ v.log_code }}</th>
+					<th style="word-break:break-all">{{ v.method_version }}</th>
+					<th>{{ v.name }}</th>
+					<th><a type="button" class="btn btn-sm btn-primary" href='{{ v.url }}' target='_blank' data-toggle="tooltip" data-placement="bottom" title="{{ v.url }}">URL</a></th>
+					<th  style="word-break:break-all"><a type="button" class="btn btn-sm btn-primary"  data-toggle="tooltip" data-placement="bottom" title="{{ v.debugmsg }}">debugmsg</a></th>
+					<th  style="word-break:break-all">{{ v.error }}</th>
+					<th  style="word-break:break-all">{{ v.message }}</th></tr>
 					{% endfor %}
 					</table>
 				</div>
@@ -67,9 +73,17 @@
 				<div class="panel-heading">错误汇总</div>
 				<div class="panel-body">
 					<table class="table table-hover table-condensed ">
-					<thead><tr class="info"><th class="col-sm-0.5">HTTPCode</th><th class="col-sm-0.5">LogCode</th><th class="col-sm-1.5">接口</th><th class="col-sm-1.5">描述</th><th class="col-sm-0.5">URL</th><th class="col-sm-2">DebugMsg</th><th class="col-sm-2">Error</th><th class="col-sm-2">Message</th><th class="col-sm-1.5">Time</th></tr></thead>
+					<thead><tr class="info"><th class="col-sm-1">HTTPCode</th><th class="col-sm-1">LogCode</th><th class="col-sm-2">接口</th><th class="col-sm-2">描述</th><th class="col-sm-1">URL</th><th class="col-sm-1">DebugMsg</th><th class="col-sm-2">Error</th><th class="col-sm-2">Message</th></tr></thead>
 					{% for v in err_500 %}
-					<tr><th>{{ v.code }}</th><th>{{ v.log_code }}</th><th style="word-break:break-all">{{ v.method_version }}</th><th>{{ v.name }}</th><th><a href="{{ v.url }}" target="_blank">URL</a></th><th>{{ v.debugmsg }}</th><th>{{ v.error }}</th><th>{{ v.message }}</th><th>{{ v.timestamp|date:"Y-m-d H:i" }}</th></tr>
+					<tr>
+					<th>{{ v.code }}</th>
+					<th>{{ v.log_code }}</th>
+					<th style="word-break:break-all">{{ v.method_version }}</th>
+					<th>{{ v.name }}</th>
+					<th><a type="button" class="btn btn-sm btn-primary" href='{{ v.url }}' target='_blank' data-toggle="tooltip" data-placement="bottom" title="{{ v.url }}">URL</a></th>
+					<th  style="word-break:break-all"><a type="button" class="btn btn-sm btn-primary"  data-toggle="tooltip" data-placement="bottom" title="{{ v.debugmsg }}">debugmsg</a></th>
+					<th>{{ v.error }}</th>
+					<th>{{ v.message }}</th></tr>
 					{% endfor %}
 					</table>
 				</div>
@@ -80,13 +94,41 @@
 				<div class="panel-heading">错误汇总</div>
 				<div class="panel-body">
 					<table class="table table-hover table-condensed ">
-					<thead><tr class="info"><th class="col-sm-0.5">HTTPCode</th><th class="col-sm-0.5">LogCode</th><th class="col-sm-1.5">接口</th><th class="col-sm-1.5">描述</th><th class="col-sm-0.5">URL</th><th class="col-sm-2">DebugMsg</th><th class="col-sm-2">Error</th><th class="col-sm-2">Message</th><th class="col-sm-1.5">Time</th></tr></thead>
+					<thead><tr class="info"><th class="col-sm-1">HTTPCode</th><th class="col-sm-1">LogCode</th><th class="col-sm-2">接口</th><th class="col-sm-2">描述</th><th class="col-sm-1">URL</th><th class="col-sm-1">DebugMsg</th><th class="col-sm-2">Error</th><th class="col-sm-2">Message</th></tr></thead>
 					{% for v in err_404 %}
-					<tr><th>{{ v.code }}</th><th>{{ v.log_code }}</th><th style="word-break:break-all">{{ v.method_version }}</th><th>{{ v.name }}</th><th><a href="{{ v.url }}" target="_blank">URL</a></th><th>{{ v.debugmsg }}</th><th>{{ v.error }}</th><th>{{ v.message }}</th><th>{{ v.timestamp|date:"Y-m-d H:i" }}</th></tr>
+					<tr>
+					<th>{{ v.code }}</th>
+					<th>{{ v.log_code }}</th>
+					<th style="word-break:break-all">{{ v.method_version }}</th>
+					<th>{{ v.name }}</th>
+					<th><a type="button" class="btn btn-sm btn-primary" href='{{ v.url }}' target='_blank' data-toggle="tooltip" data-placement="bottom" title="{{ v.url }}">URL</a></th>
+					<th  style="word-break:break-all"><a type="button" class="btn btn-sm btn-primary"  data-toggle="tooltip" data-placement="bottom" title="{{ v.debugmsg }}">debugmsg</a></th>
+					<th>{{ v.error }}</th>
+					<th>{{ v.message }}</th></tr>
 					{% endfor %}
 					</table>
 				</div>
 			</div>
+	</div>
+	<div role="tabpanel" class="tab-pane fade" id="auto1"><br />
+		<div class="panel panel-default">
+			<div class="panel-heading">请求成功</div>
+			<div class="panel-body">
+				<table class="table table-hover table-condensed ">
+				<thead><tr class="info"><th class="col-sm-1">HTTPCode</th><th class="col-sm-1">LogCode</th><th class="col-sm-2">接口</th><th class="col-sm-2">描述</th><th class="col-sm-1">URL</th><th class="col-sm-2">Error</th><th class="col-sm-2">Message</th></tr></thead>
+				{% for v in succ_200 %}
+				<tr>
+					<th>{{ v.code }}</th>
+					<th>{{ v.log_code }}</th>
+					<th style="word-break:break-all">{{ v.method_version }}</th>
+					<th>{{ v.name }}</th>
+					<th><a type="button" class="btn btn-sm btn-primary" href='{{ v.url }}' target='_blank' data-toggle="tooltip" data-placement="bottom" title="{{ v.url }}">URL</a></th>
+					<th>{{ v.error }}</th>
+					<th>{{ v.message }}</th></tr>
+				{% endfor %}
+				</table>
+			</div>
+		</div>
 	</div>
 </div>
     <script>

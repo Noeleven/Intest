@@ -49,6 +49,8 @@ def do_curl(req_url, url_method="GET", method_name="未定义名称", url_api="�
 		p.save()
 		b.close()
 		c.close()
+	else:
+		p.save()
 	end = time.time()
 	print ('docurl %s 执行完毕 runs %0.2f seconds.' % (p.name, (end - start)))
 	return

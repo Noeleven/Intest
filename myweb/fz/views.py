@@ -55,7 +55,7 @@ def fz_home(request):
 	# 分别统计500错误列表、log错误列表、404错误列表
 	err_500 = range_list.filter(code="500").distinct().order_by('name')
 	err_404 = range_list.filter(code="404").distinct().order_by('name')
-	err_200 = range_list.exclude(log_code="1").distinct().order_by('name')
+	err_200 = range_list.filter(code='200').exclude(log_code="1").distinct().order_by('name')
 	succ_200 = Sdata.objects.values('name', 'method_version', 'url', 'code', 'log_code',  'error', 'message').filter(timestamp__range=(date_from, date_to)).filter(log_code="1").distinct().order_by('name')
 	end = time.time()
 	print ('Time: %s' % (end - start))

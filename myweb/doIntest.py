@@ -1,111 +1,150 @@
 #!/usr/bin/env python
 # -*- coding:utf8 -*-
 import django
-import os, sys, io, json, pycurl, time, datetime, multiprocessing
+import os, io, json, pycurl, time
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myweb.settings')
 django.setup()
-from django.shortcuts import render, render_to_response
-from django.http import HttpResponse
-from django.template import RequestContext
 from intest.models import *
-from io import StringIO
-from multiprocessing import Process, Pool
+from multiprocessing import Pool
 
-def do_curl(req_url, url_method="GET", method_name="未定义名称", url_api="未定义接口"):
-	print ('Run task %s (%s)...' % ((req_url.split('api.com.',2)[1]).split('&',1)[0], os.getpid()))
+def do_curl(n, req_url, url_method="GET", method_name="未定义名称", url_api="未定义接口"):
+	# print ('Run task %s (%s)...' % ((req_url.split('api.com.',2)[1]).split('&',1)[0], os.getpid()))
 	start = time.time()
-	c = pycurl.Curl() #创建一个同libcurl中的CURL处理器相对应的Curl对象
 	b = io.BytesIO()
-	c.setopt(pycurl.URL, req_url) #设置要访问的网址 url = "http://www.cnn.com"
-	#写的回调
+	c = pycurl.Curl()
+	c.setopt(pycurl.URL, req_url.encode('UTF-8'))
 	c.setopt(pycurl.WRITEFUNCTION, b.write)
-	c.setopt(pycurl.FOLLOWLOCATION, 1) #参数有1、2
-	#最大重定向次数,可以预防重定向陷阱
+	c.setopt(pycurl.FOLLOWLOCATION, 1)
+	# 最大重定向次数,可以预防重定向陷阱
 	c.setopt(pycurl.MAXREDIRS, 5)
-	#连接超时设置
-	c.setopt(pycurl.CONNECTTIMEOUT, 20) #链接超时
-	c.setopt(pycurl.CUSTOMREQUEST, url_method) #get or post
-	c.setopt(pycurl.HTTPHEADER,['signal:ab4494b2-f532-4f99-b57e-7ca121a137ca'])
-	#模拟浏览器
-	c.setopt(pycurl.USERAGENT, "Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.23 Mobile Safari/537.36")
-	c.setopt(pycurl.VERBOSE,0)
-	c.perform() #执行上述访问网址的操作
-	#解析返回的json数据
-	htmlString = b.getvalue().decode('UTF-8')
-	p = Sdata(method_version = url_api)
-	p.name = method_name
-	p.url = req_url
-	p.code =  c.getinfo(c.HTTP_CODE)
-	p.dns_time = round(c.getinfo(c.NAMELOOKUP_TIME), 2)
-	p.tcp_time = round((c.getinfo(c.CONNECT_TIME) - c.getinfo(c.NAMELOOKUP_TIME)), 2)
-	p.up_time = round((c.getinfo(c.PRETRANSFER_TIME) - c.getinfo(c.CONNECT_TIME)), 2)
-	p.server_time = round((c.getinfo(c.STARTTRANSFER_TIME) - c.getinfo(c.PRETRANSFER_TIME)), 2)
-	p.download_time = round((c.getinfo(c.TOTAL_TIME) - c.getinfo(c.STARTTRANSFER_TIME)), 2)
-	p.download_size = round(((c.getinfo(c.SIZE_DOWNLOAD) / 8 ) / 1024), 2)
-	p.total_time = round(c.getinfo(c.TOTAL_TIME), 2)
-	if c.getinfo(c.HTTP_CODE) == 200:
-		html_json = json.loads(htmlString)
-		p.log_code =  html_json['code']
-		if p.log_code is '1':
-			debug_msg = html_json['debugMsg']
-			if debug_msg == '':
-				p.log_time = 0
+	# 连接超时设置
+	c.setopt(pycurl.CONNECTTIMEOUT, 20)
+	c.setopt(pycurl.CUSTOMREQUEST, url_method)  # get or post
+	c.setopt(pycurl.HTTPHEADER, ['signal:ab4494b2-f532-4f99-b57e-7ca121a137ca'])
+	# 模拟浏览器
+	c.setopt(pycurl.USERAGENT,
+			 "Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) "
+			 "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.23 Mobile Safari/537.36")
+	c.setopt(pycurl.VERBOSE, 0)
+	try:
+		c.perform()
+	except pycurl.error as e:
+		print('%s: %s' % (e, req_url))
+		end = time.time()
+		print('%s XXX URL出错 XXX runs %0.2f S' % (n, (end - start)))
+	else:
+		if c.getinfo(c.HTTP_CODE) == 200:
+			p = Sdata(method_version=url_api)
+			# 这里要确认 响应信息有json数据、html数据、图片二进制数据，仅json可以decode
+			try:
+				# 如果解析正常 就不是图片 可能是html
+				html_string = b.getvalue().decode('UTF-8')
+				html_json = json.loads(html_string)
+				m = 0
+			except:
+				html_string = b.getvalue()[-199:]
+				m = 1
+			if m == 0:
+				p.log_code = html_json['code']
+				if p.log_code is '1':
+					p.name = method_name
+					p.url = req_url
+					p.code = c.getinfo(c.HTTP_CODE)
+					p.dns_time = round(c.getinfo(c.NAMELOOKUP_TIME), 2)
+					p.tcp_time = round((c.getinfo(c.CONNECT_TIME) - c.getinfo(c.NAMELOOKUP_TIME)), 2)
+					p.up_time = round((c.getinfo(c.PRETRANSFER_TIME) - c.getinfo(c.CONNECT_TIME)), 2)
+					p.server_time = round((c.getinfo(c.STARTTRANSFER_TIME) - c.getinfo(c.PRETRANSFER_TIME)), 2)
+					p.download_time = round((c.getinfo(c.TOTAL_TIME) - c.getinfo(c.STARTTRANSFER_TIME)), 2)
+					p.download_size = round(((c.getinfo(c.SIZE_DOWNLOAD) / 8) / 1024), 2)
+					p.total_time = round(c.getinfo(c.TOTAL_TIME), 2)
+					try:
+						debug_msg = html_json['debugMsg']
+						if debug_msg == '':				
+							p.log_time = 0
+						else:
+							p.log_time = round((int((debug_msg.split('costTime:', 1)[1]).split('ms', 1)[0]) / 1000), 2)
+					except:
+						print('no debugmsg')
+					p.save()
+				else:
+					e = Errs(method_version=url_api)
+					e.name = method_name
+					e.url = req_url
+					e.httpcode = c.getinfo(c.HTTP_CODE)
+					e.log_code = html_json['code']
+					try:
+						e.error = html_json['errorMessage'][:198]
+						e.message = html_json['message'][:198]
+					except KeyError as ee:
+						e.error = b.getvalue()[-199:]
+					finally:
+						e.save()
 			else:
-				p.log_time = round((int((debug_msg.split('costTime:',1)[1]).split('ms',1)[0]) / 1000), 2)
+				p.name = method_name
+				p.url = req_url
+				p.code = c.getinfo(c.HTTP_CODE)
+				p.dns_time = round(c.getinfo(c.NAMELOOKUP_TIME), 2)
+				p.tcp_time = round((c.getinfo(c.CONNECT_TIME) - c.getinfo(c.NAMELOOKUP_TIME)), 2)
+				p.up_time = round((c.getinfo(c.PRETRANSFER_TIME) - c.getinfo(c.CONNECT_TIME)), 2)
+				p.server_time = round((c.getinfo(c.STARTTRANSFER_TIME) - c.getinfo(c.PRETRANSFER_TIME)), 2)
+				p.download_time = round((c.getinfo(c.TOTAL_TIME) - c.getinfo(c.STARTTRANSFER_TIME)), 2)
+				p.download_size = round(((c.getinfo(c.SIZE_DOWNLOAD) / 8) / 1024), 2)
+				p.total_time = round(c.getinfo(c.TOTAL_TIME), 2)
+				p.log_time = 0
+				p.save()
 		else:
-			#保存接口保存信息
-			e = Errs(method_version = url_api)
+			# 返回不是200的 都是错的
+			e = Errs(method_version=url_api)
 			e.name = method_name
 			e.url = req_url
 			e.httpcode = c.getinfo(c.HTTP_CODE)
-			e.log_code = html_json['code']
-			e.error = html_json['errorMessage']
-			e.message = html_json['message']
+			e.error = b.getvalue()[-199:]
 			e.save()
-		p.save()
+		end = time.time()
+		print('%s %s 执行完毕 runs %0.2f S' % (n, method_name, (end - start)))
+	finally:
 		b.close()
 		c.close()
-	else:
-		#存一个新表，记录bug
-		e = Errs(method_version = url_api)
-		e.name = method_name
-		e.url = req_url
-		e.httpcode = c.getinfo(c.HTTP_CODE)
-		e.save()
-	end = time.time()
-	print ('docurl %s 执行完毕 runs %0.2f seconds.' % (p.name, (end - start)))
 	return
-	
-def do_db(task):
-	print ('第%s次循环开始' % task)
+
+
+def do_db():
 	url_path = "api3g2.lvmama.com/api/router/rest.do?method="
-	#url_debug = "&IS_DEBUG=1"
-	#获取DB所有接口信息
 	source_list = Ints.objects.all()
-	#循环组合测试各个数据存入数据库
+	n = 1
+	lvsessionid = '&lvsessionid=7c204ec3-04ef-4ed9-8643-4ed64ac3f5fe'
 	for i in source_list:
 		method_name = i.name
 		url_api = i.method_version
-		url_params = i.params
-		if i.ishttp.lower() == "http":
-			url_http = "http://"
+		if 'lvsessionid' in i.params:
+			position = i.params.find('&lvsessionid')
+			url_params = i.params.replace(i.params[position:(position+49)], '')
 		else:
-			url_http = "https://"
+			url_params = i.params
 		if i.isget.lower() == "get":
 			url_method = "GET"
 		else:
 			url_method = "POST"
-		req_url = url_http + url_path + url_api + url_params
-		j.apply_async(do_curl, args=(req_url, url_method, method_name, url_api))
-	print ("=====")
+		if 'http://' not in url_params:
+			if i.ishttp.lower() == "http":
+				url_http = "http://"
+			else:
+				url_http = "https://"
+			req_url = url_http + url_path + url_api + url_params + lvsessionid
+		else:
+			req_url = url_params + lvsessionid
+		n += 1
+		j.apply_async(do_curl, args=(n, req_url, url_method, method_name, url_api))
+	print("=====")
 	return
 
+
 if __name__ == '__main__':
-	print ("parent process is %s" % os.getpid()) 
+	print("parent process is %s" % os.getpid())
 	for t in range(1):
 		j = Pool(4)
-		do_db(t)
+		do_db()
 		j.close()
 		j.join()
 		print('All subprocesses done.')
-		time.sleep(10)

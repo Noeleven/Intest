@@ -94,8 +94,7 @@ def home(request):
 	p.close()
 	p.join()
 	
-	ints_dict = sorted(show_dict.items(), key = lambda aab:aab[1]['total_time_avg'], reverse = True)	#变成列表
-	ints_server = sorted(show_dict.items(), key = lambda aab:aab[1]['server_time_avg'], reverse = True)	#变成列表
+	ints_dict = sorted(show_dict.items(), key = lambda aab:aab[1]['total_time_avg'], reverse = True)
 
 	show_errs = []	#接口错误数据字典
 	#todo 去重,如果去重则忽略发生的时间，错误数量会减少，这是不合理的
@@ -134,4 +133,4 @@ def home(request):
 	
 	end = time.time()
 	print ('Time: %s' % (end - start))
-	return render_to_response('home.html', {'show_errs': show_errs, 'show_rate':show_rate, 'succ_dict':json.dumps(succ_dict),'ints_dict':ints_dict,'ints_server':ints_server})
+	return render_to_response('home.html', {'show_errs': show_errs, 'show_rate':show_rate, 'succ_dict':json.dumps(succ_dict),'ints_dict':ints_dict})

@@ -1,3 +1,4 @@
+#导出intest数据库到intest目录下的json
 #python manage.py dumpdata intest > intest/intest.json
 
 #导入

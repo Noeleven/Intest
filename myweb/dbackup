@@ -1,8 +1,17 @@
 #!/bin/bash
+
+#清理intest fzsdata数据，清理前天的，保留昨天的用于偶尔测试
+now=`date '+%Y-%m-%d %H:%M:%S'`
+mysql -uroot -plvmama intest -e 'delete from fz_sdata where timestamp timestamp < "$now"'
+
+#分别备份intest、听云数据库
 pushd /rd/pystudy/Intest/myweb/
 /root/.pyenv/versions/3.5.1/bin/python3 manage.py dumpdata intest > /rd/pystudy/Intest/myweb/intest/db/intest.json
-/root/.pyenv/versions/3.5.1/bin/python3 manage.py dumpdata intest > /rd/pystudy/myweb/intest/db/intest.json
+mysqldump -uroot -plvmama tingyun > /rd/pystudy/Intest/myweb/intest/db/tingyun.sql
+#/root/.pyenv/versions/3.5.1/bin/python3 manage.py dumpdata intest > /rd/pystudy/myweb/intest/db/intest.json
 popd
 
 #导入
 #python manage.py loaddata /rd/pystudy/myweb/intest/db/intest.json
+
+

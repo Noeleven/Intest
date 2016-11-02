@@ -11,29 +11,59 @@ from fz.models import *
 from io import StringIO
 from multiprocessing import Process, Pool
 
-def do_curl(n, req_url, url_method="GET", method_name="未定义名称", url_api="未定义接口"):
-	#print ('Run task %s (%s)...' % ((req_url.split('api.com.',2)[1]).split('&',1)[0], os.getpid()))
-	start = time.time()
-	c = pycurl.Curl() #创建一个同libcurl中的CURL处理器相对应的Curl对象
+
+
+def do_url(login_url):
+	c = pycurl.Curl() 
 	b = io.BytesIO()
-	c.setopt(pycurl.URL, req_url) #设置要访问的网址 url = "http://www.cnn.com"
-	#写的回调
+	c.setopt(pycurl.URL, login_url) 
 	c.setopt(pycurl.WRITEFUNCTION, b.write)
-	c.setopt(pycurl.FOLLOWLOCATION, 1) #参数有1、2
-	#最大重定向次数,可以预防重定向陷阱
+	c.setopt(pycurl.FOLLOWLOCATION, 1) 
 	c.setopt(pycurl.MAXREDIRS, 5)
-	#连接超时设置
-	c.setopt(pycurl.CONNECTTIMEOUT, 20) #链接超时
-	c.setopt(pycurl.CUSTOMREQUEST, url_method) #get or post
+	c.setopt(pycurl.CONNECTTIMEOUT, 20) 
+	c.setopt(pycurl.CUSTOMREQUEST, 'GET') 
 	c.setopt(pycurl.HTTPHEADER,['signal:ab4494b2-f532-4f99-b57e-7ca121a137ca'])
-	#模拟浏览器
 	c.setopt(pycurl.USERAGENT, "Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.23 Mobile Safari/537.36")
 	c.setopt(pycurl.VERBOSE,0)
 	try:
-		c.perform() #执行上述访问网址的操作
+		c.perform()
+	except:
+		print('url error: %s' % login_url)
+	result = b.getvalue()
+	b.close()
+	c.close()
+	return result
+
+def do_session(result):
+	try:
+		htmlString = result.decode('UTF-8')
+		print(htmlString)
+		html_json = json.loads(htmlString)
+		lvsession = html_json['lvsessionId']
+		lvsessionid = ("&lvsessionid=%s" % lvsession)
+	except:
+		print('====>do session error')
+		sys.exit()
+	return lvsessionid
+
+def do_intcurl(n, req_url, url_method="GET", method_name="未定义名称", url_api="未定义接口"):
+	start = time.time()
+	c = pycurl.Curl() 
+	b = io.BytesIO()
+	c.setopt(pycurl.URL, req_url) 
+	c.setopt(pycurl.WRITEFUNCTION, b.write)
+	c.setopt(pycurl.FOLLOWLOCATION, 1) 
+	c.setopt(pycurl.MAXREDIRS, 5)
+	c.setopt(pycurl.CONNECTTIMEOUT, 20)
+	c.setopt(pycurl.CUSTOMREQUEST, url_method)
+	c.setopt(pycurl.HTTPHEADER,['signal:ab4494b2-f532-4f99-b57e-7ca121a137ca'])
+	c.setopt(pycurl.USERAGENT, "Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.23 Mobile Safari/537.36")
+	c.setopt(pycurl.VERBOSE,0)
+	try:
+		c.perform() 
 	except:
 		print('url error: %s' % req_url)
-	#解析返回的json数据
+
 	p = Sdata(method_version = url_api)
 	p.name = method_name
 	p.url = req_url
@@ -71,25 +101,41 @@ def do_curl(n, req_url, url_method="GET", method_name="未定义名称", url_api
 def do_db(task):
 	print ('第%s次循环开始' % task)
 	url_path = "192.168.0.227/api/router/rest.do?method="
-	#获取DB所有接口信息
+	login_url = 'http://192.168.0.227/t_login.htm?firstChannel=TOUCH&secondChannel=LVMM&username=eXV6aGliaW5nMw%3D%3D&password=MTExMTEx'
 	source_list = Ints.objects.all()
 	n = 1
-	#循环组合测试各个数据存入数据库
+	# 如果无验证码则可行
+	# url_string = do_url(login_url)
+	# lvsessionid = do_session(url_string)
+	# 目前每天手动获取一下吧
+	lvsessionid = '&lvsessionid=1cdc447d-207e-4a0c-91c4-2e3fc04dbcaa'
 	for i in source_list:
 		method_name = i.name
 		url_api = i.method_version
-		url_params = i.params
-		if i.ishttp.lower() == "http":
-			url_http = "http://"
+		# 处理lvsessionid
+		if 'lvsessionid' in i.params:
+			position = i.params.find('&lvsessionid')
+			url_params = i.params.replace(i.params[position:(position+49)], '')
 		else:
-			url_http = "https://"
+			url_params = i.params
+		
 		if i.isget.lower() == "get":
 			url_method = "GET"
 		else:
 			url_method = "POST"
-		req_url = url_http + url_path + url_api + url_params
+			
+		if 'http://' in url_params or 'https://' in url_params:
+			req_url = url_params + lvsessionid
+		else:
+			if i.ishttp.lower() == "http":
+				url_http = "http://"
+			else:
+				url_http = "https://"
+			req_url = url_http + url_path + url_api + url_params + lvsessionid
+			
 		n += 1
-		j.apply_async(do_curl, args=(n, req_url, url_method, method_name, url_api))
+		j.apply_async(do_intcurl, args=(n, req_url, url_method, method_name, url_api))
+		
 	print ("=====")
 	return
 
@@ -101,4 +147,4 @@ if __name__ == '__main__':
 		j.close()
 		j.join()
 		print('All subprocesses done.')
-		# time.sleep(10)
+

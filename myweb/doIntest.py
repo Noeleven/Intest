@@ -117,23 +117,25 @@ def do_db():
 	for i in source_list:
 		method_name = i.name
 		url_api = i.method_version
+		# 处理lvsessionid
 		if 'lvsessionid' in i.params:
 			position = i.params.find('&lvsessionid')
 			url_params = i.params.replace(i.params[position:(position+49)], '')
 		else:
 			url_params = i.params
+		# 
 		if i.isget.lower() == "get":
 			url_method = "GET"
 		else:
 			url_method = "POST"
-		if 'http://' not in url_params:
+		if 'http://' in url_params or 'https://' in url_params:
+			req_url = url_params + lvsessionid
+		else:
 			if i.ishttp.lower() == "http":
 				url_http = "http://"
 			else:
 				url_http = "https://"
 			req_url = url_http + url_path + url_api + url_params + lvsessionid
-		else:
-			req_url = url_params + lvsessionid
 		n += 1
 		j.apply_async(do_curl, args=(n, req_url, url_method, method_name, url_api))
 	print("=====")

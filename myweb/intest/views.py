@@ -133,4 +133,4 @@ def home(request):
 	
 	end = time.time()
 	print ('Time: %s' % (end - start))
-	return render_to_response('home.html', {'show_errs': show_errs, 'show_rate':show_rate, 'succ_dict':json.dumps(succ_dict),'ints_dict':ints_dict})
+	return render_to_response('int_home.html', {'show_errs': show_errs, 'show_rate':show_rate, 'succ_dict':json.dumps(succ_dict),'ints_dict':ints_dict})

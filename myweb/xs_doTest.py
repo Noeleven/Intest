@@ -7,6 +7,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myweb.settings')
 django.setup()
 from intest.models import *
 from multiprocessing import Pool
+from django.db.models import Q
 
 def do_curl(n, req_url, url_method="GET", method_name="未定义名称", url_api="未定义接口"):
 	# print ('Run task %s (%s)...' % ((req_url.split('api.com.',2)[1]).split('&',1)[0], os.getpid()))
@@ -111,19 +112,30 @@ def do_curl(n, req_url, url_method="GET", method_name="未定义名称", url_api
 
 def do_db():
 	url_path = "api3g2.lvmama.com/api/router/rest.do?method="
-	source_list = Ints.objects.all()
+	method_list = Ints.objects.values('method_version').order_by('method_version').distinct()
 	n = 1
-	lvsessionid = '&lvsessionid=7c204ec3-04ef-4ed9-8643-4ed64ac3f5fe'
-	for i in source_list:
+	# lvsessionid = '&lvsessionid=7c204ec3-04ef-4ed9-8643-4ed64ac3f5fe'
+	for x in method_list:
+		# 这里也顺便维护下DB，我们保留最新和最老的数据，其他的都删除
+		todel = Ints.objects.all().filter(method_version=x['method_version']).order_by('timestamp')
+		if len(todel) > 2:
+			first = todel[0].id
+			last = todel.reverse()[0].id
+			todel.exclude(Q(id=first)|Q(id=last)).delete()
+		# 只取最新的一个数据做测试
+		i = Ints.objects.all().filter(method_version=x['method_version']).order_by('-timestamp')[0]
 		method_name = i.name
 		url_api = i.method_version
 		# 处理lvsessionid
-		if 'lvsessionid' in i.params:
-			position = i.params.find('&lvsessionid')
-			url_params = i.params.replace(i.params[position:(position+49)], '')
-		else:
-			url_params = i.params
-		# 
+		# if 'lvsessionid' in i.params:
+			# position = i.params.find('&lvsessionid')
+			# url_params = i.params.replace(i.params[position:(position+49)], '')
+		# else:
+			# url_params = i.params
+		
+		url_params = i.params
+		lvsessionid = ''
+		
 		if i.isget.lower() == "get":
 			url_method = "GET"
 		else:

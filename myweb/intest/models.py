@@ -9,7 +9,7 @@ class Ints(models.Model):
 	name = models.CharField(max_length=100, default='接口描述')
 	method_version = models.CharField(max_length=100, default='api.com.xxx&version=x.0.0')
 	ishttp = models.CharField(max_length=10, default="HTTP")
-	isget = models.CharField(max_length=10,default="GET")
+	isget = models.CharField(max_length=10, default="GET")
 	params = models.TextField(default="URL里接口&之后的内容")
 	inwhere = models.TextField(default="该接口的出现页面位置")
 	timestamp = models.DateField(auto_now=True)

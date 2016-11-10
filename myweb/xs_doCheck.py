@@ -95,8 +95,8 @@ def do_address():
 	return
 	
 def do_contact():
-	getContact = "http://api3g2.lvmama.com/api/router/rest.do?method=api.com.user.getContact&version=1.0.0&receiversType=Address&lvsessionid=92ebe3a7-f763-43fb-96d7-bcec0872dd9d"
-	delContact = "http://api3g2.lvmama.com/api/router/rest.do?method=api.com.user.removeContact&version=1.0.0&receiversType=Address&lvsessionid=92ebe3a7-f763-43fb-96d7-bcec0872dd9d&receiverId="
+	getContact = "http://api3g2.lvmama.com/api/router/rest.do?method=api.com.user.getContact&version=1.0.0&receiversType=Address&lvsessionid=71257dad-5b32-44ad-aa8f-e407cddf0434"
+	delContact = "http://api3g2.lvmama.com/api/router/rest.do?method=api.com.user.removeContact&version=1.0.0&receiversType=Address&lvsessionid=71257dad-5b32-44ad-aa8f-e407cddf0434&receiverId="
 	contactNo = []
 	c = pycurl.Curl() #创建一个同libcurl中的CURL处理器相对应的Curl对象
 	#写的回调

@@ -108,7 +108,7 @@ def do_db(task):
 	# url_string = do_url(login_url)
 	# lvsessionid = do_session(url_string)
 	# 目前每天手动获取一下吧
-	lvsessionid = '&lvsessionid=1cdc447d-207e-4a0c-91c4-2e3fc04dbcaa'
+	lvsessionid = '&lvsessionid=78d4a411-87f2-41d0-8598-e86a39887f1a'
 	for i in source_list:
 		method_name = i.name
 		url_api = i.method_version

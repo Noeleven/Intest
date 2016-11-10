@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
+import os
+import sys
+import io
+import json
+import pycurl
+import time
+import datetime
+import multiprocessing
+import decimal
+
 from django.shortcuts import render, render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 from django.db import connection
 from intest.models import *
-import decimal
 from decimal import Decimal
-
-import os, sys, io, json, pycurl, time, datetime, multiprocessing
 from io import StringIO
 from multiprocessing import Pool, Manager
 # Create your views here.
@@ -65,9 +72,9 @@ def home(request):
 		m =  int(request.GET['to_date'].split('-')[1])
 		d =  int(request.GET['to_date'].split('-')[2])
 		date_to = datetime.datetime(y,m,d, 23, 59)
-	else:#today 用户并不关心当天的结果，不如取空数据，加快首页展示
+	else:
 		date_from = datetime.datetime(time.localtime().tm_year,time.localtime().tm_mon,time.localtime().tm_mday, 0, 0)
-		date_to = datetime.datetime(time.localtime().tm_year,time.localtime().tm_mon,time.localtime().tm_mday, 0, 0)
+		date_to = datetime.datetime(time.localtime().tm_year,time.localtime().tm_mon,time.localtime().tm_mday, 23, 59)
 	start = time.time()
 	range_list = Sdata.objects.all().filter(timestamp__range=(date_from, date_to)) #包含日志错误的原数据
 	error_list = Errs.objects.all().filter(timestamp__range=(date_from, date_to)) #错误表中的数据，仅http和log错误

@@ -1,6 +1,0 @@
-{% load staticfiles %}
-<h2>Response Time</h2>
-<img src="{% static 'response_time_graph.png' %}" alt="response time graph">
-<h2>Throughput</h2>
-<img src="{% static 'throughput_graph.png' %}" alt="throughput graph">
-

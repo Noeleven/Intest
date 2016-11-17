@@ -15,7 +15,41 @@ from django.template import RequestContext
 from django.db import connection
 from tyblog.models import *
 from decimal import Decimal
+from django.core import serializers
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+
+def time_des():
+	d = datetime.datetime.now()
+	this_year = d.year
+	this_month = d.month
+	last_month = (d - datetime.timedelta(days=d.day)).month
+	if d.day < 15:
+		des = str(this_year) + str(last_month) + "月下"
+	else:
+		des = str(this_year) + str(this_month) + "月上"
+	return des
+	
+	
+def count_All(a, b):
+	#a 平台 b 版本数量
+	if b > 0:
+		try:
+			version_src = RR.objects.filter(plantform=a).values('lvversion').filter(time=time_des()).distinct().order_by('-lvversion')[:b]
+		except:
+			version_src = RR.objects.filter(plantform=a).values('lvversion').filter(time=time_des()).distinct().order_by('-lvversion')
+	else:
+		version_src = RR.objects.filter(plantform=a).values('lvversion').filter(time=time_des()).distinct().order_by('-lvversion')
+	version_list = [x['lvversion'] for x in version_src]
+	datas = {}
+	for x in version_list:
+		data = RR.objects.filter(plantform=a).filter(time=time_des()).filter(lvversion=x)
+		if data:
+			datas[x] = data
+		else:
+			continue
+	return datas		
+	
 # Create your views here.
 # 老听云项目
 def tyreport(request):
@@ -28,8 +62,10 @@ def index(request):
 # 听云二期首页
 def ty_index(request):
 	return render(request, 'ty_index.html')
+
 	
-def ty_overview(request):
+# 概览
+def ty_Overview(request):
 	# 响应占比
 	ints_rate_all = Rates.objects.all().order_by('-des')
 	show_list = [x for x in ints_rate_all][:10]
@@ -129,6 +165,29 @@ def ty_overview(request):
 		else:
 			res_show_ios_other[x['name']] = datas
 	#应用交互
+	view_sub_a = views.objects.all().filter(plantform='android').values('name').distinct().order_by('name')
+	view_sub_ios = views.objects.all().filter(plantform='ios').values('name').distinct().order_by('name')
+	view_show_a = {}
+	view_show_ios = {}
+	for x in view_sub_a:
+		datas=[]
+		for y in show_t_label:
+			value = views.objects.all().filter(plantform='android').filter(name=x['name']).filter(des=y)
+			if value:
+				datas.append(value[0].value)
+			else:
+				datas.append('0')
+		view_show_a[x['name']] = datas
+	for x in view_sub_ios:
+		datas=[]
+		for y in show_t_label:
+			value = views.objects.all().filter(plantform='ios').filter(name=x['name']).filter(des=y)
+			if value:
+				datas.append(value[0].value)
+			else:
+				datas.append('0')
+		view_show_ios[x['name']] = datas
+	
 	return render_to_response('ty_overview.html', {'show_list': show_list,
 																	'show_t_label': show_t_label,
 																	'crash_v_a': crash_v_a,
@@ -144,20 +203,90 @@ def ty_overview(request):
 																	'res_show_a_other': res_show_a_other,
 																	'res_show_ios_self': res_show_ios_self,
 																	'res_show_ios_other': res_show_ios_other,
+																	'view_show_a': view_show_a,
+																	'view_show_ios': view_show_ios,
 																	})
 	
 	
-def ty_Todo(request):
-	return render(request, 'ty_todo.html')
+# 版本分
+def ty_Android_All(request):
+	check = request.GET
+	try:
+		params = check['checkall']
+		if params == '1':
+			datas = count_All('android', 0)
+		else:
+			datas = count_All('android', 3)
+	except:
+		datas = count_All('android', 3)
+	
+	return render_to_response('ty_Android_All.html', {'datas':datas,})
+	
+def ty_IOS_All(request):
+	check = request.GET
+	try:
+		params = check['checkall']
+		if params == '1':
+			datas = count_All('ios', 0)
+		else:
+			datas = count_All('ios', 3)
+	except:
+		datas = count_All('ios', 3)
+	
+	return render_to_response('ty_IOS_All.html', {'datas':datas,})
+	
+	
+# 主机分布
+def ty_siteApi3g2(request):
+	check = request.GET
+	try:
+		params = check['checkall']
+		if params == '1':
+			datas = RR.objects.filter(hostId='Api3g2')
+		else:
+			datas = RR.objects.filter(hostId='Api3g2').filter(response__gt=2).filter(rpm__gt=100)
+	except:
+		datas = RR.objects.filter(hostId='Api3g2').filter(response__gt=2).filter(rpm__gt=100)
+	return render_to_response('ty_siteApi3g2.html', {'datas':datas,})
+	
+	
+def ty_siteApi3g(request):
+	datas = RR.objects.filter(hostId='Api3g')
+	return render_to_response('ty_siteApi3g.html', {'datas':datas,})
+	
+	
+def ty_siteM(request):
+	datas = RR.objects.filter(hostId='siteM')
+	return render_to_response('ty_siteM.html', {'datas':datas,})
+
+	
+# 汇总
+
+def ty_rpmAll(request):
+	src = RR.objects.values('method', 'version', 'lvversion').distinct()
+	datas = []
+	for x in src:
+		data_list = RR.objects.filter(method=x['method']).filter(version=x['version']).filter(lvversion=x['lvversion'])
+		res = round(sum([x.response for x in data_list]) / len(data_list), 2)
+		rpm = round(sum([x.rpm for x in data_list]) * 24 * 60)
+		dict = {
+					"hostId": data_list[0].hostId,
+					"method" : x['method'],
+					"version": x['version'],
+					"lvversion": x['lvversion'],
+					"des": data_list[0].des,
+					"res": res,
+					"rpm": rpm,
+		}
+		datas.append(dict)
+	return render_to_response('ty_rpmAll.html', {'datas':datas,})
 	
 	
 def ty_fullLists(request):
-	return render(request, 'ty_fullLists.html')
+	datas = RR.objects.all().filter(time=time_des())
+	return render_to_response('ty_fullLists.html', {'datas':datas,})
+
 	
-	
-def ty_NewVersion(request):
-	return render(request, 'ty_lastInts.html')
-	
-	
+#关键元素
 def ty_keyElements(request):
 	return render(request, 'ty_keyElements.html')

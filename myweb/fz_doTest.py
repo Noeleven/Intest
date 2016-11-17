@@ -102,22 +102,26 @@ def do_db(task):
 	print ('第%s次循环开始' % task)
 	url_path = "192.168.0.227/api/router/rest.do?method="
 	login_url = 'http://192.168.0.227/t_login.htm?firstChannel=TOUCH&secondChannel=LVMM&username=eXV6aGliaW5nMw%3D%3D&password=MTExMTEx'
+	method_list = Ints.objects.filter(inuse='1').values('method_version').order_by('method_version').distinct()
 	source_list = Ints.objects.all()
 	n = 1
 	# 如果无验证码则可行
 	# url_string = do_url(login_url)
 	# lvsessionid = do_session(url_string)
-	# 目前每天手动获取一下吧
-	lvsessionid = '&lvsessionid=78d4a411-87f2-41d0-8598-e86a39887f1a'
-	for i in source_list:
+	# 目前每天手动获取一下吧 需要登录session
+	# lvsessionid = '&lvsessionid=78d4a411-87f2-41d0-8598-e86a39887f1a'
+	for x in method_list:
+		i = Ints.objects.all().filter(method_version=x['method_version']).order_by('-timestamp')[0]
 		method_name = i.name
 		url_api = i.method_version
 		# 处理lvsessionid
-		if 'lvsessionid' in i.params:
-			position = i.params.find('&lvsessionid')
-			url_params = i.params.replace(i.params[position:(position+49)], '')
-		else:
-			url_params = i.params
+		# if 'lvsessionid' in i.params:
+			# position = i.params.find('&lvsessionid')
+			# url_params = i.params.replace(i.params[position:(position+49)], '')
+		# else:
+			# url_params = i.params
+		url_params = i.params
+		lvsessionid = ''
 		
 		if i.isget.lower() == "get":
 			url_method = "GET"

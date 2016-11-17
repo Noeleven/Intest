@@ -1,0 +1,78 @@
+{% extends "ty_base.html" %}
+{% block content %}
+<div class="row">
+    <div class="panel panel-primary">
+        <div class="panel-heading">Android 所有有数据版本 接口响应-访问量</div>
+		<div class="panel-body">
+			{% if datas|length > 3 %}
+			建议优先查看最新几个版本接口数据
+			<a name='checkall' href="?checkall=0" type='submit' class='btn btn-sm btn-success'>选新版本</a>
+			{% else %}
+			可以通过所有版本查看某接口的表现差异
+			<a name='checkall' href="?checkall=1" type='submit' class='btn btn-sm btn-success'>选所有版本</a>
+			{% endif %}
+		</div>
+        <ul class="nav nav-tabs nav-justified" role="tablist">
+			{% for k,v in datas.items %}
+            <li role="presentation" {%if forloop.first%}class="active"{%endif%}">
+                <a href="#{{k|slugify|default:"others"}}" aria-controls="{{ k|slugify|default:"others" }}" role="tab" data-toggle="tab">{{ k|default:"others" }} </br>({{ v|length }})</a></li>
+			{% endfor %}
+        </ul>
+        <div class="tab-content">
+		{% for k,v in datas.items %}
+            <div role="tabpanel"  class="tab-pane {%if forloop.first%}active{%endif%}" id="{{ k|slugify|default:"others" }}">
+                <div class="panel-body">
+                </div>
+                <table data-toggle="table" data-striped="true" data-show-refresh="true" data-show-columns="true" data-search="true" data-row-style="rowStyle" style="word-break:break-all;" class="table table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th style="width: 1%; " data-field="HOST" data-sortable="true">
+                                HOST
+                            </th>
+                            <th style="width: 40%; " data-field="描述" data-sortable="true">
+                                描述
+                            </th>
+                            <th style="width: 40%; " data-field="method" data-sortable="true">
+                                method
+                            </th>
+                            <th style="width: 1%; " data-field="version" data-sortable="true">
+                                version
+                            </th>
+                            <th style="width: 1%; " data-field="lvversion" data-sortable="true">
+                                lvversion
+                            </th>
+                            <th style="width: 1%; " data-field="是否HTTPS" data-sortable="true">
+                                HTTPS
+                            </th>
+                            <th style="width: 1%; " data-field="是否POST" data-sortable="true">
+                                POST
+                            </th>
+                            <th style="width: 1%; " data-field="响应时间" data-sortable="true">
+                                响应时间/秒
+                            </th>
+                            <th style="width: 1%; " data-field="日访问量" data-sortable="true">
+                                日访问量
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+					{% for x in v %}
+						<tr>
+						<td style="width: 1%; ">{{ x.hostId }}</td>
+						<td style="width: 1%; ">{{ x.des }}</td>
+						<td style="width: 40%; ">{{ x.method }}</td>
+						<td style="width: 40%; ">{{ x.version }}</td>
+						<td style="width: 1%; ">{{ x.lvversion }}</td>
+						<td style="width: 1%; ">{{ x.isHttp }}</td>
+						<td style="width: 1%; ">{{ x.isGet }}</td>
+						<td class="twos {% if x.response > 2 %}danger{%endif%}" style="width: 1%; ">{{ x.response }}</td>
+						<td style="width: 1%; ">{{ x.rpm }}</td></tr>
+					{% endfor %}  
+                    </tbody>
+                </table>
+            </div>
+		{% endfor %}
+		</div>
+    </div>
+</div>
+{% endblock content %}

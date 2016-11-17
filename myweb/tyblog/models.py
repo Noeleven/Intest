@@ -39,7 +39,20 @@ class Rpm(models.Model):
 	isHttp = models.CharField(max_length=10, default="HTTP")
 	isGet = models.CharField(max_length=10, default="GET")
 	des = models.CharField(max_length=100, default='接口描述')
-	rpm = models.DecimalField(max_digits=8, decimal_places=3)
+	rpm = models.DecimalField(max_digits=10, decimal_places=3)
+	plantform = models.CharField(max_length=10, null=True,blank=True)
+	time = models.CharField(max_length=100, default='时间段')
+
+class RR(models.Model):
+	hostId = models.CharField(max_length=10, null=True,blank=True)
+	method = models.CharField(max_length=100, default='api.com.')
+	version = models.CharField(max_length=10, null=True,blank=True)
+	lvversion = models.CharField(max_length=10, null=True,blank=True)
+	isHttp = models.CharField(max_length=10, default="HTTP")
+	isGet = models.CharField(max_length=10, default="GET")
+	des = models.CharField(max_length=100, default='接口描述')
+	response = models.DecimalField(max_digits=6, decimal_places=3)
+	rpm = models.DecimalField(max_digits=10, decimal_places=1)
 	plantform = models.CharField(max_length=10, null=True,blank=True)
 	time = models.CharField(max_length=100, default='时间段')
 	

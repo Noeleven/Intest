@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
 
 from django.conf.urls import url
-from tyblog.views import tyreport, index, ty_index, ty_overview, ty_Todo, ty_fullLists, ty_NewVersion, ty_keyElements
+from tyblog.views import *
 
 urlpatterns = [
     url(r'^index/$', index, name='index'),
     url(r'^tyreport/$', tyreport, name='tyreport'),
 	# 听云二期URL↓
-	url(r'^$', ty_index, name='ty_index'),
-	url(r'^ty_overview', ty_overview, name='ty_overview'),
-	url(r'^ty_Todo', ty_Todo, name='ty_Todo'),
+	url(r'^$', ty_Overview, name='ty_Overview'),
+	url(r'^ty_Overview$', ty_Overview, name='ty_Overview'),
+	url(r'^ty_Android_All', ty_Android_All, name='ty_Android_All'),
+	url(r'^ty_IOS_All', ty_IOS_All, name='ty_IOS_All'),
+	url(r'^ty_siteApi3g2', ty_siteApi3g2, name='ty_siteApi3g2'),
+	url(r'^ty_siteApi3g', ty_siteApi3g, name='ty_siteApi3g'),
+	url(r'^ty_siteM', ty_siteM, name='ty_siteM'),
+	url(r'^ty_rpmAll', ty_rpmAll, name='ty_rpmAll'),
 	url(r'^ty_fullLists', ty_fullLists, name='ty_fullLists'),
-	url(r'^ty_NewVersion', ty_NewVersion, name='ty_NewVersion'),
 	url(r'^ty_keyElements', ty_keyElements, name='ty_keyElements'),
 ]

@@ -1,0 +1,72 @@
+{% extends "ty_base.html" %}
+{% block content %}
+<div class="row">
+    <div class="panel panel-primary">
+        <div class="panel-heading">主机：api3g2.lvmama.com  数量：{{datas|length}}</div>
+		<div class="panel-body">
+		
+		{% if datas|length < 100 %}
+		默认仅显示访问量过1000，响应超2秒的接口，建议优先优化，要查看不同的客户端版本表现，请搜索筛选<br>
+		<a id='checkall' href="?checkall=1" type="submit" class="btn btn-sm btn-success">查看所有api3g2</a>
+		{% else %}
+		本期全部api3g2数据，可筛选访问量过1000，响应超2秒的接口<br>
+		<a id='checkonly' href="?checkall=0" type="submit" class="btn btn-sm btn-success">筛选</a>
+		{% endif %}
+		</div>
+		<table data-toggle="table" data-striped="true" data-show-refresh="true" data-show-columns="true" data-search="true" data-row-style="rowStyle" style="word-break:break-all;" class="table table-hover table-striped">
+			<thead>
+				<tr>
+					<th style="width: 1%; " data-field="HOST">
+						HOST
+					</th>
+					<th style="width: 40%; " data-field="描述" data-sortable="true">
+						描述
+					</th>
+					<th style="width: 40%; " data-field="method" data-sortable="true">
+						method
+					</th>
+					<th style="width: 1%; " data-field="version" data-sortable="true">
+						version
+					</th>
+					<th style="width: 1%; " data-field="lvversion" data-sortable="true">
+						lvversion
+					</th>
+					<th style="width: 1%; " data-field="是否HTTPS" data-sortable="true">
+						HTTPS
+					</th>
+					<th style="width: 1%; " data-field="是否POST" data-sortable="true">
+						POST
+					</th>
+					<th style="width: 1%; " data-field="响应时间" data-sortable="true">
+						响应时间/秒
+					</th>
+					<th style="width: 1%; " data-field="日访问量" data-sortable="true">
+						日访问量
+					</th>
+					<th style="width: 1%; " data-field="平台" data-sortable="true">
+						平台
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+			{% for x in datas %}
+				<tr>
+				<td style="width: 1%; ">{{ x.hostId }}</td>
+				<td style="width: 1%; ">{{ x.des }}</td>
+				<td style="width: 40%; ">{{ x.method }}</td>
+				<td style="width: 40%; ">{{ x.version }}</td>
+				<td style="width: 1%; ">{{ x.lvversion }}</td>
+				<td style="width: 1%; ">{{ x.isHttp }}</td>
+				<td style="width: 1%; ">{{ x.isGet }}</td>
+				<td class="twos {% if x.response > 2 %}danger{%endif%}" style="width: 1%; ">{{ x.response }}</td>
+				<td style="width: 1%; ">{{ x.rpm }}</td>
+				<td style="width: 1%; ">{{ x.plantform }}</td></tr>
+			{% endfor %}  
+			</tbody>
+		</table>
+    </div>
+</div>
+<script>
+
+</script>
+{% endblock content %}

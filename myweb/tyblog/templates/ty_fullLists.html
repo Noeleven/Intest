@@ -1,4 +1,59 @@
 {% extends "ty_base.html" %}
 {% block content %}
-<h3>Full lists</h3>
+<div class="row">
+    <div class="panel panel-primary">
+        <div class="panel-heading">Android 所有有数据版本 接口响应-访问量</div>
+			<div class="panel-body">
+			总量：{{datas|length}}
+			</div>
+			<table data-toggle="table" data-striped="true" data-show-refresh="true" data-show-columns="true" data-search="true" data-row-style="rowStyle" style="word-break:break-all;" class="table table-hover table-striped">
+				<thead>
+					<tr>
+						<th style="width: 1%; " data-field="HOST" data-sortable="true">
+							HOST
+						</th>
+						<th style="width: 40%; " data-field="描述" data-sortable="true">
+							描述
+						</th>
+						<th style="width: 40%; " data-field="method" data-sortable="true">
+							method
+						</th>
+						<th style="width: 1%; " data-field="version" data-sortable="true">
+							version
+						</th>
+						<th style="width: 1%; " data-field="lvversion" data-sortable="true">
+							lvversion
+						</th>
+						<th style="width: 1%; " data-field="是否HTTPS" data-sortable="true">
+							HTTPS
+						</th>
+						<th style="width: 1%; " data-field="是否POST" data-sortable="true">
+							POST
+						</th>
+						<th style="width: 1%; " data-field="响应时间" data-sortable="true">
+							响应时间/秒
+						</th>
+						<th style="width: 1%; " data-field="日访问量" data-sortable="true">
+							日访问量
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+				{% for x in datas %}
+					<tr>
+					<td style="width: 1%; ">{{ x.hostId }}</td>
+					<td style="width: 1%; ">{{ x.des }}</td>
+					<td style="width: 40%; ">{{ x.method }}</td>
+					<td style="width: 40%; ">{{ x.version }}</td>
+					<td style="width: 1%; ">{{ x.lvversion }}</td>
+					<td style="width: 1%; ">{{ x.isHttp }}</td>
+					<td style="width: 1%; ">{{ x.isGet }}</td>
+					<td class="twos {% if x.response > 2 %}danger{%endif%}" style="width: 1%; ">{{ x.response }}</td>
+					<td style="width: 1%; ">{{ x.rpm }}</td></tr>
+				{% endfor %}  
+				</tbody>
+			</table>
+		</div>
+    </div>
+</div>
 {% endblock content %}

@@ -7,6 +7,7 @@ import os
 import django
 import logging
 import argparse
+import decimal
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myweb.settings')
 django.setup()
@@ -15,6 +16,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from tyblog.models import *
 from django.db.models import Q
+from decimal import Decimal
 
 # 日志模块
 logger = logging.getLogger('myLogger')
@@ -75,6 +77,9 @@ def get_urls():
 	this_day = d.day
 
 	url0 = 'https://report.tingyun.com/mobile/mobileApplication/selectFilter/'
+	# url1 = ('&endTime=%s-%s-%s%%2000%%3A00' % (this_year, '10', '15'))
+	# url2 = ('&endTime=%s-%s-%s+00%%3A00' % (this_year, '10', '15'))
+	# url3 = ('&endTime=%s-%s-%s+00%%3A00' % (this_year, '10', '08'))
 	if int(this_day) < 15:
 		url1 = ('&endTime=%s-%s-%s%%2023%%3A59' % (this_year, last_month, '28'))
 		url2 = ('&endTime=%s-%s-%s+23%%3A59' % (this_year, last_month, '28'))
@@ -145,11 +150,11 @@ def get_urls():
 # 获取主机名和平台
 def judge_host(s):
 	if 'api3g2' in s.split('_'):
-		hostid = 'api3g2'
+		hostid = 'Api3g2'
 	elif 'lvmm' in s.split('_'):
-		hostid = 'm'
+		hostid = 'siteM'
 	else:
-		hostid = 'api3g'
+		hostid = 'Api3g'
 	if 'ios' in s.split('_'):
 		plantform = 'ios'
 	else:
@@ -162,14 +167,17 @@ def time_des():
 	this_year = d.year
 	this_month = d.month
 	last_month = (d - datetime.timedelta(days=d.day)).month
+	# des = str(this_year) + '10' + "月上"
+	# crash_one = str(this_year) + '10' + "第1周"
+	# crash_two = str(this_year) + '10' + "第2周"
 	if d.day < 15:
 		des = str(this_year) + str(last_month) + "月下"
 		crash_one = str(this_year) + str(last_month) + "第3周"
 		crash_two = str(this_year) + str(last_month) + "第4周"
 	else:
 		des = str(this_year) + str(this_month) + "月上"
-		crash_one = str(this_year) + str(last_month) + "第1周"
-		crash_two = str(this_year) + str(last_month) + "第2周"
+		crash_one = str(this_year) + str(this_month) + "第1周"
+		crash_two = str(this_year) + str(this_month) + "第2周"
 	return des, crash_one, crash_two
 
 #储存数据库
@@ -195,13 +203,13 @@ def do_db():
 			plantform = judge_host(i)[1]
 			for x in newb:
 				if 'method=' in x['name']:
-					if 'productId' not in x['name'] or 'keyword' not in x['name']:
+					if 'productId' not in x['name'] and 'keyword' not in x['name']:
 						src = x['name'].replace('&', '|').replace('?', '|').replace(' ', '|').replace('%', '|') + '|'
 						p = Res(hostId=host_id)
-						logger.debug('api3g2 xname=%s' % x['name'])
-						logger.debug('api3g2 src=%s' % src)
+						# logger.debug('api3g2 xname=%s' % x['name'])
+						# logger.debug('api3g2 src=%s' % src)
 						method = re.findall(r"method=(.+?)\|", src)[0]
-						logger.debug('api3g2 method=%s' % method)
+						# logger.debug('api3g2 method=%s' % method)
 						p.method = method
 						if 'POST' in src:
 							p.isGet = 'Post'
@@ -216,7 +224,10 @@ def do_db():
 						else:
 							p.lvversion = ''
 						if '|version' in src:
-							p.version = re.findall(r"\|version=(.+?)\|", src)[0]
+							try:
+								p.version = re.findall(r'\|version=(\d\.\d\.\d)', src)[0]
+							except:
+								p.version = ''
 						else:
 							p.version = ''
 						p.plantform = plantform
@@ -298,8 +309,8 @@ def do_db():
 					p = Rpm(hostId=host_id)
 					method = re.findall(r'method=(.+?)\|', src)[0]
 					p.method = method
-					logger.debug('api3g2 src=%s' % src)
-					logger.debug('api3g2 method=%s' % method)
+					# logger.debug('api3g2 src=%s' % src)
+					# logger.debug('api3g2 method=%s' % method)
 					if 'POST' in src:
 						p.isGet = 'Post'
 					else:
@@ -404,12 +415,12 @@ def do_db():
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'], ) for x in b]
 			host_list = ['WelcomeActivity', 'MainActivity', 'V5IndextFragment', 'LvmmWebIndexFragment',
-						 'WebViewIndexActivity', 'Filter2ViewController', 'RouteSearchTableViewController',
-						 'LVMMTabBarController', 'IndexSearchViewController', 'LVNavigationController',
-						 'StartUpViewController']
+						 'WebViewIndexActivity', 'Filter2ViewController#loading', 'RouteSearchTableViewController#loading',
+						 'LVMMTabBarController#loading', 'IndexSearchViewController#loading', 'LVNavigationController#loading',
+						 'StartUpViewController#loading']
 			for x in newb:
 				for y in host_list:
-					if y in x['name']:
+					if y == x['name']:
 						p = views(name=y)
 						p.des = time_des()[0]
 						p.plantform = judge_host(i)[1]
@@ -427,7 +438,7 @@ def do_db():
 						 'api.share.mob.com:80']
 			for x in newb:
 				for y in host_list:
-					if y in x['name']:
+					if y == x['name']:
 						p = reses(name=y)
 						p.des = time_des()[0]
 						p.plantform = judge_host(i)[1]
@@ -438,7 +449,7 @@ def do_db():
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'],) for x in b]
 			for x in newb:
-				if re.findall(r'\d', x['name']):
+				if re.findall(r'\d\.\d\.\d', x['name']):
 					p = crashes(name=x['name'])
 					if 'one' in i:
 						p.des = time_des()[1]
@@ -446,12 +457,14 @@ def do_db():
 						p.des = time_des()[2]
 					p.plantform = judge_host(i)[1]
 					p.value = x['value']
+					logger.debug('crash %s' % x)
+					logger.debug('crash %s' % p.value)
 					p.save()
 				else:
 					continue
 #计算接口占比
 def do_rates():
-	x = Res.objects.all().filter(hostId='api3g2').filter(time=time_des()[0]) #过滤这期所有api3g2的res数据
+	x = Res.objects.all().filter(hostId='Api3g2').filter(time=time_des()[0]) #过滤这期所有api3g2的res数据
 	x_a = x.filter(plantform='android') # 安卓的所有数据
 	x_ios = x.filter(plantform='ios') # ios的所有数据
 	# 取最新的2个版本号
@@ -480,12 +493,36 @@ def do_rates():
 	except:
 		print("计算占比出错")
 # 合并res和rpm数据
-def do_count():
-	pass
-	
+def do_rr():
+	# 现存android
+	RR.objects.all().delete()
+	res_obj = Res.objects.filter(time=time_des()[0])
+	for x in res_obj:
+		rpm_obj = Rpm.objects.filter(method=x.method).filter(isHttp=x.isHttp).filter(isGet=x.isGet).filter(plantform=x.plantform).filter(time=time_des()[0]).filter(lvversion=x.lvversion).filter(version=x.version)
+		p = RR(time=time_des()[0])
+		p.hostId = x.hostId
+		p.version = x.version
+		p.lvversion = x.lvversion
+		p.isHttp = x.isHttp
+		p.isGet = x.isGet
+		p.method = x.method
+		p.response = x.response
+		p.plantform = x.plantform
+		p.des = x.des
+		if len(rpm_obj) == 1:
+			p.rpm = round(rpm_obj[0].rpm *60 * 24, 1)
+		elif len(rpm_obj) > 1:
+			s = 0
+			for y in rpm_obj:
+				s += y.rpm
+			p.rpm = round(s * 60 * 24, 1)
+		else:
+			p.rpm = Decimal('0')
+		p.save()
 	
 if __name__ == '__main__':
-	# urls = get_urls() #拼接URL
-	# get_data(urls) #通过听云获取数据
-	# do_db() # 存储数据库
+	urls = get_urls() #拼接URL
+	get_data(urls) #通过听云获取数据
+	do_db() # 存储数据库
 	do_rates() # 计算接口占比 
+	do_rr()

@@ -7,3 +7,5 @@ INTEST 项目
 	run intest自启动脚本
 FZ 项目
 	doFZtest 仿真每日测试脚本
+TY 项目
+	ty_doData 采集听云线上数据，存入数据库

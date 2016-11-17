@@ -1,0 +1,53 @@
+{% extends "ty_base.html" %}
+{% block content %}
+<div class="row">
+    <div class="panel panel-primary">
+        <div class="panel-heading">主机：api3g.lvmama.com 数量：{{datas|length}}</div>
+		<div class="panel-body">
+		</div>
+		<table data-toggle="table" data-striped="true" data-show-refresh="true" data-show-columns="true" data-search="true" data-row-style="rowStyle" style="word-break:break-all;" class="table table-hover table-striped">
+			<thead>
+				<tr>
+					<th style="width: 1%; " data-field="HOST" data-sortable="true">
+						HOST
+					</th>
+					<th style="width: 40%; " data-field="描述" data-sortable="true">
+						描述
+					</th>
+					<th style="width: 40%; " data-field="method" data-sortable="true">
+						method
+					</th>
+					<th style="width: 1%; " data-field="是否HTTPS" data-sortable="true">
+						HTTPS
+					</th>
+					<th style="width: 1%; " data-field="是否POST" data-sortable="true">
+						POST
+					</th>
+					<th style="width: 1%; " data-field="响应时间" data-sortable="true">
+						响应时间/秒
+					</th>
+					<th style="width: 1%; " data-field="日访问量" data-sortable="true">
+						日访问量
+					</th>
+					<th style="width: 1%; " data-field="平台" data-sortable="true">
+						平台
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+			{% for x in datas %}
+				<tr>
+				<td style="width: 1%; ">{{ x.hostId }}</td>
+				<td style="width: 1%; ">{{ x.des }}</td>
+				<td style="width: 40%; ">{{ x.method }}</td>
+				<td style="width: 1%; ">{{ x.isHttp }}</td>
+				<td style="width: 1%; ">{{ x.isGet }}</td>
+				<td class="twos {% if x.response > 2 %}danger{%endif%}" style="width: 1%; ">{{ x.response }}</td>
+				<td style="width: 1%; ">{{ x.rpm }}</td>
+				<td style="width: 1%; ">{{ x.plantform }}</td></tr>
+			{% endfor %}  
+			</tbody>
+		</table>
+    </div>
+</div>
+{% endblock content %}

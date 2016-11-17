@@ -26,7 +26,7 @@ def err_list():
 	date_from = datetime.datetime(y,m,d, 0, 0)
 	date_to = datetime.datetime(y,m,d, 23, 59)
 	succ_200 = Sdata.objects.values('name', 'method_version', 'url', 'code', 'log_code', 'error', 'message').filter(timestamp__range=(date_from,date_to)).filter(log_code='1').order_by('name').distinct().order_by('name')
-	err_200 = Sdata.objects.values('name', 'method_version', 'url', 'code', 'log_code', 'debugmsg', 'error', 'message').filter(timestamp__range=(date_from,date_to)).filter(code='200').exclude(log_code='1').order_by('name').distinct().order_by('name')
+	err_200 = Sdata.objects.values('name', 'method_version', 'url', 'code', 'log_code', 'debugmsg', 'error', 'message').filter(timestamp__range=(date_from,date_to)).filter(code='200').exclude(log_code='1').exclude(log_code='-3').order_by('name').distinct().order_by('name')
 	err_500_list = Sdata.objects.values('name', 'method_version', 'url', 'code', 'log_code', 'debugmsg', 'error', 'message').filter(timestamp__range=(date_from,date_to)).filter(code='500').order_by('name').distinct().order_by('name')
 	succ_list = [x['method_version'] for x in succ_200]
 	err_500 = [x for x in err_500_list if x['method_version'] not in succ_list]

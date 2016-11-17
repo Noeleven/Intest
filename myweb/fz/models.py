@@ -12,6 +12,11 @@ class Ints(models.Model):
     isget = models.CharField(max_length=10,default="GET")
     params = models.TextField(default="&firstChannel=LVMM&secondChannel=...")
     inwhere = models.TextField(default="该接口的出现页面位置")
+    inuse_choice = (
+        ('0', '弃用'),
+        ('1', '在用'),
+    )
+    inuse = models.CharField(max_length=1, choices=inuse_choice, default='1')
     timestamp = models.DateField(auto_now=True)
 
     def __str__(self):
@@ -30,7 +35,7 @@ class Sdata(models.Model):
     timestamp = models.DateTimeField(auto_now=True)
 	
 class IntsAdmin(admin.ModelAdmin):
-	list_display = ('name', 'method_version', 'ishttp', 'isget', 'inwhere', 'timestamp')
+	list_display = ('name', 'method_version', 'ishttp', 'isget', 'inwhere', 'inuse', 'timestamp')
 	list_per_page = 30
 	search_fields = ['name', 'method_version',]
 #	list_editable = [('name'),]

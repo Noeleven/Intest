@@ -1,13 +1,16 @@
 {% extends "ty_base.html" %}
 {% block content %}
-<h3>overview</h3>
+<h3>概览图表</h3>
+<div class="panel panel-success">
+	<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> 接口占比 </div>
+</div>
 <div class="row">
-	<div class="col-xs-7">
+	<div class="col-lg-7 col-md-12 col-sm-12 col-sx-12">
 		<div id="canvas-holder">
 			<canvas id="chart-area1" /></canvas>
 		</div>
 	</div>
-	<div class="col-xs-5">
+	<div class="col-lg-5 col-md-12 col-sm-12 col-sx-12">
 		<h3>接口占比数据</h3><p>（近10次）</p>
 		<table class="table table-hover table-condensed table-responsive">
 		<thead>
@@ -28,15 +31,15 @@
 </div>
 <hr>
 <div class="panel panel-success">
-	<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> 崩溃率 </div>
+	<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> 崩溃率 峰值和底值区间过大，采用对数图展示，要降低峰值，需要测试期间关闭听云探针</div>
 </div>
 <div class="row">
-	<div class="col-xs-6">
+	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
 		<div id="canvas-holder">
 			<canvas id="chart-area2" /></canvas>
 		</div>
 	</div>
-	<div class="col-xs-6">
+	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
 		<div id="canvas-holder">
 			<canvas id="chart-area3" /></canvas>
 		</div>
@@ -47,24 +50,24 @@
 	<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> 错误率 </div>
 </div>
 <div class="row">
-	<div class="col-xs-6">
+	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
 		<div id="canvas-holder">
 			<canvas id="chart-area4"/></canvas>
 		</div>
 	</div>
-	<div class="col-xs-6">
+	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
 		<div id="canvas-holder">
 			<canvas id="chart-area5"/></canvas>
 		</div>
 	</div>
 </div>
 <div class="row">
-	<div class="col-xs-6">
+	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
 		<div id="canvas-holder">
 			<canvas id="chart-area6"/></canvas>
 		</div>
 	</div>
-	<div class="col-xs-6">
+	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
 		<div id="canvas-holder">
 			<canvas id="chart-area7"/></canvas>
 		</div>
@@ -75,24 +78,24 @@
 	<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> 主机响应时间 </div>
 </div>
 <div class="row">
-	<div class="col-xs-6">
+	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
 		<div id="canvas-holder">
 			<canvas id="chart-area8"/></canvas>
 		</div>
 	</div>
-	<div class="col-xs-6">
+	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
 		<div id="canvas-holder">
 			<canvas id="chart-area9"/></canvas>
 		</div>
 	</div>
 </div>
 <div class="row">
-	<div class="col-xs-6">
+	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
 		<div id="canvas-holder">
 			<canvas id="chart-area10"/></canvas>
 		</div>
 	</div>
-	<div class="col-xs-6">
+	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
 		<div id="canvas-holder">
 			<canvas id="chart-area11"/></canvas>
 		</div>
@@ -102,12 +105,12 @@
 	<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> 应用交互响应 </div>
 </div>
 <div class="row">
-	<div class="col-xs-6">
+	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
 		<div id="canvas-holder">
 			<canvas id="chart-area12"/></canvas>
 		</div>
 	</div>
-	<div class="col-xs-6">
+	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
 		<div id="canvas-holder">
 			<canvas id="chart-area13"/></canvas>
 		</div>
@@ -118,7 +121,7 @@
             return Math.round(Math.random() * 255);
         };
 	var randomColor = function(opacity) {
-		return 'rgba(' + randomColorFactor() + ',' + randomColorFactor() + ',' + randomColorFactor() + ',' + (opacity || '.3') + ')';
+		return 'rgba(' + randomColorFactor() + ',' + randomColorFactor() + ',' + randomColorFactor() + ',' + (opacity || '.5') + ')';
 	};
 		
     var config1 = {
@@ -275,9 +278,9 @@
 				{% for k,v in crash_show_a.items %}
 				{
 				label: "{{ k }}",
-				borderColor : randomColor(0.4),
+				borderColor : randomColor(0.7),
 				borderCapStyle: 'butt',
-				backgroundColor : randomColor(0.5),
+				<!-- backgroundColor : randomColor(0.5), -->
 				pointBackgroundColor : randomColor(0.7),
 				pointBorderColor: "#fff",
 				pointHighlightFill: "#fff",
@@ -287,7 +290,7 @@
 					"{{ x }}",
 				{% endfor %}
 				],
-				fill:true,
+				fill:false,
 				},
 				{% endfor %}
 			]},
@@ -334,9 +337,9 @@
 			{% for k,v in crash_show_ios.items %}
 			{
             label: "{{ k }}",
-            borderColor : randomColor(0.4),
+            borderColor : randomColor(0.7),
             borderCapStyle: 'butt',
-            backgroundColor : randomColor(0.5),
+            <!-- backgroundColor : randomColor(0.5), -->
             pointBackgroundColor : randomColor(0.7),
             pointBorderColor: "#fff",
             pointHighlightFill: "#fff",
@@ -346,7 +349,7 @@
 				"{{ x }}",
 			{% endfor %}
 			],
-            fill:true,
+            fill:false,
 			},
 			{% endfor %}
         ]},
@@ -392,9 +395,9 @@
 			{% for k,v in err_show_a_self.items %}
 			{
             label: "{{ k }}",
-            borderColor : randomColor(0.4),
+            borderColor : randomColor(0.7),
             borderCapStyle: 'butt',
-            backgroundColor : randomColor(0.5),
+            <!-- backgroundColor : randomColor(0.5), -->
             pointBackgroundColor : randomColor(0.7),
             pointBorderColor: "#fff",
             pointHighlightFill: "#fff",
@@ -404,7 +407,7 @@
 				"{{ x }}",
 			{% endfor %}
 			],
-            fill:true,
+            fill:false,
 			},
 			{% endfor %}
         ]},
@@ -450,9 +453,9 @@
 			{% for k,v in err_show_a_other.items %}
 			{
             label: "{{ k }}",
-            borderColor : randomColor(0.4),
+            borderColor : randomColor(0.7),
             borderCapStyle: 'butt',
-            backgroundColor : randomColor(0.5),
+            <!-- backgroundColor : randomColor(0.5), -->
             pointBackgroundColor : randomColor(0.7),
             pointBorderColor: "#fff",
             pointHighlightFill: "#fff",
@@ -462,7 +465,7 @@
 				"{{ x }}",
 			{% endfor %}
 			],
-            fill:true,
+            fill:false,
 			},
 			{% endfor %}
         ]},
@@ -508,9 +511,9 @@
 			{% for k,v in err_show_ios_self.items %}
 			{
             label: "{{ k }}",
-            borderColor : randomColor(0.4),
+            borderColor : randomColor(0.7),
             borderCapStyle: 'butt',
-            backgroundColor : randomColor(0.5),
+            <!-- backgroundColor : randomColor(0.5), -->
             pointBackgroundColor : randomColor(0.7),
             pointBorderColor: "#fff",
             pointHighlightFill: "#fff",
@@ -520,7 +523,7 @@
 				"{{ x }}",
 			{% endfor %}
 			],
-            fill:true,
+            fill:false,
 			},
 			{% endfor %}
         ]},
@@ -566,9 +569,9 @@
 			{% for k,v in err_show_ios_other.items %}
 			{
             label: "{{ k }}",
-            borderColor : randomColor(0.4),
+            borderColor : randomColor(0.7),
             borderCapStyle: 'butt',
-            backgroundColor : randomColor(0.5),
+            <!-- backgroundColor : randomColor(0.5), -->
             pointBackgroundColor : randomColor(0.7),
             pointBorderColor: "#fff",
             pointHighlightFill: "#fff",
@@ -578,7 +581,7 @@
 				"{{ x }}",
 			{% endfor %}
 			],
-            fill:true,
+            fill:false,
 			},
 			{% endfor %}
         ]},
@@ -624,9 +627,9 @@
 				{% for k,v in res_show_a_self.items %}
 				{
 				label: "{{ k }}",
-				borderColor : randomColor(0.4),
+				borderColor : randomColor(0.7),
 				borderCapStyle: 'butt',
-				backgroundColor : randomColor(0.5),
+				<!-- backgroundColor : randomColor(0.5), -->
 				pointBackgroundColor : randomColor(0.7),
 				pointBorderColor: "#fff",
 				pointHighlightFill: "#fff",
@@ -636,7 +639,7 @@
 					"{{ x }}",
 					{% endfor %}
 				],
-				fill:true,
+				fill:false,
 				},
 				{% endfor %}
 			]},
@@ -682,9 +685,9 @@
 			{% for k,v in res_show_a_other.items %}
 			{
             label: "{{ k }}",
-            borderColor : randomColor(0.4),
+            borderColor : randomColor(0.7),
             borderCapStyle: 'butt',
-            backgroundColor : randomColor(0.5),
+            <!-- backgroundColor : randomColor(0.5), -->
             pointBackgroundColor : randomColor(0.7),
             pointBorderColor: "#fff",
             pointHighlightFill: "#fff",
@@ -694,7 +697,7 @@
 				"{{ x }}",
 			{% endfor %}
 			],
-            fill:true,
+            fill:false,
 			},
 			{% endfor %}
         ]},
@@ -710,7 +713,7 @@
             },
 			title: {
                 display: true,
-                text: 'Ios 自身服务响应 | (5个月) | 单位：s | 标准2s',
+                text: 'Ios 自身服务响应趋势 | (5个月) | 单位：s | 标准2s',
 				position: 'top'
             },
 			scales: {
@@ -740,9 +743,9 @@
 			{% for k,v in res_show_ios_self.items %}
 			{
             label: "{{ k }}",
-            borderColor : randomColor(0.4),
+            borderColor : randomColor(0.7),
             borderCapStyle: 'butt',
-            backgroundColor : randomColor(0.5),
+            <!-- backgroundColor : randomColor(0.5), -->
             pointBackgroundColor : randomColor(0.7),
             pointBorderColor: "#fff",
             pointHighlightFill: "#fff",
@@ -752,7 +755,7 @@
 				"{{ x }}",
 			{% endfor %}
 			],
-            fill:true,
+            fill:false,
 			},
 			{% endfor %}
         ]},
@@ -768,7 +771,7 @@
             },
 			title: {
                 display: true,
-                text: 'Ios 第三方错误率 | (5个月) | 单位：s | 标准2s',
+                text: 'Ios 第三方服务响应趋势 | (5个月) | 单位：s | 标准2s',
 				position: 'top'
             },
 			scales: {
@@ -798,9 +801,9 @@
 			{% for k,v in res_show_ios_other.items %}
 			{
             label: "{{ k }}",
-            borderColor : randomColor(0.4),
+            borderColor : randomColor(0.7),
             borderCapStyle: 'butt',
-            backgroundColor : randomColor(0.5),
+            <!-- backgroundColor : randomColor(0.5), -->
             pointBackgroundColor : randomColor(0.7),
             pointBorderColor: "#fff",
             pointHighlightFill: "#fff",
@@ -810,7 +813,7 @@
 				"{{ x }}",
 			{% endfor %}
 			],
-            fill:true,
+            fill:false,
 			},
 			{% endfor %}
         ]},
@@ -853,22 +856,22 @@
 			{% endfor %}
             ],
             datasets: [
-			{% for k,v in err_show_ios_self.items %}
+			{% for k,v in view_show_a.items %}
 			{
             label: "{{ k }}",
-            borderColor : randomColor(0.4),
+            borderColor : randomColor(0.7),
             borderCapStyle: 'butt',
             backgroundColor : randomColor(0.5),
-            pointBackgroundColor : randomColor(0.7),
+            <!-- pointBackgroundColor : randomColor(0.7), -->
             pointBorderColor: "#fff",
             pointHighlightFill: "#fff",
             pointHighlightStroke: randomColor(0.5),
 			data:[
-			{% for x in v %}
-				"{{ x }}",
-			{% endfor %}
+				{% for x in v %}
+					"{{ x }}",
+				{% endfor %}
 			],
-            fill:true,
+            fill:false,
 			},
 			{% endfor %}
         ]},
@@ -911,22 +914,22 @@
 			{% endfor %}
             ],
             datasets: [
-			{% for k,v in err_show_ios_other.items %}
+			{% for k,v in view_show_ios.items %}
 			{
             label: "{{ k }}",
-            borderColor : randomColor(0.4),
+            borderColor : randomColor(0.7),
             borderCapStyle: 'butt',
-            backgroundColor : randomColor(0.5),
+            <!-- backgroundColor : randomColor(0.5), -->
             pointBackgroundColor : randomColor(0.7),
             pointBorderColor: "#fff",
             pointHighlightFill: "#fff",
             pointHighlightStroke: randomColor(0.5),
 			data:[
-			{% for x in v %}
-				"{{ x }}",
-			{% endfor %}
+				{% for x in v %}
+					"{{ x }}",
+				{% endfor %}
 			],
-            fill:true,
+            fill:false,
 			},
 			{% endfor %}
         ]},

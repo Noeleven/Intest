@@ -8,6 +8,7 @@ import django
 import logging
 import argparse
 import decimal
+import smtplib
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myweb.settings')
 django.setup()
@@ -17,6 +18,12 @@ from selenium import webdriver
 from tyblog.models import *
 from django.db.models import Q
 from decimal import Decimal
+from email import encoders
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email.header import Header
+from email.utils import	parseaddr, formataddr
 
 # 日志模块
 logger = logging.getLogger('myLogger')
@@ -32,12 +39,17 @@ logger.addHandler(fh)
 # logger.addHandler(ch)
 parser = argparse.ArgumentParser(description='I print messages')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
-
 args = parser.parse_args()
 if args.verbose:
 	logger.setLevel(logging.DEBUG)
 else:
 	logger.setLevel(logging.INFO)
+	
+	
+def _format_addr(s):
+	name, addr = parseaddr(s)
+	return formataddr((Header(name, 'utf-8').encode(), addr))
+
 
 # 通过selenium获取数据
 def get_data(urls):
@@ -519,6 +531,52 @@ def do_rr():
 		else:
 			p.rpm = Decimal('0')
 		p.save()
+
+def do_contents():
+	# 第一部分 头
+	html_string0 = "<h3><font face='微软雅黑'> 简要接口报告 </font></h3><h4><span style='font-weight: normal;'><font face='微软雅黑'><font size='3'></font>&nbsp;<a href='http://10.113.1.35:8000/tyblog/' target='_blank'>查看更多图表和丰富数据</a></font></span></h4>"
+	# 第二部分 占比图表
+	html_string1 = "<h3>【接口占比趋势】</h3><table border=1 width=100%%><tr style=\'background-color:cadetblue\'><th>时间区间</th><th>毫秒级</th><th>1~2秒</th><th>2~3秒</th><th>3~4秒</th><th>4~5秒</th><th>5秒以上</th></tr>\n\r"
+	rates = Rates.objects.all()
+	for x in rates:
+		html_string1 += ("<tr><td>%s</td><td>%s%%</td><td>%s%%</td><td>%s%%</td><td>%s%%</td><td>%s%%</td><td>%s%%</td></tr>\n\r" %(  x.des, x.zero_level, x.one_level, x.two_level, x.three_level, x.four_level, x.five_level ))
+	# 第三部分 api3g2图表
+	html_string2 = "</table>"
+	html_string3 = "<hr><h3>【访问量大又超过2秒的接口】</h3><table border=1 width=100%%><tr style=\'background-color:cadetblue\'><th>描述</th><th>method</th><th>version</th><th>lvversion</th><th>HTTPS</th><th>POST</th><th>响应时间/秒</th><th>日访问量</th><th>平台</th></tr>\n\r"
+	datas =  RR.objects.filter(hostId='Api3g2').filter(response__gt=2).filter(rpm__gt=100)
+	for x in datas:
+		html_string3 += ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td style=\'background-color:LightSalmon\'>%s</td><td>%s</td><td>%s</td></tr>\n\r" %(  x.des, x.method, x.version, x.lvversion, x.isHttp, x.isGet, x.response, x.rpm, x.plantform ))
+	html_string4 = "</table>"
+	html_string = html_string0 + html_string1 + html_string2 + html_string3 + html_string4
+
+	return html_string
+	
+	
+def do_mail():
+	cf = configparser.ConfigParser()
+	cf.read("/rd/pystudy/conf")
+	sender = cf.get('mail', 'username')
+	receiverlist = [x for x in cf.get('mail', 'ty_receiver').split(',')] 
+	subject = "[听云 接口报告]"
+	smtpserver = cf.get('mail','smtpserver') 
+	username = cf.get('mail','username') 
+	password = cf.get('mail','password') 
+
+	html_string = do_contents()
+	
+	msg=MIMEText(html_string,'html','utf-8')
+	msg['From'] = _format_addr("性能测试 <%s>" % sender) 
+	msg['to'] = '%s' % ','.join([_format_addr('<%s>' % x) for x in receiverlist])
+	msg['Subject'] = Header("%s" % subject , 'utf-8').encode()
+
+	smtp = smtplib.SMTP()
+	smtp.connect(smtpserver)
+	smtp.ehlo()
+	#smtp.set_debuglevel(1)
+	smtp.login(username, password)
+	smtp.sendmail(msg['From'],receiverlist,msg.as_string())
+	smtp.quit()
+
 	
 if __name__ == '__main__':
 	urls = get_urls() #拼接URL
@@ -526,3 +584,4 @@ if __name__ == '__main__':
 	do_db() # 存储数据库
 	do_rates() # 计算接口占比 
 	do_rr()
+	do_mail()

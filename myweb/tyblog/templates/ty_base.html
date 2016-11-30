@@ -2,11 +2,9 @@
 <html lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <!-- Meta, title, CSS, favicons, etc. -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>TY analysis ! </title>
 	{% load staticfiles %}
     <!-- Bootstrap -->
@@ -17,8 +15,7 @@
     <link href="{% static 'vendors/nprogress.css' %}" rel="stylesheet">
     <!-- Custom Theme Style -->
     <link href="{% static 'vendors/custom.min.css' %}" rel="stylesheet">
-	<link href="http://10.113.1.35:8000/static/css/bootstrap-table.min.css" rel="stylesheet">
-	<script type="text/javascript" src="{% static 'js/Chart.bundle.min.js' %}" charset="UTF-8"></script>
+	<link href="{% static 'css/bootstrap-table.min.css' %}" rel="stylesheet">
 	<!--[if lt IE 9]>
 	<script src="assets/js/ie8-responsive-file-warning.js"></script>
 	<![endif]-->
@@ -29,10 +26,6 @@
 	  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 	<![endif]-->
 	<style>
-    #canvas-holder {
-        width: 100%;
-        text-align: center;
-    }
 	.tooltip-inner {
     text-align:left;
 	word-break:break-all;
@@ -43,7 +36,7 @@
   <body class="nav-md">
     <div class="container body">
       <div class="main_container">
-        <div class="col-md-3 left_col"  data-spy="affix" data-offset-top="60" data-offset-bottom="200" style="position:fixed;">
+        <div class="col-md-3 left_col"  data-spy="affix" style="position:fixed;">
 			<div class="left_col scroll-view">
 
 				<div class="navbar nav_title" style="border: 0;">
@@ -56,8 +49,6 @@
 						<h3>General</h3>
 						<ul class="nav side-menu">
 							<li><a href="ty_Overview"><i class="fa fa-home"></i> 概览图表 </a></li>
-							<!-- <li><a href="ty_Todo"><i class="fa fa-edit"></i> 多又慢TOP50 </a></li>
-							<li><a href="ty_NewVersion"><i class="fa fa-desktop"></i> 最新版本接口列表 </a></li> -->
 							<li><a><i class="fa fa-edit"></i> 按主机服务分
 								<span class="fa fa-chevron-down"></span></a>
 							<ul class="nav child_menu">
@@ -105,6 +96,7 @@
         </div>
 
         <!-- page content -->
+		<script src="{% static 'js/echarts-all.js' %}" charset="UTF-8"></script>
         <div class="right_col" role="main">
 		{% block content %}
 		{% endblock content %}
@@ -127,14 +119,13 @@
     <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
     <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
     <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-	<script src="http://10.113.1.35:8000/static/js/bootstrap-table.min.js"></script>
-	<script src="http://10.113.1.35:8000/static/js/bootstrap-table-zh-CN.min.js"></script>
+	<script src="{% static 'js/bootstrap-table.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap-table-zh-CN.min.js' %}"></script>
     <!-- FastClick -->
     <script src="{% static 'vendors/fastclick.js' %}"></script>
     <script src="{% static 'vendors/randomColor.min.js' %}"></script>
     <!-- NProgress -->
     <script src="{% static 'vendors/nprogress.js' %}"></script>
-    
     <!-- Custom Theme Scripts -->
     <script src="{% static 'vendors/custom.min.js' %}"></script>
 	<script>

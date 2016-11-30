@@ -1,0 +1,86 @@
+{% extends "int_base.html" %}
+{% block content %}
+<ul class="nav nav-pills nav-justified" role="tablist">
+	<li role="presentation" class="active"><a href="#autoerror" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-flag"></span> 接口首包追踪 <span class="badge"> {{ show_list|length}}</span></a></li>
+</ul>
+<div class="tab-content">	
+	<div role="tabpanel" class="tab-pane fade in active" id="autoerror"><br />
+		<div class="panel panel-default">
+			<div class="panel-heading">展示近2周都没有进入毫秒级的接口所处的level趋势</div>
+			<div class="panel-body">
+				<table class="table table-hover table-condensed table-bordered"  style="word-break:break-all;">
+					<thead>
+					<tr class="info">
+						<th class="col-md-8">图表</th>
+						<th  class="col-md-4">详情</th>
+					</tr>
+					</thead>	
+					<tbody>
+					{% for v in show_list %}
+						<tr>
+							<td rowspan=2>
+								<div id="{{ v.method_version|slugify }}" style="height:200px"></div>
+							</td>
+							<td>{{ v.name }}</td>
+						</tr>
+						<tr><td>{{ v.method_version }}</td></tr>
+					{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	{% for v in show_list %}
+	var myChart = echarts.init(document.getElementById('{{ v.method_version|slugify  }}')); 
+	var {{ v.method_version|slugify }} = {
+		title : {
+			text: '首包占比趋势',
+			subtext: '首包近似服务器处理时间'
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:['时间level']
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for x in v.label %}
+				'{{ x }}',
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value'
+			}
+		],
+		series : [
+			{
+				name:'时间level',
+				type:'line',
+				smooth:true,
+				itemStyle: {normal: {areaStyle: {type: 'default'}}},
+				data:[
+				{% for x in v.value %}
+				{{ x }},
+				{% endfor %}
+				]
+			},
+		]
+	};
+	
+	myChart.setOption({{ v.method_version|slugify }});   
+	{% endfor %}
+</script>
+
+{% endblock %}

@@ -1,196 +1,84 @@
 {% extends "int_base.html" %}
 {% block content %}
-	<div class="panel panel-lvmm">
-		<div class="panel-body">
-			<div class="row">
-				<div class="col-md-6 col-lg-4 col-xs-6 col-sm-6">
-					<!-- <div class="alert alert-warning" role="alert">默认是今日的测试结果</div> -->
-					<a class="btn btn-primary btn-sm" data-toggle="tooltip" data-placement="right" title="首包时间：经历过DNS解析和TCP3次握手后，从客户端开始发送请求到接收到服务器响应的第一个包的时间。包含NG的队列时间、首包的传输时间、服务端处理时间。由于NG队列和首包时间仅从客户端处无法取得，近似认为首包时间就是服务器的响应时间">首包时间 说明</a>		
-					<table class="table table-hover table-condensed table-responsive table-bordered">
-					<thead><tr class="info">
-					<th>接口响应占比</th><th>毫秒级</th><th>1~2秒</th><th>2~3秒</th><th>3~4秒</th><th>4~5秒</th><th>5秒以上</th></tr></thead>
-					<tbody>
-					{% for x,y in show_rate.items %}
-					<tr><th class="info">{{ x }}</th><td>{{ y.ms }}%</td><td>{{ y.os }}%</td><td>{{ y.ts }}%</td><td>{{ y.tts }}%</td><td>{{ y.fs }}%</td><td>{{ y.ffs }}%</td></tr>
-					{% endfor %}
-					</tbody></table>
-					<form role="form" method="get">
-						<div class="form-group">
-							<label for="dtp_input2">开始时间</label>
-							<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
-								<input name="from_date" size="16"  class="form-control" type="text" value="" readonly>
-								<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
-							</div>
-							<input type="hidden" id="dtp_input2" value="" />
-						</div>
-						<div class="form-group">
-							<label for="dtp_input2">结束时间</label>
-							<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
-								<input name="to_date" size="16"  class="form-control" type="text" value="" readonly>
-								<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
-							</div>
-							<input type="hidden" id="dtp_input2" value="" />
-						</div>
-						<button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span> 查询</button>
-					</form>				
+<div class="row">
+	<div class="col-md-6 col-lg-4 col-xs-6 col-sm-6">
+		<!-- <div class="alert alert-warning" role="alert">默认是今日的测试结果</div> -->
+		<form role="form" method="get">
+			<div class="form-group">
+				<label for="dtp_input2">开始时间</label>
+				<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+					<input name="from_date" size="16"  class="form-control" type="text" value="" readonly>
+					<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
 				</div>
-				<div class="col-md-6 col-lg-4 col-xs-6 col-sm-6">
-					<div id="canvas-holder">
-						<canvas id="chart-area1" /></canvas>
-					</div>
-				</div>
-				<div class="col-md-6 col-lg-4 col-xs-6 col-sm-6">
-					<div id="canvas-holder">
-						<canvas id="chart-area2" /></canvas>
-					</div>
-				</div>
+				<input type="hidden" id="dtp_input2" value="" />
 			</div>
-		</div>
+			<div class="form-group">
+				<label for="dtp_input2">结束时间</label>
+				<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+					<input name="to_date" size="16"  class="form-control" type="text" value="" readonly>
+					<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+				</div>
+				<input type="hidden" id="dtp_input2" value="" />
+			</div>
+			<button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span> 查询</button> （默认当天）
+		</form>				
 	</div>
+</div>
 
 <ul class="nav nav-pills nav-justified" role="tablist">
 	<li role="presentation" class="active"><a href="#autoint" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-tasks"></span> 接口(以平均总耗时排序)<span class="badge"> {{ ints_dict|length}}</span></a></li>
-	<li role="presentation"><a href="#autoerror" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-remove"></span> 错误<span class="badge"> {{ show_errs|length}}</span></a></li>
 </ul>
 <div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="autoint"><br />
 	
-	<table data-toggle="table" data-striped="true" data-show-refresh="true" data-show-columns="true" data-search="true" data-row-style="rowStyle" style="word-break:break-all;" data-height='1000'>
-		<thead><tr>
-			<th data-field="接口" data-sortable="true" data-width="10%">接口</th>
-			<th data-field="详情" data-width="85%">详情</th>
-			<th data-field="整体耗时时间" data-sortable="true" data-width="1%">总耗时/秒</th>
-			<th data-field="首包时间" data-sortable="true" data-width="1%">首包/秒</th>
-			<th data-field="大小" data-sortable="true" data-width="1%">大小KB</th>
-			<th data-field="Http错" data-sortable="true" data-width="1%">Http错%</th>
-			<th data-field="Log错" data-sortable="true" data-width="1%">Log错%</th></tr></thead>
-		<tbody>
-		{% for k,v in ints_dict %}
-		<tr>
-			<td><strong>{{ k }}</strong></td>
-			<td>
-				<table class="table  table-hover table-condensed">
-					<tr class="info">
-						<td class="col-sm-2"><a type="button" class="btn btn-sm btn-primary" href='{{ v.url }}' target='_blank' data-toggle="tooltip" data-placement="right" title="{{ v.url }}">URL</a></td>
-						<td class="col-sm-4"><span class="label sr-only">名称</span> <strong>{{ v.name }}</strong></td>
-						<td><span class="label label-warning">DNS解析</span>
-						<span class="label label-info">建连</span>
-						<span class="label label-success">首包</span>
-						<span class="label label-danger">下载</span></td>
-					</tr>
-				</table>
-				<div class="progress">
-					<div class="progress-bar progress-bar-warning" style="width: {{ v.dns_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="{{ v.dns_time_avg }}">
-						<span>{{ v.dns_time_avg }}s</span>
-					</div>
-					<div class="progress-bar progress-bar-info" style="width: {{ v.tcp_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="{{ v.tcp_time_avg }}">
-						<span>{{ v.tcp_time_avg }}s</span>
-					</div>
-					<div class="progress-bar progress-bar-success" style="width:{{ v.server_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="{{ v.server_time_avg }}">
-						<span>{{ v.server_time_avg }}s</span>
-					</div>
-					<div class="progress-bar progress-bar-danger" style="width: {{ v.download_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="{{ v.download_time_avg }}">
-						<span>{{ v.download_time_avg }}s</span>
-					</div>
-				</div>
-				<table class="table table-bordered table-hover table-condensed">
-					<tr class="info"><td>#</td><td>DNS</td><td>建联</td><td>首包时间</td><td>下载</td><td class="warning">总耗时</td><td class="warning">日志时间</td></tr>
-					<tr><td class="info">平均耗时</td><td> {{ v.dns_time_avg }}s</td><td>{{ v.tcp_time_avg }}s</td><td>{{ v.server_time_avg }}s</td><td>{{ v.download_time_avg }}s</td><td>{{ v.total_time_avg }}s</td><td>{{ v.log_time_avg }}s</td></tr>
-					<tr><td class="info">95%Line</td><td> {{ v.dns_time_95line }}s</td><td>{{ v.tcp_time_95line }}s</td><td>{{ v.server_time_95line }}s</td><td>{{ v.download_time_95line }}s</td><td>{{ v.total_time_95line }}s</td><td>{{ v.log_time_95line }}s</td></tr>
-					<tr><td class="info">耗时范围</td><td>{{ v.dns_time_range }}s</td><td>{{ v.tcp_time_range }}s</td><td>{{ v.server_time_range }}s</td><td>{{ v.download_time_range }}s</td><td>{{ v.total_time_range }}s</td><td>{{ v.log_time_range }}s</td></tr>
-				</table>
-			</td>
-			<td>{{ v.total_time_avg }}</td>
-			<td>{{ v.server_time_avg }}</td>
-			<td>{{ v.download_size }}</td>
-			<td>{{ v.error_rate }}</td>
-			<td>{{ v.log_error_rate }}</td></tr>
-		{% endfor %}
-	</tbody></table>
-
-	</div>
-	
-	<div role="tabpanel" class="tab-pane fade" id="autoerror"><br />
-			<div class="panel panel-default">
-				<div class="panel-heading">错误汇总</div>
-				<div class="panel-body">
-					<table class="table table-hover table-condensed ">
-					<thead><tr class="info"><th class="col-sm-0.5">HTTPCode</th><th class="col-sm-0.5">LogCode</th><th class="col-sm-2">接口</th><th class="col-sm-2">描述</th><th class="col-sm-1">URL</th><th class="col-sm-2">Error</th><th class="col-sm-2">Message</th><th class="col-sm-2">Time</th></tr></thead>
-					{% for v in show_errs %}
-					<tr><th>{{ v.httpcode }}</th><th>{{ v.log_code }}</th><th style="word-break:break-all">{{ v.method_version }}</th><th>{{ v.name }}</th><th><a href="{{ v.url }}" target="_blank">URL</a></th><th>{{ v.error }}</th><th>{{ v.message }}</th><th>{{ v.timestamp|date:"Y-m-d H:i" }}</th></tr>
-					{% endfor %}
+		<table data-toggle="table" data-striped="true" data-show-refresh="true" data-show-columns="true" data-search="true" data-row-style="rowStyle" style="word-break:break-all;" data-height='1000'>
+			<thead><tr>
+				<th data-field="详情" data-width="85%">详情</th>
+				<th data-field="整体耗时时间" data-sortable="true" data-width="1%">总耗时/秒</th>
+				<th data-field="首包时间" data-sortable="true" data-width="1%">首包/秒</th>
+				<th data-field="大小" data-sortable="true" data-width="1%">大小KB</th>
+				<th data-field="Http错" data-sortable="true" data-width="1%">Http错%</th>
+				</tr></thead>
+			<tbody>
+			{% for k,v in ints_dict %}
+			<tr>
+				<td>
+					<table class="table  table-hover table-condensed">
+						<tr class="info">
+							<td class="col-sm-2"><a type="button" class="btn btn-sm btn-primary" href='{{ v.url }}' target='_blank' data-toggle="tooltip" data-placement="right" title="{{ v.url }}">URL</a></td>
+							<td class="col-sm-6"><strong>{{ k }}</strong></td>
+							<td class="col-sm-4"><span class="label sr-only">名称</span> <strong>{{ v.name }}</strong></td>
+						</tr>
 					</table>
-				</div>
-			</div>
+					<div class="progress">
+						<div class="progress-bar progress-bar-warning" style="width: {{ v.dns_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="DNS解析:{{ v.dns_time_avg }}">
+							<span>{{ v.dns_time_avg }}s</span>
+						</div>
+						<div class="progress-bar progress-bar-info" style="width: {{ v.tcp_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="建联:{{ v.tcp_time_avg }}">
+							<span>{{ v.tcp_time_avg }}s</span>
+						</div>
+						<div class="progress-bar progress-bar-success" style="width:{{ v.server_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="服务处理:{{ v.server_time_avg }}">
+							<span>{{ v.server_time_avg }}s</span>
+						</div>
+						<div class="progress-bar progress-bar-danger" style="width: {{ v.download_time_rate }}%"  data-toggle="tooltip" data-placement="top" title="下载:{{ v.download_time_avg }}">
+							<span>{{ v.download_time_avg }}s</span>
+						</div>
+					</div>
+					<table class="table table-bordered table-hover table-condensed">
+						<tr class="info"><td>#</td><td>DNS</td><td>建联</td><td>首包时间</td><td>下载</td><td class="warning">总耗时</td><td class="warning">日志时间</td></tr>
+						<tr><td class="info">平均耗时</td><td> {{ v.dns_time_avg }}s</td><td>{{ v.tcp_time_avg }}s</td><td>{{ v.server_time_avg }}s</td><td>{{ v.download_time_avg }}s</td><td>{{ v.total_time_avg }}s</td><td>{{ v.log_time_avg }}s</td></tr>
+						<tr><td class="info">95%Line</td><td> {{ v.dns_time_95line }}s</td><td>{{ v.tcp_time_95line }}s</td><td>{{ v.server_time_95line }}s</td><td>{{ v.download_time_95line }}s</td><td>{{ v.total_time_95line }}s</td><td>{{ v.log_time_95line }}s</td></tr>
+						<tr><td class="info">耗时范围</td><td>{{ v.dns_time_range }}s</td><td>{{ v.tcp_time_range }}s</td><td>{{ v.server_time_range }}s</td><td>{{ v.download_time_range }}s</td><td>{{ v.total_time_range }}s</td><td>{{ v.log_time_range }}s</td></tr>
+					</table>
+				</td>
+				<td>{{ v.total_time_avg }}</td>
+				<td>{{ v.server_time_avg }}</td>
+				<td>{{ v.download_size }}</td>
+				<td>{{ v.error_rate }}</td></tr>
+			{% endfor %}
+			</tbody>
+		</table>
 	</div>
 </div>
-<script>
-	var succ_dict = {{ succ_dict|safe }};
-    var config = {
-        type: 'pie',
-        data: {
-            datasets: [{
-                data: [succ_dict['su_r']  ,  succ_dict['er_r']],
-                backgroundColor: [
-                    "#3498db",
-                    "#e74c3c",
-                ],
-            }],
-            labels: [
-                "成功率",
-                "失败率",
-            ]
-        },
-        options: {
-            responsive: true,
-            legend: {
-                display: true,
-				position: 'bottom'
-            },
-			title: {
-                display: true,
-                text: '成功率',
-				position: 'top'
-            },
-        }
-    };
-	var show_rate = {{ show_rate|safe }};
-    var config2 = {
-        type: 'pie',
-        data: {
-            datasets: [{
-                data: [show_rate['按首包时间']['ms'], show_rate['按首包时间']['os'], show_rate['按首包时间']['ts'], show_rate['按首包时间']['tts'], show_rate['按首包时间']['fs'], show_rate['按首包时间']['ffs'],],
-                backgroundColor: [
-                    "#3498db",
-					"#1abc9c",
-                    "#f1c40f",
-                    "#e67e22",
-                    "#e74c3c",
-                    "#9b59b6",
-                ],
-            }],
-            labels: [
-                "毫秒", "1秒", "2秒", "3秒", "4秒", "5秒",
-            ]
-        },
-        options: {
-            responsive: true,
-            legend: {
-                display: true,
-				position: 'bottom'
-            },
-			title: {
-                display: true,
-                text: '首包占比',
-				position: 'top'
-            },
-        }
-    };
-    window.onload = function() {
-        var ctx1 = document.getElementById("chart-area1").getContext("2d");
-		var ctx2 = document.getElementById("chart-area2").getContext("2d");
-        window.myPie = new Chart(ctx1, config);
-		window.myPie2 = new Chart(ctx2, config2);
-    };
-</script>
+
 {% endblock %}

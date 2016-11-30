@@ -68,7 +68,7 @@ def ty_index(request):
 def ty_Overview(request):
 	# 响应占比
 	ints_rate_all = Rates.objects.all().order_by('-des')
-	show_list = [x for x in ints_rate_all][:10]
+	show_list = [x for x in ints_rate_all]
 	show_list.reverse()
 	show_t_label = [x.des for x in show_list] # 时间标签，适用于错误，交互，响应
 	# 崩溃率

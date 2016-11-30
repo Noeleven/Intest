@@ -1,77 +1,102 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-  
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
-    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
     <title>LVMAMA Interface Perform Test</title>
-    <!-- Bootstrap -->
-    <!-- 新 Bootstrap 核心 CSS 文件 -->
 	{% load staticfiles %}
     <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
 	<link href="{% static 'css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet" media="screen">
-	<link href="http://10.113.1.35:8000/static/css/bootstrap-table.min.css" rel="stylesheet">
-	<script type="text/javascript" src="{% static 'js/Chart.bundle.min.js' %}" charset="UTF-8"></script>
-
+	<link href="{% static 'css/bootstrap-table.min.css' %}" rel="stylesheet">
+	<link href="{% static 'vendors/font-awesome.min.css' %}" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="{% static 'vendors/nprogress.css' %}" rel="stylesheet">
+    <!-- Custom Theme Style -->
+    <link href="{% static 'vendors/custom.min.css' %}" rel="stylesheet">
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
       <script src="http://cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="http://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-<style>.panel-lvmm {border-color: #e38;}.panel-heading {background-color: #e38;	color: #FFF;}.table>tbody>tr.fives>td, .table>tbody>tr.fives>th, .table>tbody>tr>td.fives, .table>tbody>tr>th.fives {background-color: #FF6600;}.table>tbody>tr.fours>td, .table>tbody>tr.fours>th, .table>tbody>tr>td.fours, .table>tbody>tr>th.fours {background-color: #FF9900;}.table>tbody>tr.threes>td, .table>tbody>tr.threes>th, .table>tbody>tr>td.threes, .table>tbody>tr>th.threes {background-color: #FFCC00;}.table>tbody>tr.twos>td, .table>tbody>tr.twos>th, .table>tbody>tr>td.twos, .table>tbody>tr>th.twos {background-color: #FFFF00;}.table>tbody>tr.ones>td, .table>tbody>tr.ones>th, .table>tbody>tr>td.ones, .table>tbody>tr>th.ones {background-color: #CCFF00;}.table>tbody>tr.ms>td, .table>tbody>tr.ms>th, .table>tbody>tr>td.ms, .table>tbody>tr>th.ms {background-color: #99FF00;}
-</style>
-<style>
-.x-goto-top{opacity:.9;z-index:999999;position:fixed;bottom:113px;right:1%;margin-left:40px;width:38px;height:38px;border-radius:3px;cursor:pointer;background-color:#f5f5f5;border:1px solid #0593d3}.x-goto-top:hover{background-color:#fafafa;border-color:#0482ba}.x-goto-top:hover div.x-arrow{border-bottom-color:#0482ba}.x-goto-top:hover div.x-stick{background-color:#0482ba}.x-goto-top div.x-arrow{position:absolute;left:10px;top:-1px;width:0;height:0;border:9px solid transparent;border-bottom-color:#0593d3}.x-goto-top div.x-stick{position:absolute;left:15px;top:15px;width:8px;height:14px;display:block;border-radius:1px;background-color:#0593d3}
-</style>
-<style>
-    #canvas-holder {
-        width: 90%;
-        text-align: center;
-    }
+
+	<style>.x-goto-top{opacity:.9;z-index:999999;position:fixed;bottom:113px;right:1%;margin-left:40px;width:38px;height:38px;border-radius:3px;cursor:pointer;background-color:#f5f5f5;border:1px solid #0593d3}.x-goto-top:hover{background-color:#fafafa;border-color:#0482ba}.x-goto-top:hover div.x-arrow{border-bottom-color:#0482ba}.x-goto-top:hover div.x-stick{background-color:#0482ba}.x-goto-top div.x-arrow{position:absolute;left:10px;top:-1px;width:0;height:0;border:9px solid transparent;border-bottom-color:#0593d3}.x-goto-top div.x-stick{position:absolute;left:15px;top:15px;width:8px;height:14px;display:block;border-radius:1px;background-color:#0593d3}
+	</style>
+	<style>
 	.tooltip-inner {
     text-align:left;
 	word-break:break-all;
 	}
-</style>
+	.nav-tabs.nav-justified>.active>a, .nav-tabs.nav-justified>.active>a:focus, .nav-tabs.nav-justified>.active>a:hover { border-bottom-color: #a94442; border-bottom-width: 3px; }
+	</style>
 
   </head>
   <body>
-    <nav class="navbar navbar-default navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="http://10.113.1.35:8000">
-            <img src="{% static 'aboutLv.png' %}" class=" img-rounded" alt="Responsive image" style="height:30px"></a>
-          <p class="navbar-text">
-            <span class="label label-danger">接口性能自动化</span></p>
+    <body class="nav-md">
+    <div class="container body">
+      <div class="main_container">
+        <div class="col-md-3 left_col"  data-spy="affix" style="position:fixed;">
+			<div class="left_col scroll-view">
+				
+				<div class="navbar nav_title" style="border: 0;">
+					<a class="site_title">接口性能自动化</a>
+				</div>
+
+				<br>
+				<div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+					<div class="menu_section">
+						<h3>General</h3>
+						<ul class="nav side-menu">
+							<li><a href="int_percent"><i class="fa fa-home"></i> 占比与趋势 </a></li>
+							<li><a><i class="fa fa-edit"></i> 接口测试数据
+								<span class="fa fa-chevron-down"></span></a>
+								<ul class="nav child_menu">
+									<li><a  href="int_table">性能数据</a></li>
+									<li><a  href="int_trace">数据追踪</a></li>
+									<li><a  href="int_err">错误数据</a></li>
+								</ul>
+							</li>
+							<li><a href="http://10.113.1.35:8000/admin/intest/ints/" target="_blank"><i class="fa fa-windows"></i> 接口配置后台</a></li>
+							<li><a href="http://10.113.1.35:8000/tyblog/" target="_blank"><i class="fa fa-flag"></i> 接口听云报告</a></li>
+						</ul>
+					</div>
+				</div> 
+			</div>
+		</div>
+
+        <!-- top navigation -->
+        <div class="top_nav">
+          <div class="nav_menu">
+            <nav>
+              <div class="nav toggle">
+                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+              </div>
+
+              <ul class="nav navbar-nav navbar-right">
+                <li class="">
+                  <a href="http://10.113.1.35:8000/"><i class="fa fa-home"></i> HOME </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
         </div>
-		<ul class="nav navbar-nav">
-			<li></li>
-	    </ul>
-        <div id="navbar" class="navbar-collapse collapse">	
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="http://10.113.1.35:8000/admin/intest/ints/" target=_blank><span class="glyphicon glyphicon-cog"></span> 接口配置后台</a></li>
-            <li><a href="http://10.113.1.35:8000/tyreport/" target=_blank><span class="glyphicon glyphicon-bullhorn"></span> 接口听云报告</a></li>
-			<!-- <li><a href="#">OTHER</a></li> -->
-          </ul>
-        </div>
-        <!--/.nav-collapse -->
-	</div>
-    </nav>
-	
-    <div  id="top" style="padding-top:80px">
-		<div class="row" style="padding-left:50px;padding-right:50px">
-{% block content %}
-{% endblock %}
-        </div>
+		
+		<script src="{% static 'js/echarts-all.js' %}" charset="UTF-8"></script>
+        <!-- page content -->
+        <div class="right_col" role="main">
+		{% block content %}
+		{% endblock content %}
+		</div>
+
+        <!-- footer content -->
+        <footer>
+          <div class="pull-right">
+            &copy; TestTeam 2016 <a href="http://m.lvmama.com">@Lvmama</a>
+          </div>
+          <div class="clearfix"></div>
+        </footer>
+        <!-- /footer content -->
+      </div>
     </div>
 	
 	<a class="x-goto-top" style="display: block;">
@@ -79,16 +104,27 @@
         <div class="x-stick"></div>
     </a>
 
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="http://cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
-    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
     <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-	<script src="http://10.113.1.35:8000/static/js/bootstrap-table.min.js"></script>
-	<script src="http://10.113.1.35:8000/static/js/bootstrap-table-zh-CN.min.js"></script>
-	<script type="text/javascript" src="{% static 'js/bootstrap-datetimepicker.min.js' %}" charset="UTF-8"></script>
-    <script type="text/javascript" src="{% static 'js/locales/bootstrap-datetimepicker.zh-CN.js' %}"  charset="UTF-8"></script>
+	<script src="{% static 'js/bootstrap-table.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap-table-zh-CN.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap-datetimepicker.min.js' %}" charset="UTF-8"></script>
+    <script src="{% static 'js/locales/bootstrap-datetimepicker.zh-CN.js' %}"  charset="UTF-8"></script>
+	<script src="{% static 'vendors/fastclick.js' %}"></script>
+    <!-- NProgress -->
+    <script src="{% static 'vendors/nprogress.js' %}"></script>
+    <!-- Custom Theme Scripts -->
+    <script src="{% static 'vendors/custom.min.js' %}"></script>
+	<script>
+	$('#myAffix').affix({
+	  offset: {
+		top: 100,
+		bottom: function () {
+		  return (this.bottom = $('.footer').outerHeight(true))
+		}
+	  }
+	})
+	</script>
 	<script type="text/javascript">
 		$(".form_date").datetimepicker({
 			language:  'zh-CN',

@@ -26,7 +26,7 @@ def err_list():
 	d = int(today.split('-')[2])
 	date_from = datetime.datetime(y,m,d, 0, 0)
 	date_to = datetime.datetime(y,m,d, 23, 59)
-	error_list = Errs.objects.exclude(='-3').filter(timestamp__range=(date_from,date_to)).order_by('name')
+	error_list = Errs.objects.exclude(log_code='-3').filter(timestamp__range=(date_from,date_to)).order_by('name')
 	if error_list:	#没有错误就跳出程序吧
 		return error_list
 	else:

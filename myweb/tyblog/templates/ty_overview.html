@@ -5,13 +5,12 @@
 	<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> 接口占比 </div>
 </div>
 <div class="row">
-	<div class="col-lg-7 col-md-12 col-sm-12 col-sx-12">
-		<div id="canvas-holder">
-			<canvas id="chart-area1" /></canvas>
+	<div class="col-lg-9 col-md-12 col-sm-12 col-sx-12">
+		<div id="area0" style="height:500px">
 		</div>
 	</div>
-	<div class="col-lg-5 col-md-12 col-sm-12 col-sx-12">
-		<h3>接口占比数据</h3><p>（近10次）</p>
+	<div class="col-lg-3 col-md-12 col-sm-12 col-sx-12">
+		<h3>接口占比数据</h3>
 		<table class="table table-hover table-condensed table-responsive">
 		<thead>
 		<tr class="info">
@@ -31,17 +30,15 @@
 </div>
 <hr>
 <div class="panel panel-success">
-	<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> 崩溃率 峰值和底值区间过大，采用对数图展示，要降低峰值，需要测试期间关闭听云探针</div>
+	<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> 崩溃率 </div>
 </div>
 <div class="row">
 	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
-		<div id="canvas-holder">
-			<canvas id="chart-area2" /></canvas>
+		 <div id="area1" style="height:500px">
 		</div>
 	</div>
 	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
-		<div id="canvas-holder">
-			<canvas id="chart-area3" /></canvas>
+		 <div id="area2" style="height:500px">
 		</div>
 	</div>
 </div>
@@ -51,25 +48,21 @@
 </div>
 <div class="row">
 	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
-		<div id="canvas-holder">
-			<canvas id="chart-area4"/></canvas>
+		 <div id="area3" style="height:500px">
 		</div>
 	</div>
 	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
-		<div id="canvas-holder">
-			<canvas id="chart-area5"/></canvas>
+		 <div id="area4" style="height:500px">
 		</div>
 	</div>
 </div>
 <div class="row">
 	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
-		<div id="canvas-holder">
-			<canvas id="chart-area6"/></canvas>
+		 <div id="area5" style="height:500px">
 		</div>
 	</div>
 	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
-		<div id="canvas-holder">
-			<canvas id="chart-area7"/></canvas>
+		 <div id="area6" style="height:500px">
 		</div>
 	</div>
 </div>
@@ -79,25 +72,21 @@
 </div>
 <div class="row">
 	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
-		<div id="canvas-holder">
-			<canvas id="chart-area8"/></canvas>
+		 <div id="area7" style="height:500px">
 		</div>
 	</div>
 	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
-		<div id="canvas-holder">
-			<canvas id="chart-area9"/></canvas>
+		 <div id="area8" style="height:500px">
 		</div>
 	</div>
 </div>
 <div class="row">
 	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
-		<div id="canvas-holder">
-			<canvas id="chart-area10"/></canvas>
+		 <div id="area9" style="height:500px">
 		</div>
 	</div>
 	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
-		<div id="canvas-holder">
-			<canvas id="chart-area11"/></canvas>
+		 <div id="area10" style="height:500px">
 		</div>
 	</div>
 </div><hr>
@@ -106,862 +95,1088 @@
 </div>
 <div class="row">
 	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
-		<div id="canvas-holder">
-			<canvas id="chart-area12"/></canvas>
+		 <div id="area11" style="height:500px">
 		</div>
 	</div>
 	<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
-		<div id="canvas-holder">
-			<canvas id="chart-area13"/></canvas>
+		 <div id="area12" style="height:500px">
 		</div>
 	</div>
 </div>
 <script>
-	var randomColorFactor = function() {
-            return Math.round(Math.random() * 255);
-        };
-	var randomColor = function(opacity) {
-		return 'rgba(' + randomColorFactor() + ',' + randomColorFactor() + ',' + randomColorFactor() + ',' + (opacity || '.5') + ')';
-	};
-		
-    var config1 = {
-        type: 'line',
-		options: {
-            responsive: true,
-            legend: {
-                display: true,
-				position: 'bottom'
-            },
-			title: {
-                display: true,
-                text: '接口响应占比趋势',
-				position: 'top'
-            },
-        },
-        data: {
-            labels: [
-			{% for i in show_t_label %}
-			"{{ i }}",
-			{% endfor %}
-            ],
-            datasets: [
-        {
-            label: "毫秒",
-            borderColor : "rgba(102,204,255,1)",
-            borderCapStyle: 'butt',
-            backgroundColor : "rgba(102,204,255,0.2)",
-            pointBackgroundColor : "rgba(102,204,255,1)",
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: "rgba(220,220,220,1)",
-			data:[
-			{% for i in show_list %}
-			"{{ i.zero_level }}",
-			{% endfor %}
-			],
-            fill:true,
-        },{
-            label: "1~2秒",
-            borderColor : "rgba(102,204,102,1)",
-            borderCapStyle: 'butt',
-            backgroundColor : "rgba(102,204,102,0.3)",
-            pointBackgroundColor : "rgba(102,204,102,1)",
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: "rgba(220,220,220,1)",
-			data:[
-			{% for i in show_list %}
-			"{{ i.one_level }}",
-			{% endfor %}
-			],
-            fill:true,
-        },{
-            label: "2~3秒",
-            borderColor : "rgba(241,196,15,1)",
-            borderCapStyle: 'butt',
-            backgroundColor : "rgba(241,196,15,0.4)",
-            pointBackgroundColor : "rgba(241,196,15,1)",
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: "rgba(220,220,220,1)",
-			data:[
-			{% for i in show_list %}
-			"{{ i.two_level }}",
-			{% endfor %}
-			],
-            fill:true,
-        },{
-            label: "3~4秒",
-            borderColor : "rgba(255,204,51,1)",
-            borderCapStyle: 'butt',
-            backgroundColor : "rgba(255,204,51,0.5)",
-            pointBackgroundColor : "rgba(255,204,51,1)",
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: "rgba(220,220,220,1)",
-			data:[
-			{% for i in show_list %}
-			"{{ i.three_level }}",
-			{% endfor %}
-			],
-            fill:false,
-        },{
-            label: "4~5秒",
-            borderColor : "rgba(255,153,51,1)",
-            borderCapStyle: 'butt',
-            backgroundColor : "rgba(255,153,51,0.6)",
-            pointBackgroundColor : "rgba(255,153,51,1)",
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: "rgba(220,220,220,1)",
-			data:[
-			{% for i in show_list %}
-			"{{ i.four_level }}",
-			{% endfor %}
-			],
-            fill:false,
-        },{
-            label: "5秒以上",
-            borderColor : "rgba(255,102,51,1)",
-            borderCapStyle: 'butt',
-            backgroundColor : "rgba(255,102,51,0.7)",
-            pointBackgroundColor : "rgba(255,102,51,1)",
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: "rgba(220,220,220,1)",
-			data:[
-			{% for i in show_list %}
-			"{{ i.five_level }}",
-			{% endfor %}
-			],
-            fill:false,
-        }]}};
-
-    var config2 = {
-        type: 'line',
-		options: {
-            responsive: true,
-            legend: {
-                display: true,
-				position: 'bottom'
-            },
-			title: {
-                display: true,
-                text: 'Android崩溃趋势 | (3个月) | 单位:‰ | 标准4‰',
-				position: 'top'
-            },
-			scales: {
-				xAxes: [{
-                    display: true,
-                    scaleLabel: {
-                        display: false,
-                        labelString: 'timeline'
-                    }
-                }],
-                yAxes: [{
-                    display: true,
-                    type: 'logarithmic',
-                    scaleLabel: {
-                        display: true,
-                        labelString: '对数图'
-                    }
-                }]
+	
+	var myChart0 = echarts.init(document.getElementById('area0'));
+	var myChart1 = echarts.init(document.getElementById('area1')); 
+	var myChart2 = echarts.init(document.getElementById('area2'));  
+	var myChart3 = echarts.init(document.getElementById('area3'));  
+	var myChart4 = echarts.init(document.getElementById('area4'));  
+	var myChart5 = echarts.init(document.getElementById('area5'));  
+	var myChart6 = echarts.init(document.getElementById('area6'));  
+	var myChart7 = echarts.init(document.getElementById('area7'));  
+	var myChart8 = echarts.init(document.getElementById('area8'));  
+	var myChart9 = echarts.init(document.getElementById('area9'));  
+	var myChart10 = echarts.init(document.getElementById('area10'));  
+	var myChart11 = echarts.init(document.getElementById('area11'));  
+	var myChart12 = echarts.init(document.getElementById('area12'));  
+    var option0 = {
+		title : {
+			text: '接口响应占比趋势',
+			subtext: '包含网络时间的完整时间'
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:['毫秒', '1-2秒', '2-3秒', '3-4秒', '4-5秒', '>5秒', ]
+		},
+		toolbox: {
+			show : true,
+			feature : {
+				 mark : {
+					show : true,
+					title : {
+						mark : '辅助线开关',
+						markUndo : '删除辅助线',
+						markClear : '清空辅助线'
+					},
+					lineStyle : {
+						width : 2,
+						color : '#1e90ff',
+						type : 'dashed'
+					}
+				},
+				dataView : {show: true, readOnly: false},
+				restore : {show: true},
+				saveAsImage : {show: true}
 			}
-        },
-        data: {
-            labels: [
-			{% for k in crash_t_list %}
-			"{{ k }}",
-			{% endfor %}
-            ],
-			datasets: [
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for i in show_t_label %}
+				"{{ i }}",
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+				axisLabel : {
+					formatter: '{value} %'
+				}
+			}
+		],
+		series : [
+				{
+					name:'毫秒',
+					type:'line',
+					smooth:true,
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					markPoint : {
+						data : [
+							{type : 'max', name: '最大值'},
+							{type : 'min', name: '最小值'}
+						]
+					},
+					data:[
+					{% for x in show_list %}
+					"{{ x.zero_level }}",
+					{% endfor %}
+					]
+				},
+				{
+					name:'1-2秒',
+					type:'line',
+					smooth:true,
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:[
+					{% for x in show_list %}
+					{{ x.one_level }},
+					{% endfor %}
+					]
+				},
+				{
+					name:'2-3秒',
+					type:'line',
+					smooth:true,
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:[
+					{% for x in show_list %}
+					{{ x.two_level }},
+					{% endfor %}
+					]
+				},
+				{
+					name:'3-4秒',
+					type:'line',
+					smooth:true,
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:[
+					{% for x in show_list %}
+					{{ x.three_level }},
+					{% endfor %}
+					]
+				},
+				{
+					name:'4-5秒',
+					type:'line',
+					smooth:true,
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:[
+					{% for x in show_list %}
+					{{ x.four_level }},
+					{% endfor %}
+					]
+				},
+				{
+					name:'>5秒',
+					type:'line',
+					smooth:true,
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:[
+					{% for x in show_list %}
+					{{ x.five_level }},
+					{% endfor %}
+					]
+				},
+			]
+		};
+
+    var option1 = {
+				title : {
+				text: 'Android崩溃趋势 测试开发期间会有较高的崩溃率，属正常情况',
+				subtext: '| 标准<4‰ | 优秀<2‰ | 15年平均1.3‰ | 旅游行业指标2.1‰'
+			},
+			tooltip : {
+				trigger: 'axis'
+			},
+			legend: {
+				y: 'bottom', // 'center' | 'bottom' | {number}
+				data:[
+				{% for k,v in crash_show_a.items %}
+				"{{ k }}",
+				{% endfor %}
+				]
+			},
+			toolbox: {
+				show : true,
+				feature : {
+					 mark : {
+						show : true,
+						title : {
+							mark : '辅助线开关',
+							markUndo : '删除辅助线',
+							markClear : '清空辅助线'
+						},
+						lineStyle : {
+							width : 2,
+							color : '#1e90ff',
+							type : 'dashed'
+						}
+					},
+					dataView : {show: true, readOnly: false},
+					restore : {show: true},
+					saveAsImage : {show: true}
+				}
+			},
+			calculable : true,
+			xAxis : [
+				{
+					type : 'category',
+					boundaryGap : false,
+					data : [
+					{% for k in crash_t_list %}
+					"{{ k }}",
+					{% endfor %}
+					]
+				}
+			],
+			yAxis : [
+				{
+					type : 'value',
+					axisLabel : {
+						formatter: '{value} ‰'
+					}
+				}
+			],
+			series : [
 				{% for k,v in crash_show_a.items %}
 				{
-				label: "{{ k }}",
-				borderColor : randomColor(0.7),
-				borderCapStyle: 'butt',
-				<!-- backgroundColor : randomColor(0.5), -->
-				pointBackgroundColor : randomColor(0.7),
-				pointBorderColor: "#fff",
-				pointHighlightFill: "#fff",
-				pointHighlightStroke: randomColor(0.5),
-				data:[
-				{% for x in v %}
-					"{{ x }}",
-				{% endfor %}
-				],
-				fill:false,
-				},
-				{% endfor %}
-			]},
-		};
-
-    var config3 = {
-        type: 'line',
-		options: {
-            responsive: true,
-            legend: {
-                display: true,
-				position: 'bottom'
-            },
-			title: {
-                display: true,
-                text: 'Ios崩溃趋势 | (3个月) | 单位:‰ | 标准8‰',
-				position: 'top'
-            },
-			scales: {
-				xAxes: [{
-                    display: true,
-                    scaleLabel: {
-                        display: false,
-                        labelString: 'timeline'
-                    }
-                }],
-                yAxes: [{
-                    display: true,
-                    type: 'logarithmic',
-                    scaleLabel: {
-                        display: true,
-                        labelString: '对数图'
-                    }
-                }]
-			}
-        },
-        data: {
-            labels: [
-			{% for k in crash_t_list %}
-			"{{ k }}",
-			{% endfor %}
-            ],
-            datasets: [
-			{% for k,v in crash_show_ios.items %}
-			{
-            label: "{{ k }}",
-            borderColor : randomColor(0.7),
-            borderCapStyle: 'butt',
-            <!-- backgroundColor : randomColor(0.5), -->
-            pointBackgroundColor : randomColor(0.7),
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: randomColor(0.5),
-			data:[
-			{% for x in v %}
-				"{{ x }}",
-			{% endfor %}
-			],
-            fill:false,
-			},
-			{% endfor %}
-        ]},
-		};
-		
-    var config4 = {
-        type: 'line',
-		options: {
-            responsive: true,
-            legend: {
-                display: true,
-				position: 'bottom'
-            },
-			title: {
-                display: true,
-                text: 'Android 自身服务错误率 | (5个月) | 单位：‰ | 标准12‰',
-				position: 'top'
-            },
-			scales: {
-				xAxes: [{
-					display: true,
-					scaleLabel: {
-						display: false,
-						labelString: '时间轴'
-					}
-				}],
-				yAxes: [{
-					display: true,
-					scaleLabel: {
-						display: true,
-						labelString: '‰'
-					},
-				}]
-			}
-        },
-        data: {
-            labels: [
-			{% for k in show_t_label %}
-			"{{ k }}",
-			{% endfor %}
-            ],
-            datasets: [
-			{% for k,v in err_show_a_self.items %}
-			{
-            label: "{{ k }}",
-            borderColor : randomColor(0.7),
-            borderCapStyle: 'butt',
-            <!-- backgroundColor : randomColor(0.5), -->
-            pointBackgroundColor : randomColor(0.7),
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: randomColor(0.5),
-			data:[
-			{% for x in v %}
-				"{{ x }}",
-			{% endfor %}
-			],
-            fill:false,
-			},
-			{% endfor %}
-        ]},
-		};
-		
-    var config5 = {
-        type: 'line',
-		options: {
-            responsive: true,
-            legend: {
-                display: true,
-				position: 'bottom'
-            },
-			title: {
-                display: true,
-                text: 'Android 第三方错误率 | (5个月) | 单位：‰ | 标准12‰',
-				position: 'top'
-            },
-			scales: {
-				xAxes: [{
-					display: true,
-					scaleLabel: {
-						display: false,
-						labelString: '时间轴'
-					}
-				}],
-				yAxes: [{
-					display: true,
-					scaleLabel: {
-						display: true,
-						labelString: '‰'
-					},
-				}]
-			}
-        },
-        data: {
-            labels: [
-			{% for k in show_t_label %}
-			"{{ k }}",
-			{% endfor %}
-            ],
-            datasets: [
-			{% for k,v in err_show_a_other.items %}
-			{
-            label: "{{ k }}",
-            borderColor : randomColor(0.7),
-            borderCapStyle: 'butt',
-            <!-- backgroundColor : randomColor(0.5), -->
-            pointBackgroundColor : randomColor(0.7),
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: randomColor(0.5),
-			data:[
-			{% for x in v %}
-				"{{ x }}",
-			{% endfor %}
-			],
-            fill:false,
-			},
-			{% endfor %}
-        ]},
-		};
-		
-	var config6 = {
-        type: 'line',
-		options: {
-            responsive: true,
-            legend: {
-                display: true,
-				position: 'bottom'
-            },
-			title: {
-                display: true,
-                text: 'IOS 自身服务错误率 | (5个月) | 单位：‰ | 标准12‰',
-				position: 'top'
-            },
-			scales: {
-				xAxes: [{
-					display: true,
-					scaleLabel: {
-						display: false,
-						labelString: '时间轴'
-					}
-				}],
-				yAxes: [{
-					display: true,
-					scaleLabel: {
-						display: true,
-						labelString: '‰'
-					},
-				}]
-			}
-        },
-        data: {
-            labels: [
-			{% for k in show_t_label %}
-			"{{ k }}",
-			{% endfor %}
-            ],
-            datasets: [
-			{% for k,v in err_show_ios_self.items %}
-			{
-            label: "{{ k }}",
-            borderColor : randomColor(0.7),
-            borderCapStyle: 'butt',
-            <!-- backgroundColor : randomColor(0.5), -->
-            pointBackgroundColor : randomColor(0.7),
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: randomColor(0.5),
-			data:[
-			{% for x in v %}
-				"{{ x }}",
-			{% endfor %}
-			],
-            fill:false,
-			},
-			{% endfor %}
-        ]},
-		};
-		
-	var config7 = {
-        type: 'line',
-		options: {
-            responsive: true,
-            legend: {
-                display: true,
-				position: 'bottom'
-            },
-			title: {
-                display: true,
-                text: 'IOS 第三方错误率 | (5个月) | 单位：‰ | 标准12‰',
-				position: 'top'
-            },
-			scales: {
-				xAxes: [{
-					display: true,
-					scaleLabel: {
-						display: false,
-						labelString: '时间轴'
-					}
-				}],
-				yAxes: [{
-					display: true,
-					scaleLabel: {
-						display: true,
-						labelString: '‰'
-					},
-				}]
-			}
-        },
-        data: {
-            labels: [
-			{% for k in show_t_label %}
-			"{{ k }}",
-			{% endfor %}
-            ],
-            datasets: [
-			{% for k,v in err_show_ios_other.items %}
-			{
-            label: "{{ k }}",
-            borderColor : randomColor(0.7),
-            borderCapStyle: 'butt',
-            <!-- backgroundColor : randomColor(0.5), -->
-            pointBackgroundColor : randomColor(0.7),
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: randomColor(0.5),
-			data:[
-			{% for x in v %}
-				"{{ x }}",
-			{% endfor %}
-			],
-            fill:false,
-			},
-			{% endfor %}
-        ]},
-		};
-		
-    var config8 = {
-        type: 'line',
-		options: {
-            responsive: true,
-            legend: {
-                display: true,
-				position: 'bottom'
-            },
-			title: {
-                display: true,
-                text: 'Android自身服务响应趋势 | (5个月) | 单位:s | 标准2s',
-				position: 'top'
-            },
-			scales: {
-				xAxes: [{
-					display: true,
-					scaleLabel: {
-						display: false,
-						labelString: '时间轴'
-					}
-				}],
-				yAxes: [{
-					display: true,
-					scaleLabel: {
-						display: true,
-						labelString: '秒'
-					},
-				}]
-			}
-        },
-        data: {
-            labels: [
-			{% for k in show_t_label %}
-			"{{ k }}",
-			{% endfor %}
-            ],
-			datasets: [
-				{% for k,v in res_show_a_self.items %}
-				{
-				label: "{{ k }}",
-				borderColor : randomColor(0.7),
-				borderCapStyle: 'butt',
-				<!-- backgroundColor : randomColor(0.5), -->
-				pointBackgroundColor : randomColor(0.7),
-				pointBorderColor: "#fff",
-				pointHighlightFill: "#fff",
-				pointHighlightStroke: randomColor(0.5),
-				data:[
+					name:"{{ k }}",
+					type:'line',
+					smooth:true,
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:[
 					{% for x in v %}
 					"{{ x }}",
 					{% endfor %}
-				],
-				fill:false,
+					],
 				},
 				{% endfor %}
-			]},
+			]
 		};
-
-    var config9 = {
-        type: 'line',
-		options: {
-            responsive: true,
-            legend: {
-                display: true,
-				position: 'bottom'
-            },
-			title: {
-                display: true,
-                text: 'Android 第三方响应趋势 | (5个月) | 单位:s | 标准2s',
-				position: 'top'
-            },
-			scales: {
-				xAxes: [{
-					display: true,
-					scaleLabel: {
-						display: false,
-						labelString: '时间轴'
-					}
-				}],
-				yAxes: [{
-					display: true,
-					scaleLabel: {
-						display: true,
-						labelString: '秒'
-					},
-				}]
-			}
-        },
-        data: {
-            labels: [
-			{% for k in show_t_label %}
+		
+    var option2 = {
+		title : {
+			text: 'Ios崩溃趋势  测试开发期间会有较高的崩溃率，属正常情况',
+			subtext: '| 标准<8‰ | 优秀<3‰ | 15年平均9.3‰ | 旅游行业指标8.5‰'
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:[
+			{% for k,v in crash_show_ios.items %}
 			"{{ k }}",
 			{% endfor %}
-            ],
-            datasets: [
+			]
+		},
+		toolbox: {
+			show : true,
+			feature : {
+				 mark : {
+					show : true,
+					title : {
+						mark : '辅助线开关',
+						markUndo : '删除辅助线',
+						markClear : '清空辅助线'
+					},
+					lineStyle : {
+						width : 2,
+						color : '#1e90ff',
+						type : 'dashed'
+					}
+				},
+				dataView : {show: true, readOnly: false},
+				restore : {show: true},
+				saveAsImage : {show: true}
+			}
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for k in crash_t_list %}
+				"{{ k }}",
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+					axisLabel : {
+						formatter: '{value} ‰'
+					}
+			}
+		],
+		series : [
+			{% for k,v in crash_show_ios.items %}
+			{
+				name:"{{ k }}",
+				type:'line',
+				smooth:true,
+				itemStyle: {normal: {areaStyle: {type: 'default'}}},
+				data:[
+				{% for x in v %}
+				"{{ x }}",
+				{% endfor %}
+				],
+			},
+			{% endfor %}
+		],
+	};
+		
+    var option3 = {
+		title : {
+			text: 'Android 自身服务错误率',
+			subtext: '| 标准<12‰ | 优秀<8‰ | 旅游行业指标13.7‰'
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		grid:{
+			y2: '20%',
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:[
+			{% for k,v in err_show_a_self.items %}
+			"{{ k }}",
+			{% endfor %}
+			]
+		},
+		toolbox: {
+			show : true,
+			feature : {
+				 mark : {
+					show : true,
+					title : {
+						mark : '辅助线开关',
+						markUndo : '删除辅助线',
+						markClear : '清空辅助线'
+					},
+					lineStyle : {
+						width : 2,
+						color : '#1e90ff',
+						type : 'dashed'
+					}
+				},
+				dataView : {show: true, readOnly: false},
+				restore : {show: true},
+				saveAsImage : {show: true}
+			}
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for k in show_t_label %}
+				"{{ k }}",
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+					axisLabel : {
+						formatter: '{value} ‰'
+					}
+			}
+		],
+		series : [
+			{% for k,v in err_show_a_self.items %}
+			{
+				name:"{{ k }}",
+				type:'line',
+				smooth:true,
+				itemStyle: {normal: {areaStyle: {type: 'default'}}},
+				data:[
+				{% for x in v %}
+				"{{ x }}",
+				{% endfor %}
+				],
+			},
+			{% endfor %}
+		]
+	};
+		
+    var option4 = {
+		title : {
+			text: 'Android 第三方错误率',
+			subtext: '| 标准<12‰ | 优秀<8‰ | 旅游行业指标13.7‰'
+		},
+		grid:{
+			y2: '20%',
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:[
+			{% for k,v in err_show_a_other.items %}
+			"{{ k }}",
+			{% endfor %}
+			]
+		},
+		toolbox: {
+			show : true,
+			feature : {
+				 mark : {
+					show : true,
+					title : {
+						mark : '辅助线开关',
+						markUndo : '删除辅助线',
+						markClear : '清空辅助线'
+					},
+					lineStyle : {
+						width : 2,
+						color : '#1e90ff',
+						type : 'dashed'
+					}
+				},
+				dataView : {show: true, readOnly: false},
+				restore : {show: true},
+				saveAsImage : {show: true}
+			}
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for k in show_t_label %}
+				"{{ k }}",
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+					axisLabel : {
+						formatter: '{value} ‰'
+					}
+			}
+		],
+		series : [
+			{% for k,v in err_show_a_other.items %}
+			{
+				name:"{{ k }}",
+				type:'line',
+				smooth:true,
+				itemStyle: {normal: {areaStyle: {type: 'default'}}},
+				data:[
+				{% for x in v %}
+				"{{ x }}",
+				{% endfor %}
+				],
+			},
+			{% endfor %}
+		]
+	};
+		
+	var option5 = {
+		title : {
+			text: 'IOS 自身服务错误率',
+			subtext: '| 标准<12‰ | 优秀<8‰ | 旅游行业指标11.8‰'
+		},
+		grid:{
+			y2: '20%',
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:[
+			{% for k,v in err_show_ios_self.items %}
+			"{{ k }}",
+			{% endfor %}
+			]
+		},
+		toolbox: {
+			show : true,
+			feature : {
+				 mark : {
+					show : true,
+					title : {
+						mark : '辅助线开关',
+						markUndo : '删除辅助线',
+						markClear : '清空辅助线'
+					},
+					lineStyle : {
+						width : 2,
+						color : '#1e90ff',
+						type : 'dashed'
+					}
+				},
+				dataView : {show: true, readOnly: false},
+				restore : {show: true},
+				saveAsImage : {show: true}
+			}
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for k in show_t_label %}
+				"{{ k }}",
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+					axisLabel : {
+						formatter: '{value} ‰'
+					}
+			}
+		],
+		series : [
+			{% for k,v in err_show_ios_self.items %}
+			{
+				name:"{{ k }}",
+				type:'line',
+				smooth:true,
+				itemStyle: {normal: {areaStyle: {type: 'default'}}},
+				data:[
+				{% for x in v %}
+				"{{ x }}",
+				{% endfor %}
+				],
+			},
+			{% endfor %}
+		]
+	};
+		
+	var option6 = {
+		title : {
+			text: 'IOS 第三方错误率',
+			subtext: '| 标准<12‰ | 优秀<8‰ | 旅游行业指标11.8‰'
+		},
+		grid:{
+			y2: '20%',
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:[
+			{% for k,v in err_show_ios_other.items %}
+			"{{ k }}",
+			{% endfor %}
+			]
+		},
+		toolbox: {
+			show : true,
+			feature : {
+				 mark : {
+					show : true,
+					title : {
+						mark : '辅助线开关',
+						markUndo : '删除辅助线',
+						markClear : '清空辅助线'
+					},
+					lineStyle : {
+						width : 2,
+						color : '#1e90ff',
+						type : 'dashed'
+					}
+				},
+				dataView : {show: true, readOnly: false},
+				restore : {show: true},
+				saveAsImage : {show: true}
+			}
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for k in show_t_label %}
+				"{{ k }}",
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+					axisLabel : {
+						formatter: '{value} ‰'
+					}
+			}
+		],
+		series : [
+			{% for k,v in err_show_ios_other.items %}
+			{
+				name:"{{ k }}",
+				type:'line',
+				smooth:true,
+				itemStyle: {normal: {areaStyle: {type: 'default'}}},
+				data:[
+				{% for x in v %}
+				"{{ x }}",
+				{% endfor %}
+				],
+			},
+			{% endfor %}
+		]
+	};
+		
+    var option7 = {
+		title : {
+			text: 'Android自身服务响应趋势',
+			subtext: '| 标准< 2s | 优秀 < 0.4s | 旅游行业首包 0.76s'
+		},
+		grid:{
+			y2: '20%',
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:[
+			{% for k,v in res_show_a_self.items %}
+			"{{ k }}",
+			{% endfor %}
+			]
+		},
+		toolbox: {
+			show : true,
+			feature : {
+				 mark : {
+					show : true,
+					title : {
+						mark : '辅助线开关',
+						markUndo : '删除辅助线',
+						markClear : '清空辅助线'
+					},
+					lineStyle : {
+						width : 2,
+						color : '#1e90ff',
+						type : 'dashed'
+					}
+				},
+				dataView : {show: true, readOnly: false},
+				restore : {show: true},
+				saveAsImage : {show: true}
+			}
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for k in show_t_label %}
+				"{{ k }}",
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+				axisLabel : {
+					formatter: '{value} 秒'
+				}
+			}
+		],
+		series : [
+			{% for k,v in res_show_a_self.items %}
+			{
+				name:"{{ k }}",
+				type:'line',
+				smooth:true,
+				itemStyle: {normal: {areaStyle: {type: 'default'}}},
+				data:[
+				{% for x in v %}
+				"{{ x }}",
+				{% endfor %}
+				],
+			},
+			{% endfor %}
+		]
+	};
+
+    var option8 = {
+		title : {
+			text: 'Android第三方响应趋势',
+			subtext: '| 标准< 2s | 优秀 < 0.4s | 旅游行业首包 0.76s'
+		},
+		grid:{
+			y2: '20%',
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:[
+			{% for k,v in res_show_a_other.items %}
+			"{{ k }}",
+			{% endfor %}
+			]
+		},
+		toolbox: {
+			show : true,
+			feature : {
+				 mark : {
+					show : true,
+					title : {
+						mark : '辅助线开关',
+						markUndo : '删除辅助线',
+						markClear : '清空辅助线'
+					},
+					lineStyle : {
+						width : 2,
+						color : '#1e90ff',
+						type : 'dashed'
+					}
+				},
+				dataView : {show: true, readOnly: false},
+				restore : {show: true},
+				saveAsImage : {show: true}
+			}
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for k in show_t_label %}
+				"{{ k }}",
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+				axisLabel : {
+					formatter: '{value} 秒'
+				}
+			}
+		],
+		series : [
 			{% for k,v in res_show_a_other.items %}
 			{
-            label: "{{ k }}",
-            borderColor : randomColor(0.7),
-            borderCapStyle: 'butt',
-            <!-- backgroundColor : randomColor(0.5), -->
-            pointBackgroundColor : randomColor(0.7),
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: randomColor(0.5),
-			data:[
-			{% for x in v %}
+				name:"{{ k }}",
+				type:'line',
+				smooth:true,
+				itemStyle: {normal: {areaStyle: {type: 'default'}}},
+				data:[
+				{% for x in v %}
 				"{{ x }}",
-			{% endfor %}
-			],
-            fill:false,
+				{% endfor %}
+				],
 			},
 			{% endfor %}
-        ]},
-		};
+		]
+	};
 		
-    var config10 = {
-        type: 'line',
-		options: {
-            responsive: true,
-            legend: {
-                display: true,
-				position: 'bottom'
-            },
-			title: {
-                display: true,
-                text: 'Ios 自身服务响应趋势 | (5个月) | 单位：s | 标准2s',
-				position: 'top'
-            },
-			scales: {
-				xAxes: [{
-					display: true,
-					scaleLabel: {
-						display: false,
-						labelString: '时间轴'
-					}
-				}],
-				yAxes: [{
-					display: true,
-					scaleLabel: {
-						display: true,
-						labelString: '秒'
-					},
-				}]
-			}
-        },
-        data: {
-            labels: [
-			{% for k in show_t_label %}
+    var option9 = {
+		title : {
+			text: 'Ios 自身服务响应趋势',
+			subtext: '| 标准< 2s | 优秀 < 0.4s | 旅游行业首包 0.76s'
+		},
+		grid:{
+			y2: '20%',
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:[
+			{% for k,v in res_show_ios_self.items %}
 			"{{ k }}",
 			{% endfor %}
-            ],
-            datasets: [
+			]
+		},
+		toolbox: {
+			show : true,
+			feature : {
+				 mark : {
+					show : true,
+					title : {
+						mark : '辅助线开关',
+						markUndo : '删除辅助线',
+						markClear : '清空辅助线'
+					},
+					lineStyle : {
+						width : 2,
+						color : '#1e90ff',
+						type : 'dashed'
+					}
+				},
+				dataView : {show: true, readOnly: false},
+				restore : {show: true},
+				saveAsImage : {show: true}
+			}
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for k in show_t_label %}
+				"{{ k }}",
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+				axisLabel : {
+					formatter: '{value} 秒'
+				}
+			}
+		],
+		series : [
 			{% for k,v in res_show_ios_self.items %}
 			{
-            label: "{{ k }}",
-            borderColor : randomColor(0.7),
-            borderCapStyle: 'butt',
-            <!-- backgroundColor : randomColor(0.5), -->
-            pointBackgroundColor : randomColor(0.7),
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: randomColor(0.5),
-			data:[
-			{% for x in v %}
+				name:"{{ k }}",
+				type:'line',
+				smooth:true,
+				itemStyle: {normal: {areaStyle: {type: 'default'}}},
+				data:[
+				{% for x in v %}
 				"{{ x }}",
-			{% endfor %}
-			],
-            fill:false,
+				{% endfor %}
+				],
 			},
 			{% endfor %}
-        ]},
-		};
+		]
+	};
 		
-    var config11 = {
-        type: 'line',
-		options: {
-            responsive: true,
-            legend: {
-                display: true,
-				position: 'bottom'
-            },
-			title: {
-                display: true,
-                text: 'Ios 第三方服务响应趋势 | (5个月) | 单位：s | 标准2s',
-				position: 'top'
-            },
-			scales: {
-				xAxes: [{
-					display: true,
-					scaleLabel: {
-						display: false,
-						labelString: '时间轴'
-					}
-				}],
-				yAxes: [{
-					display: true,
-					scaleLabel: {
-						display: true,
-						labelString: '秒'
-					},
-				}]
-			}
-        },
-        data: {
-            labels: [
-			{% for k in show_t_label %}
+    var option10 = {
+		title : {
+			text: 'Ios 第三方服务响应趋势',
+			subtext: '| 标准< 2s | 优秀 < 0.4s | 旅游行业首包 0.76s'
+		},
+		grid:{
+			y2: '20%',
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:[
+			{% for k,v in res_show_ios_other.items %}
 			"{{ k }}",
 			{% endfor %}
-            ],
-            datasets: [
+			]
+		},
+		toolbox: {
+			show : true,
+			feature : {
+				 mark : {
+					show : true,
+					title : {
+						mark : '辅助线开关',
+						markUndo : '删除辅助线',
+						markClear : '清空辅助线'
+					},
+					lineStyle : {
+						width : 2,
+						color : '#1e90ff',
+						type : 'dashed'
+					}
+				},
+				dataView : {show: true, readOnly: false},
+				restore : {show: true},
+				saveAsImage : {show: true}
+			}
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for k in show_t_label %}
+				"{{ k }}",
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+				axisLabel : {
+					formatter: '{value} 秒'
+				}
+			}
+		],
+		series : [
 			{% for k,v in res_show_ios_other.items %}
 			{
-            label: "{{ k }}",
-            borderColor : randomColor(0.7),
-            borderCapStyle: 'butt',
-            <!-- backgroundColor : randomColor(0.5), -->
-            pointBackgroundColor : randomColor(0.7),
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: randomColor(0.5),
-			data:[
-			{% for x in v %}
+				name:"{{ k }}",
+				type:'line',
+				smooth:true,
+				itemStyle: {normal: {areaStyle: {type: 'default'}}},
+				data:[
+				{% for x in v %}
 				"{{ x }}",
-			{% endfor %}
-			],
-            fill:false,
+				{% endfor %}
+				],
 			},
 			{% endfor %}
-        ]},
-		};
+		]
+	};
 		
-	var config12 = {
-        type: 'line',
-		options: {
-            responsive: true,
-            legend: {
-                display: true,
-				position: 'bottom'
-            },
-			title: {
-                display: true,
-                text: 'Android交互响应趋势 | (5个月) | 单位：s | 标准0.4s',
-				position: 'top'
-            },
-			scales: {
-				xAxes: [{
-					display: true,
-					scaleLabel: {
-						display: false,
-						labelString: '时间轴'
-					}
-				}],
-				yAxes: [{
-					display: true,
-					scaleLabel: {
-						display: true,
-						labelString: '秒'
-					},
-				}]
-			}
-        },
-        data: {
-            labels: [
-			{% for k in show_t_label %}
+	var option11 = {
+		title : {
+			text: 'Android交互响应趋势',
+			subtext: '| 标准 < 0.4s | 优秀 < 0.3s'
+		},
+		grid:{
+			y2: '20%',
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:[
+			{% for k,v in view_show_a.items %}
 			"{{ k }}",
 			{% endfor %}
-            ],
-            datasets: [
+			]
+		},
+		toolbox: {
+			show : true,
+			feature : {
+				 mark : {
+					show : true,
+					title : {
+						mark : '辅助线开关',
+						markUndo : '删除辅助线',
+						markClear : '清空辅助线'
+					},
+					lineStyle : {
+						width : 2,
+						color : '#1e90ff',
+						type : 'dashed'
+					}
+				},
+				dataView : {show: true, readOnly: false},
+				restore : {show: true},
+				saveAsImage : {show: true}
+			}
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for k in show_t_label %}
+				"{{ k }}",
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+				axisLabel : {
+					formatter: '{value} 秒'
+				}
+			}
+		],
+		series : [
 			{% for k,v in view_show_a.items %}
 			{
-            label: "{{ k }}",
-            borderColor : randomColor(0.7),
-            borderCapStyle: 'butt',
-            backgroundColor : randomColor(0.5),
-            <!-- pointBackgroundColor : randomColor(0.7), -->
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: randomColor(0.5),
-			data:[
+				name:"{{ k }}",
+				type:'line',
+				smooth:true,
+				itemStyle: {normal: {areaStyle: {type: 'default'}}},
+				data:[
 				{% for x in v %}
-					"{{ x }}",
+				"{{ x }}",
 				{% endfor %}
-			],
-            fill:false,
+				],
 			},
 			{% endfor %}
-        ]},
-		};
+		]
+	};
 		
-	var config13 = {
-        type: 'line',
-		options: {
-            responsive: true,
-            legend: {
-                display: true,
-				position: 'bottom'
-            },
-			title: {
-                display: true,
-                text: 'IOS 应用交互响应 |交互响应趋势 | (5个月) | 单位：s | 标准0.4s',
-				position: 'top'
-            },
-			scales: {
-				xAxes: [{
-					display: true,
-					scaleLabel: {
-						display: false,
-						labelString: '时间轴'
-					}
-				}],
-				yAxes: [{
-					display: true,
-					scaleLabel: {
-						display: true,
-						labelString: '秒'
-					},
-				}]
-			}
-        },
-        data: {
-            labels: [
-			{% for k in show_t_label %}
+	var option12 = {
+		title : {
+			text: 'IOS应用交互响应',
+			subtext: '| 标准 < 0.4s | 优秀 < 0.3s'
+		},
+		grid:{
+			y2: '20%',
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:[
+			{% for k,v in view_show_ios.items %}
 			"{{ k }}",
 			{% endfor %}
-            ],
-            datasets: [
+			]
+		},
+		toolbox: {
+			show : true,
+			feature : {
+				 mark : {
+					show : true,
+					title : {
+						mark : '辅助线开关',
+						markUndo : '删除辅助线',
+						markClear : '清空辅助线'
+					},
+					lineStyle : {
+						width : 2,
+						color : '#1e90ff',
+						type : 'dashed'
+					}
+				},
+				dataView : {show: true, readOnly: false},
+				restore : {show: true},
+				saveAsImage : {show: true}
+			}
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for k in show_t_label %}
+				"{{ k }}",
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+				axisLabel : {
+					formatter: '{value} 秒'
+				}
+			}
+		],
+		series : [
 			{% for k,v in view_show_ios.items %}
 			{
-            label: "{{ k }}",
-            borderColor : randomColor(0.7),
-            borderCapStyle: 'butt',
-            <!-- backgroundColor : randomColor(0.5), -->
-            pointBackgroundColor : randomColor(0.7),
-            pointBorderColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: randomColor(0.5),
-			data:[
+				name:"{{ k }}",
+				type:'line',
+				smooth:true,
+				itemStyle: {normal: {areaStyle: {type: 'default'}}},
+				data:[
 				{% for x in v %}
-					"{{ x }}",
+				"{{ x }}",
 				{% endfor %}
-			],
-            fill:false,
+				],
 			},
 			{% endfor %}
-        ]},
-		};
+		]
+	};
 
-	window.onload = function() {
-        var ctx1 = document.getElementById("chart-area1").getContext("2d");
-		var ctx2 = document.getElementById("chart-area2").getContext("2d");
-		var ctx3 = document.getElementById("chart-area3").getContext("2d");
-		var ctx4 = document.getElementById("chart-area4").getContext("2d");
-		var ctx5 = document.getElementById("chart-area5").getContext("2d");
-		var ctx6 = document.getElementById("chart-area6").getContext("2d");
-		var ctx7 = document.getElementById("chart-area7").getContext("2d");
-		var ctx8 = document.getElementById("chart-area8").getContext("2d");
-		var ctx9 = document.getElementById("chart-area9").getContext("2d");
-		var ctx10 = document.getElementById("chart-area10").getContext("2d");
-		var ctx11 = document.getElementById("chart-area11").getContext("2d");
-		var ctx12 = document.getElementById("chart-area12").getContext("2d");
-		var ctx13 = document.getElementById("chart-area13").getContext("2d");
-        window.myLine1 = new Chart(ctx1, config1);
-		window.myLine2 = new Chart(ctx2, config2);
-		window.myLine3 = new Chart(ctx3, config3);
-		window.myLine4 = new Chart(ctx4, config4);
-		window.myLine5 = new Chart(ctx5, config5);
-		window.myLine6 = new Chart(ctx6, config6);
-		window.myLine7 = new Chart(ctx7, config7);
-		window.myLine8 = new Chart(ctx8, config8);
-		window.myLine9 = new Chart(ctx9, config9);
-		window.myLine10 = new Chart(ctx10, config10);
-		window.myLine11 = new Chart(ctx11, config11);
-		window.myLine12 = new Chart(ctx12, config12);
-		window.myLine13 = new Chart(ctx13, config13);
-		};
+	myChart0.setOption(option0);
+	myChart1.setOption(option1);    
+	myChart2.setOption(option2);    
+	myChart3.setOption(option3);    
+	myChart4.setOption(option4);    
+	myChart5.setOption(option5);    
+	myChart6.setOption(option6);    
+	myChart7.setOption(option7);    
+	myChart8.setOption(option8);    
+	myChart9.setOption(option9);    
+	myChart10.setOption(option10);    
+	myChart11.setOption(option11);    
+	myChart12.setOption(option12);
 </script>
 {% endblock content %}

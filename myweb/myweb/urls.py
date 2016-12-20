@@ -20,10 +20,13 @@ from django.views.generic.base import RedirectView
 
 
 urlpatterns = [
-    url(r'^$', RedirectView.as_view(url="/tyblog/index/")),
+    url(r'^$', RedirectView.as_view(url=r"/tyblog/index/")),
     url(r'^admin/', admin.site.urls),
     url(r'^intest/', include('intest.urls')),
     url(r'^fz/', include('fz.urls')),
     url(r'^tyblog/', include('tyblog.urls')),
-    url(r'^tyreport/', RedirectView.as_view(url="/tyblog/tyreport/")),
+    url(r'^cobra/', include('cobra.urls')),
+	url(r'^accounts/login/', RedirectView.as_view(url=r'/tyblog/login')),
+	url(r'^favicon.ico$',RedirectView.as_view(url=r'static/favicon.ico')),
+	url(r'^logout/$', RedirectView.as_view(url=r"/tyblog/logout/")),
 ]

@@ -37,6 +37,7 @@ logger.addHandler(fh)
 # ch.setLevel(logger.DEBUG)
 # ch.setFormatter(formatter)
 # logger.addHandler(ch)
+# 设置debug参数 -v
 parser = argparse.ArgumentParser(description='I print messages')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
 args = parser.parse_args()
@@ -179,9 +180,16 @@ def time_des():
 	this_year = d.year
 	this_month = d.month
 	last_month = (d - datetime.timedelta(days=d.day)).month
-	# des = str(this_year) + '10' + "月上"
-	# crash_one = str(this_year) + '10' + "第1周"
-	# crash_two = str(this_year) + '10' + "第2周"
+	# 调试拉数据
+	# des = str(this_year) + '12' + "月上"
+	# crash_one = str(this_year) + '12' + "第1周"
+	# crash_two = str(this_year) + '12' + "第2周"
+	
+	# des = str(this_year) + '12' + "月下"
+	# crash_one = str(this_year) + '12' + "第3周"
+	# crash_two = str(this_year) + '12' + "第4周"
+	# 调试结束
+	
 	if d.day < 15:
 		des = str(this_year) + str(last_month) + "月下"
 		crash_one = str(this_year) + str(last_month) + "第3周"
@@ -321,8 +329,8 @@ def do_db():
 					p = Rpm(hostId=host_id)
 					method = re.findall(r'method=(.+?)\|', src)[0]
 					p.method = method
-					# logger.debug('api3g2 src=%s' % src)
-					# logger.debug('api3g2 method=%s' % method)
+					logger.debug('api3g2 src=%s' % src)
+					logger.debug('api3g2 method=%s' % method)
 					if 'POST' in src:
 						p.isGet = 'Post'
 					else:
@@ -332,11 +340,17 @@ def do_db():
 					else:
 						p.isHttp = 'Http'
 					if 'lvversion' in src:
-						p.lvversion = re.findall(r'lvversion=(.+?)\|', src)[0]
+						try:
+							p.lvversion = re.findall(r'lvversion=(.+?)\|', src)[0]
+						except:
+							p.lvversion = ''
 					else:
 						p.lvversion = ''
 					if '|version' in src:
-						p.version = re.findall(r"\|version=(.+?)\|", src)[0]
+						try:
+							p.version = re.findall(r"\|version=(.+?)\|", src)[0]
+						except:
+							p.version = ''
 					else:
 						p.version = ''
 					p.plantform = plantform
@@ -409,11 +423,12 @@ def do_db():
 		with open(('tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'], ) for x in b]
-			host_list = ['pic.lvmama.com', 'iguide.lvmama.com', 'api3g.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com',
-						 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com', 'alog.umeng.com',
-						 'loc.map.baidu.com', 'resolver.gslb.mi-idc.com', 'sapi.map.baidu.com', 'api.weixin.qq.com',
-						 'collect.dsp.chinanetcenter.com', 'mauth.chinanetcenter.com', 'm.api.baifengdian.com',
-						 'data.cn.coremetrics.com', 'api.weibo.com', 'pingma.qq.com', 'api.share.mob.com']
+			host_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com',
+							'iguide.lvmama.com', 'api3g.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com',
+							'loc.map.baidu.com', 'resolver.gslb.mi-idc.com', 'sapi.map.baidu.com', 'scs.openspeech.cn', 'data.openspeech.cn',
+							'mauth.chinanetcenter.com', 'alog.umeng.com', 'data.cn.coremetrics.com', 'collect.dsp.chinanetcenter.com',
+							'api.share.mob.com', 'pingma.qq.com', 'hm.baidu.com',
+							'api.weibo.com', 'api.weixin.qq.com']
 			for x in newb:
 				for y in host_list:
 					if y == x['name']:
@@ -422,14 +437,22 @@ def do_db():
 						p.plantform = judge_host(i)[1]
 						p.value = x['value']
 						p.save()
+	# 交互应用
 	for i in view_file:
 		with open(('tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'], ) for x in b]
-			host_list = ['WelcomeActivity', 'MainActivity', 'V5IndextFragment', 'LvmmWebIndexFragment',
-						 'WebViewIndexActivity', 'Filter2ViewController#loading', 'RouteSearchTableViewController#loading',
-						 'LVMMTabBarController#loading', 'IndexSearchViewController#loading', 'LVNavigationController#loading',
-						 'StartUpViewController#loading']
+			host_list = ['V5IndextFragment2', 'GuessLikeFragment', 'ImageGalleryActivity', 'V7BaseSearchFragment',
+							'TicketDetailFootBranchesFragment', 'HolidayAbroadListFragment', 'HolidayNearByListFragment2', 
+							'TicketDetailActivity', 'CommentListFragment', 'SplashActivity700', 'WelcomeActivity', 
+							'MainActivity', 'V5IndextFragment', 'LvmmWebIndexFragment', 'WebViewIndexActivity',
+							'LVNavigationController#loading','StartUpViewController#loading','LVMMTabBarController#loading',
+							'IndexSearchViewController#loading','GrouponDetailViewController#loading','FocusWebViewController#loading',
+							'RouteDetailViewController#loading','RouteSearchListViewController#loading','LVRouteCalendarCollectionController#loading',
+							'RouteGnyDetailController#loading','RouteCjyDetailController#loading','RouteZbyDetailController#loading',
+							'MyLvmamaController#loading', 'HomeSearchViewController#loading','Filter2ViewController#loading', 
+							'RouteSearchTableViewController#loading',
+							]
 			for x in newb:
 				for y in host_list:
 					if y == x['name']:
@@ -438,16 +461,17 @@ def do_db():
 						p.plantform = judge_host(i)[1]
 						p.value = x['value']
 						p.save()
+	# 服务响应
 	for i in resite_file:
 		with open(('tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'], ) for x in b]
-			host_list = ['pic.lvmama.com', 'iguide.lvmama.com', 'api3g.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com',
+			host_list = ['pic.lvmama.com', 'iguide.lvmama.com', 'api3g.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com',
 						 'login.lvmama.com', 'zt1.lvmama.com', 'super.lvmama.com', 'alog.umeng.com',
 						 'loc.map.baidu.com', 'resolver.gslb.mi-idc.com', 'sapi.map.baidu.com', 'api.weixin.qq.com',
 						 'collect.dsp.chinanetcenter.com', 'mauth.chinanetcenter.com', 'm.api.baifengdian.com',
 						 'data.cn.coremetrics.com', 'api.weibo.com', 'pingma.qq.com', 'api.share.mob.com',
-						 'api.share.mob.com:80']
+						 'api.share.mob.com:80', 'libs.cn.coremetrics.com', 'tmscdn.cn.coremetrics.com', 'scs.openspeech.cn', 'data.openspeech.cn', 'hm.baidu.com']
 			for x in newb:
 				for y in host_list:
 					if y == x['name']:
@@ -474,36 +498,43 @@ def do_db():
 					p.save()
 				else:
 					continue
+
+					
 #计算接口占比
 def do_rates():
 	x = Res.objects.all().filter(hostId='Api3g2').filter(time=time_des()[0]) #过滤这期所有api3g2的res数据
-	x_a = x.filter(plantform='android') # 安卓的所有数据
-	x_ios = x.filter(plantform='ios') # ios的所有数据
-	# 取最新的2个版本号
-	z = x.values('lvversion').distinct().order_by('-lvversion')
-	first_version = z[0]['lvversion']
-	second_version = z[1]['lvversion']
-	#将最新的2个版本数据汇总，包含android和ios
-	all_list = x.filter(Q(lvversion=first_version)|Q(lvversion=second_version)).values('response')
-	ms_count = len([x for x in all_list if x['response'] < 1])
-	one_count = len([x for x in all_list if 1 <= x['response'] < 2])
-	two_count = len([x for x in all_list if 2 <= x['response'] < 3])
-	three_count = len([x for x in all_list if 3 <= x['response'] < 4])
-	four_count = len([x for x in all_list if 4 <= x['response'] < 5])
-	five_count = len([x for x in all_list if x['response'] >=5])
-	all_list = len(all_list)
+	# 先过滤所有接口+version列表，然后遍历，如果有多个值得求平均，最后一个列表中求占比
+	method_list = x.values('method', 'version').distinct().order_by('method')
+	all_list = []
+	for i in method_list:
+		m = i['method']
+		v = i['version']
+		datas = x.filter(method=m).filter(version=v)
+		p = [y.response for y in datas]
+		value = sum(p) / len(p)
+		all_list.append(value)
+	
+	ms_count = len([x for x in all_list if x < 1])
+	one_count = len([x for x in all_list if 1 <= x < 2])
+	two_count = len([x for x in all_list if 2 <= x < 3])
+	three_count = len([x for x in all_list if 3 <= x < 4])
+	four_count = len([x for x in all_list if 4 <= x < 5])
+	five_count = len([x for x in all_list if x >=5])
+	all_list_len = len(all_list)
 	try:
 		Rates.objects.all().filter(des=time_des()[0]).delete()
 		p = Rates(des=time_des()[0])
-		p.zero_level = round(ms_count / all_list * 100)
-		p.one_level = round(one_count / all_list * 100)
-		p.two_level = round(two_count / all_list * 100)
-		p.three_level = round(three_count / all_list * 100)
-		p.four_level = round(four_count / all_list * 100)
-		p.five_level = round(five_count / all_list * 100)
+		p.zero_level = round(ms_count / all_list_len * 100)
+		p.one_level = round(one_count / all_list_len * 100)
+		p.two_level = round(two_count / all_list_len * 100)
+		p.three_level = round(three_count / all_list_len * 100)
+		p.four_level = round(four_count / all_list_len * 100)
+		p.five_level = round(five_count / all_list_len * 100)
 		p.save()
 	except:
 		print("计算占比出错")
+
+		
 # 合并res和rpm数据
 def do_rr():
 	# 现存android
@@ -532,12 +563,14 @@ def do_rr():
 			p.rpm = Decimal('0')
 		p.save()
 
+		
 def do_contents():
 	# 第一部分 头
 	html_string0 = "<h3><font face='微软雅黑'> 简要接口报告 </font></h3><h4><span style='font-weight: normal;'><font face='微软雅黑'><font size='3'></font>&nbsp;<a href='http://10.113.1.35:8000/tyblog/' target='_blank'>查看更多图表和丰富数据</a></font></span></h4>"
 	# 第二部分 占比图表
-	html_string1 = "<h3>【接口占比趋势】</h3><table border=1 width=100%%><tr style=\'background-color:cadetblue\'><th>时间区间</th><th>毫秒级</th><th>1~2秒</th><th>2~3秒</th><th>3~4秒</th><th>4~5秒</th><th>5秒以上</th></tr>\n\r"
-	rates = Rates.objects.all()
+	html_string1 = "<h3>【接口占比趋势】</h3><p>算法微调，和之前数据有少许偏差</p><table border=1 width=100%%><tr style=\'background-color:cadetblue\'><th>时间区间</th><th>毫秒级</th><th>1~2秒</th><th>2~3秒</th><th>3~4秒</th><th>4~5秒</th><th>5秒以上</th></tr>\n\r"
+	rates = Rates.objects.all().order_by('des')
+	print(rates.count())
 	for x in rates:
 		html_string1 += ("<tr><td>%s</td><td>%s%%</td><td>%s%%</td><td>%s%%</td><td>%s%%</td><td>%s%%</td><td>%s%%</td></tr>\n\r" %(  x.des, x.zero_level, x.one_level, x.two_level, x.three_level, x.four_level, x.five_level ))
 	# 第三部分 api3g2图表
@@ -579,9 +612,9 @@ def do_mail():
 
 	
 if __name__ == '__main__':
-	urls = get_urls() #拼接URL
-	get_data(urls) #通过听云获取数据
-	do_db() # 存储数据库
-	do_rates() # 计算接口占比 
-	do_rr()
+	# urls = get_urls() #拼接URL
+	# get_data(urls) #通过听云获取数据
+	# do_db() # 存储数据库
+	# do_rates() # 计算接口占比 
+	# do_rr()
 	do_mail()

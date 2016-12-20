@@ -56,6 +56,20 @@ class Wdata(models.Model):
 	ms_tag = models.IntegerField()
 	timestamp = models.DateField(auto_now=False)
 	
+	
+class Ddata(models.Model):
+	method_version = models.CharField(max_length=100, default="api.com.xxx")
+	url = models.TextField()
+	log_time = models.DecimalField(max_digits=5, decimal_places=2,null=True,blank=True)
+	dns_time = models.DecimalField(max_digits=5, decimal_places=2)
+	tcp_time = models.DecimalField(max_digits=5, decimal_places=2)
+	up_time = models.DecimalField(max_digits=5, decimal_places=2)
+	server_time = models.DecimalField(max_digits=5, decimal_places=2)
+	download_time = models.DecimalField(max_digits=5, decimal_places=2)
+	download_size = models.DecimalField(max_digits=5, decimal_places=2)
+	total_time = models.DecimalField(max_digits=5, decimal_places=2)
+	timestamp = models.DateField(auto_now=False)
+	
 class Rate(models.Model):
 	des = models.CharField(max_length=20, null=True, blank=True)
 	type = models.CharField(max_length=1, default='0')

@@ -1,4 +1,4 @@
-{% extends "int_base.html" %}
+{% extends "ty_base.html" %}
 {% block content %}
 <h3>概览图表</h3>
 <div class="panel panel-success">
@@ -17,30 +17,6 @@
 		<th>时间区间</th><th>毫秒级</th><th>1~2秒</th><th>2~3秒</th><th>3~4秒</th><th>4~5秒</th><th>5秒以上</th></tr></thead>
 		<tbody>
 		{% for i in server_list %}
-		<TR><TD>{{ i.des }}</TD>
-		<TD>{{ i.zero_level}}%</TD>
-		<TD>{{ i.one_level}}%</TD>
-		<TD>{{ i.two_level}}%</TD>
-		<TD>{{ i.three_level}}%</TD>
-		<TD>{{ i.four_level}}%</TD>
-		<TD>{{ i.five_level}}%</TD></TR>
-		{% endfor %}
-		</tbody></TABLE>
-	</div>
-</div>
-<div class="row">
-	<div class="col-lg-9 col-md-12 col-sm-12 col-sx-12">
-		<div id="limitserver" style="height:500px">
-		</div>
-	</div>
-	<div class="col-lg-3 col-md-12 col-sm-12 col-sx-12">
-		<h3>固定范围内接口的前后首包占比</h3> 
-		<table class="table table-hover table-condensed table-responsive">
-		<thead>
-		<tr class="info">
-		<th>时间区间</th><th>毫秒级</th><th>1~2秒</th><th>2~3秒</th><th>3~4秒</th><th>4~5秒</th><th>5秒以上</th></tr></thead>
-		<tbody>
-		{% for i in limit_list %}
 		<TR><TD>{{ i.des }}</TD>
 		<TD>{{ i.zero_level}}%</TD>
 		<TD>{{ i.one_level}}%</TD>
@@ -76,31 +52,10 @@
 		</tbody></TABLE>
 	</div>
 </div>
-<div class="row">
-	<div class="col-lg-9 col-md-12 col-sm-12 col-sx-12">
-		<div id="err" style="height:500px">
-		</div>
-	</div>
-	<div class="col-lg-3 col-md-12 col-sm-12 col-sx-12">
-		<h3>错误率趋势</h3>
-		<table class="table table-hover table-condensed table-responsive">
-		<thead>
-		<tr class="info">
-		<th>时间区间</th><th>错误率</th></tr></thead>
-		<tbody>
-		{% for i in server_list %}
-		<TR><TD>{{i.des}}</TD>
-		<TD>{{ i.err}}%</TD></TR>
-		{% endfor %}
-		</tbody></TABLE>
-	</div>
-</div>
 <script>
         // 基于准备好的dom，初始化echarts图表
         var myChart = echarts.init(document.getElementById('server')); 
-        var myChart0 = echarts.init(document.getElementById('limitserver')); 
         var myChart1 = echarts.init(document.getElementById('total')); 
-        var myChart2 = echarts.init(document.getElementById('err'), 'infographic'); 
         var option = {
 			title : {
 				text: '占比趋势--所有在测接口首包时间',
@@ -234,139 +189,7 @@
 				},
 			]
 		};
-		var option0 = {
-			title : {
-				text: '占比趋势--接口首包时间占比优化',
-				subtext: '通过选取项目初期监控的固定数量接口，查看占比趋势，趋向于看接口前后的整体优化效果，待接口相对稳定时，会重新选取新的起点做基准'
-			},
-			tooltip : {
-				trigger: 'axis'
-			},
-			legend: {
-				y: 'bottom', // 'center' | 'bottom' | {number}
-				data:['毫秒', '1-2秒', '2-3秒', '3-4秒', '4-5秒', '>5秒', ]
-			},
-			toolbox: {
-				show : true,
-				feature : {
-					 mark : {
-						show : true,
-						title : {
-							mark : '辅助线开关',
-							markUndo : '删除辅助线',
-							markClear : '清空辅助线'
-						},
-						lineStyle : {
-							width : 2,
-							color : '#1e90ff',
-							type : 'dashed'
-						}
-					},
-					dataView : {show: true, readOnly: false},
-					restore : {show: true},
-					saveAsImage : {show: true}
-				}
-			},
-			calculable : true,
-			xAxis : [
-				{
-					type : 'category',
-					boundaryGap : false,
-					data : [
-					{% for x in limit_list %}
-					'{{ x.des }}',
-					{% endfor %}
-					]
-				}
-			],
-			yAxis : [
-				{
-					type : 'value',
-					axisLabel : {
-						formatter: '{value} %'
-					}
-				}
-			],
-			series : [
-				{
-					name:'毫秒',
-					type:'line',
-					smooth:true,
-					itemStyle: {normal: {areaStyle: {type: 'default'}}},
-					markPoint : {
-						data : [
-							{type : 'max', name: '最大值'},
-							{type : 'min', name: '最小值'}
-						]
-					},
-					markLine : {
-						data : [
-							{type : 'average', name: '平均值'}
-						]
-					},
-					data:[
-					{% for x in limit_list %}
-					{{ x.zero_level }},
-					{% endfor %}
-					]
-				},
-				{
-					name:'1-2秒',
-					type:'line',
-					smooth:true,
-					itemStyle: {normal: {areaStyle: {type: 'default'}}},
-					data:[
-					{% for x in limit_list %}
-					{{ x.one_level }},
-					{% endfor %}
-					]
-				},
-				{
-					name:'2-3秒',
-					type:'line',
-					smooth:true,
-					itemStyle: {normal: {areaStyle: {type: 'default'}}},
-					data:[
-					{% for x in limit_list %}
-					{{ x.two_level }},
-					{% endfor %}
-					]
-				},
-				{
-					name:'3-4秒',
-					type:'line',
-					smooth:true,
-					itemStyle: {normal: {areaStyle: {type: 'default'}}},
-					data:[
-					{% for x in limit_list %}
-					{{ x.three_level }},
-					{% endfor %}
-					]
-				},
-				{
-					name:'4-5秒',
-					type:'line',
-					smooth:true,
-					itemStyle: {normal: {areaStyle: {type: 'default'}}},
-					data:[
-					{% for x in limit_list %}
-					{{ x.four_level }},
-					{% endfor %}
-					]
-				},
-				{
-					name:'>5秒',
-					type:'line',
-					smooth:true,
-					itemStyle: {normal: {areaStyle: {type: 'default'}}},
-					data:[
-					{% for x in limit_list %}
-					{{ x.five_level }},
-					{% endfor %}
-					]
-				},
-			]
-		};
+
 		var option1 = {
 			title : {
 				text: '占比趋势--总耗时',
@@ -500,88 +323,9 @@
 				},
 			]
 		};
-		var option2 = {
-			title : {
-				text: '错误率比趋势',
-				subtext: 'HTTP网络错误率占比',
-			},
-			tooltip : {
-				trigger: 'axis'
-			},
-			legend: {
-				y: 'bottom', // 'center' | 'bottom' | {number}
-				data:['错误率',]
-			},
-			toolbox: {
-				show : true,
-				feature : {
-					 mark : {
-						show : true,
-						title : {
-							mark : '辅助线开关',
-							markUndo : '删除辅助线',
-							markClear : '清空辅助线'
-						},
-						lineStyle : {
-							width : 2,
-							color : '#1e90ff',
-							type : 'dashed'
-						}
-					},
-					dataView : {show: true, readOnly: false},
-					restore : {show: true},
-					saveAsImage : {show: true}
-				}
-			},
-			calculable : true,
-			xAxis : [
-				{
-					type : 'category',
-					boundaryGap : false,
-					data : [
-					{% for x in server_list %}
-					'{{ x.des }}',
-					{% endfor %}
-					]
-				}
-			],
-			yAxis : [
-				{
-					type : 'value',
-					axisLabel : {
-						formatter: '{value} %'
-					}
-				}
-			],
-			series : [
-				{
-					name:'错误率',
-					type:'line',
-					smooth:true,
-					itemStyle: {normal: {areaStyle: {type: 'default'}}},
-					markPoint : {
-						data : [
-							{type : 'max', name: '最大值'},
-							{type : 'min', name: '最小值'}
-						]
-					},
-					markLine : {
-						data : [
-							{type : 'average', name: '平均值'}
-						]
-					},
-					data:[
-					{% for x in server_list %}
-					{{ x.err }},
-					{% endfor %}
-					]
-				},
-			]
-		};
+		
         // 为echarts对象加载数据 
         myChart.setOption(option);    
-		myChart0.setOption(option0); 
 		myChart1.setOption(option1); 
-		myChart2.setOption(option2); 		
 </script>
 {% endblock %}

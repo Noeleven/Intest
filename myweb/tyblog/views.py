@@ -17,7 +17,9 @@ from tyblog.models import *
 from decimal import Decimal
 from django.core import serializers
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
+from django.contrib.auth.decorators import login_required
+from django.contrib import auth
+from django.views.decorators.cache import cache_page
 
 def time_des():
 	d = datetime.datetime.now()
@@ -52,19 +54,44 @@ def count_All(a, b):
 	
 # Create your views here.
 # 老听云项目
-def tyreport(request):
-	return render(request, 'TYreport.html')
+# def tyreport(request):
+	# return render(request, 'TYreport.html')
 	
-# 项目首页
+# 总导航页
 def index(request):
 	return render(request, 'index.html')
 	
-# 听云二期首页
-def ty_index(request):
-	return render(request, 'ty_index.html')
+# 登录页面
+def login(request):
+	return render(request, 'login.html')
 
+
+def ty_login(request):
+	if request.method == 'POST':
+		username = request.POST.get('username', '')
+		password = request.POST.get('password', '')
+		user = auth.authenticate(username=username, password=password)
+		print(user)
+		if user is not None:
+			auth.login(request, user)
+			request.session['user'] = username
+			response = HttpResponseRedirect('/tyblog/ty_Overview')
+			return response
+		else:
+			return render(request, 'login.html', {'error' : '用户密码错误'})
+
+			
+def logout(request):			
+	try:
+		del request.session['user']
+		print('yes')
+	except KeyError as e:
+		print(e)
+	return render(request, 'login.html')
 	
 # 概览
+@login_required
+@cache_page(300)
 def ty_Overview(request):
 	# 响应占比
 	ints_rate_all = Rates.objects.all().order_by('-des')
@@ -81,6 +108,11 @@ def ty_Overview(request):
 	crash_t_list = [x['des'] for x in crash_time]
 	crash_t_list.reverse()
 	# 开始过滤
+	other_list = ['alog.umeng.com', 'loc.map.baidu.com', 'resolver.gslb.mi-idc.com', 'sapi.map.baidu.com', 
+					'api.weixin.qq.com', 'collect.dsp.chinanetcenter.com', 'mauth.chinanetcenter.com', 'm.api.baifengdian.com',						 'data.cn.coremetrics.com', 'api.weibo.com', 'pingma.qq.com', 'api.share.mob.com',
+					'api.share.mob.com:80', 'libs.cn.coremetrics.com', 'tmscdn.cn.coremetrics.com', 'scs.openspeech.cn', 
+					'data.openspeech.cn', 'hm.baidu.com'
+					]
 	crash_show_a = {}
 	crash_show_ios = {}
 	for x in crash_v_a:
@@ -117,9 +149,12 @@ def ty_Overview(request):
 				datas.append(value[0].value)
 			else:
 				datas.append('0')
-		if 'lvmama' in x['name']:
+		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com', 
+						# 'iguide.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com'
+						]
+		if x['name'] in self_list:
 			err_show_a_self[x['name']] = datas
-		else:
+		elif x['name'] in other_list:
 			err_show_a_other[x['name']] = datas
 	for x in err_sub_ios:
 		datas=[]
@@ -129,9 +164,13 @@ def ty_Overview(request):
 				datas.append(value[0].value)
 			else:
 				datas.append('0')
-		if 'lvmama' in x['name']:
+		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com', 
+						# 'iguide.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com'
+						]
+
+		if x['name'] in self_list:
 			err_show_ios_self[x['name']] = datas
-		else:
+		elif x['name'] in other_list:
 			err_show_ios_other[x['name']] = datas
 	#主机响应
 	res_sub_a = reses.objects.all().filter(plantform='android').values('name').distinct().order_by('name')
@@ -140,7 +179,7 @@ def ty_Overview(request):
 	res_show_a_other = {}
 	res_show_ios_self = {}
 	res_show_ios_other = {}
-	for x in err_sub_a:
+	for x in res_sub_a:
 		datas=[]
 		for y in show_t_label:
 			value = reses.objects.all().filter(plantform='android').filter(name=x['name']).filter(des=y)
@@ -148,11 +187,14 @@ def ty_Overview(request):
 				datas.append(value[0].value)
 			else:
 				datas.append('0')
-		if 'lvmama' in x['name']:
+		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com', 
+						# 'iguide.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com'
+						]
+		if x['name'] in self_list:
 			res_show_a_self[x['name']] = datas
-		else:
+		elif x['name'] in other_list:
 			res_show_a_other[x['name']] = datas
-	for x in err_sub_ios:
+	for x in res_sub_ios:
 		datas=[]
 		for y in show_t_label:
 			value = reses.objects.all().filter(plantform='ios').filter(name=x['name']).filter(des=y)
@@ -160,9 +202,12 @@ def ty_Overview(request):
 				datas.append(value[0].value)
 			else:
 				datas.append('0')
-		if 'lvmama' in x['name']:
+		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com', 
+						# 'iguide.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com'
+						]
+		if x['name'] in self_list:
 			res_show_ios_self[x['name']] = datas
-		else:
+		elif x['name'] in other_list:
 			res_show_ios_other[x['name']] = datas
 	#应用交互
 	view_sub_a = views.objects.all().filter(plantform='android').values('name').distinct().order_by('name')
@@ -187,7 +232,6 @@ def ty_Overview(request):
 			else:
 				datas.append('0')
 		view_show_ios[x['name']] = datas
-	
 	return render_to_response('ty_overview.html', {'show_list': show_list,
 																	'show_t_label': show_t_label,
 																	'crash_v_a': crash_v_a,
@@ -209,7 +253,10 @@ def ty_Overview(request):
 	
 	
 # 版本分
+@login_required
+@cache_page(300)
 def ty_Android_All(request):
+	username = request.session.get('user', '')
 	check = request.GET
 	try:
 		params = check['checkall']
@@ -221,7 +268,10 @@ def ty_Android_All(request):
 		datas = count_All('android', 3)
 	
 	return render_to_response('ty_Android_All.html', {'datas':datas,})
+
 	
+@login_required
+@cache_page(300)
 def ty_IOS_All(request):
 	check = request.GET
 	try:
@@ -237,6 +287,8 @@ def ty_IOS_All(request):
 	
 	
 # 主机分布
+@login_required
+@cache_page(300)
 def ty_siteApi3g2(request):
 	check = request.GET
 	try:
@@ -250,18 +302,23 @@ def ty_siteApi3g2(request):
 	return render_to_response('ty_siteApi3g2.html', {'datas':datas,})
 	
 	
+@login_required
+@cache_page(300)
 def ty_siteApi3g(request):
 	datas = RR.objects.filter(hostId='Api3g')
 	return render_to_response('ty_siteApi3g.html', {'datas':datas,})
 	
 	
+@login_required
+@cache_page(300)	
 def ty_siteM(request):
 	datas = RR.objects.filter(hostId='siteM')
 	return render_to_response('ty_siteM.html', {'datas':datas,})
 
 	
 # 汇总
-
+@login_required
+@cache_page(300)
 def ty_rpmAll(request):
 	src = RR.objects.values('method', 'version', 'lvversion').distinct()
 	datas = []
@@ -282,11 +339,14 @@ def ty_rpmAll(request):
 	return render_to_response('ty_rpmAll.html', {'datas':datas,})
 	
 	
+@login_required
+@cache_page(300)
 def ty_fullLists(request):
 	datas = RR.objects.all().filter(time=time_des())
 	return render_to_response('ty_fullLists.html', {'datas':datas,})
 
 	
 #关键元素
+@login_required
 def ty_keyElements(request):
 	return render(request, 'ty_keyElements.html')

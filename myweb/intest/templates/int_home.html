@@ -1,4 +1,4 @@
-{% extends "int_base.html" %}
+{% extends "ty_base.html" %}
 {% block content %}
 <div class="row">
 	<div class="col-md-6 col-lg-4 col-xs-6 col-sm-6">
@@ -34,10 +34,9 @@
 		<table data-toggle="table" data-striped="true" data-show-refresh="true" data-show-columns="true" data-search="true" data-row-style="rowStyle" style="word-break:break-all;" data-height='1000'>
 			<thead><tr>
 				<th data-field="详情" data-width="85%">详情</th>
-				<th data-field="整体耗时时间" data-sortable="true" data-width="1%">总耗时/秒</th>
 				<th data-field="首包时间" data-sortable="true" data-width="1%">首包/秒</th>
+				<th data-field="整体耗时时间" data-sortable="true" data-width="1%">总耗时/秒</th>
 				<th data-field="大小" data-sortable="true" data-width="1%">大小KB</th>
-				<th data-field="Http错" data-sortable="true" data-width="1%">Http错%</th>
 				</tr></thead>
 			<tbody>
 			{% for k,v in ints_dict %}
@@ -71,10 +70,9 @@
 						<tr><td class="info">耗时范围</td><td>{{ v.dns_time_range }}s</td><td>{{ v.tcp_time_range }}s</td><td>{{ v.server_time_range }}s</td><td>{{ v.download_time_range }}s</td><td>{{ v.total_time_range }}s</td><td>{{ v.log_time_range }}s</td></tr>
 					</table>
 				</td>
-				<td>{{ v.total_time_avg }}</td>
 				<td>{{ v.server_time_avg }}</td>
+				<td>{{ v.total_time_avg }}</td>
 				<td>{{ v.download_size }}</td>
-				<td>{{ v.error_rate }}</td></tr>
 			{% endfor %}
 			</tbody>
 		</table>

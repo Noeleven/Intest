@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'tyblog',
 	'intest',
 	'fz',
+	'cobra',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -134,3 +135,14 @@ STATIC_URL = '/static/'
 #STATICFILES_DIRS = (
 #	os.path.join(BASE_DIR, "common_static")
 #)
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': '/var/tmp/django_cache',
+        'TIMEOUT': 600,
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000
+        }
+    }
+}

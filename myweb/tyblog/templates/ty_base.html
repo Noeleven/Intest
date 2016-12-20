@@ -5,10 +5,12 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TY analysis ! </title>
+    <title> 接口性能分析 </title>
 	{% load staticfiles %}
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<link rel="shortcut icon" href="{% static 'favicon.ico'%}">
+    <link rel="stylesheet" href="{% static 'dist/css/bootstrap.min.css' %}">
+	<link href="{% static 'css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet" media="screen">
     <!-- Font Awesome -->
     <link href="{% static 'vendors/font-awesome.min.css' %}" rel="stylesheet">
     <!-- NProgress -->
@@ -25,6 +27,8 @@
 	  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
 	  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 	<![endif]-->
+	<style>.x-goto-top{opacity:.9;z-index:999999;position:fixed;bottom:113px;right:1%;margin-left:40px;width:38px;height:38px;border-radius:3px;cursor:pointer;background-color:#f5f5f5;border:1px solid #0593d3}.x-goto-top:hover{background-color:#fafafa;border-color:#0482ba}.x-goto-top:hover div.x-arrow{border-bottom-color:#0482ba}.x-goto-top:hover div.x-stick{background-color:#0482ba}.x-goto-top div.x-arrow{position:absolute;left:10px;top:-1px;width:0;height:0;border:9px solid transparent;border-bottom-color:#0593d3}.x-goto-top div.x-stick{position:absolute;left:15px;top:15px;width:8px;height:14px;display:block;border-radius:1px;background-color:#0593d3}
+	</style>
 	<style>
 	.tooltip-inner {
     text-align:left;
@@ -40,38 +44,61 @@
 			<div class="left_col scroll-view">
 
 				<div class="navbar nav_title" style="border: 0;">
-					<a class="site_title">听云接口分析</a>
+					<a class="site_title">接口性能分析</a>
 				</div>
 
 				<br>
 				<div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
 					<div class="menu_section">
-						<h3>General</h3>
+						<hr>
+						<h3>听云接口数据</h3>
 						<ul class="nav side-menu">
-							<li><a href="ty_Overview"><i class="fa fa-home"></i> 概览图表 </a></li>
-							<li><a><i class="fa fa-edit"></i> 按主机服务分
+							<li><a href="/tyblog/ty_Overview"><i class="fa fa-area-chart"></i> 图表汇总 </a></li>
+							<li><a><i class="fa fa-edit"></i> 按Host分
 								<span class="fa fa-chevron-down"></span></a>
 							<ul class="nav child_menu">
-								<li><a  href="ty_siteApi3g2">api3g2</a></li>
-								<li><a href="ty_siteApi3g">api3g</a></li>
-								<li><a href="ty_siteM">m站</a></li>
+								<li><a  href="/tyblog/ty_siteApi3g2">api3g2</a></li>
+								<li><a href="/tyblog/ty_siteApi3g">api3g</a></li>
+								<li><a href="/tyblog/ty_siteM">m站</a></li>
 							</ul>
 							</li>
 							<li><a><i class="fa fa-desktop"></i> 按客户端版本分
 								<span class="fa fa-chevron-down"></span></a>
 							<ul class="nav child_menu">
-								<li><a href="ty_IOS_All">IOS</a></li>
-								<li><a href="ty_Android_All">Android</a></li>
+								<li><a href="/tyblog/ty_IOS_All">IOS</a></li>
+								<li><a href="/tyblog/ty_Android_All">Android</a></li>
 							</ul>
 							</li>
 							<li><a><i class="fa fa-table"></i> 汇总数据
 							<span class="fa fa-chevron-down"></span></a>
 							<ul class="nav child_menu">
-								<li><a href="ty_rpmAll">访问量汇总</a></li>
-								<li><a href="ty_fullLists">所有汇总</a></li>
+								<li><a href="/tyblog/ty_rpmAll">汇总访问量</a></li>
+								<li><a href="/tyblog/ty_fullLists">本期源数据</a></li>
 							</ul>
 							</li>
-							<li><a href="ty_keyElements"><i class="fa fa-windows"></i> 关键元素采集 (建设中)</a></li>
+							<!-- <li><a href="ty_keyElements"><i class="fa fa-windows"></i> 关键元素采集 (建设中)</a></li> -->
+						</ul>
+						
+						<hr>
+						<h3>内网测试数据</h3>
+						<ul class="nav side-menu">
+							<li><a href="/intest/int_percent"><i class="fa fa-flag"></i> 占比趋势 </a></li>
+							<li><a><i class="fa fa-windows"></i> 测试数据
+								<span class="fa fa-chevron-down"></span></a>
+								<ul class="nav child_menu">
+									<li><a  href="/intest/int_table">性能详细</a></li>
+									<li><a  href="/intest/int_trace">波动接口追踪</a></li>
+									<li><a  href="/intest/int_err">错误详情</a></li>
+								</ul>
+							</li>
+						</ul>
+						<hr>
+						
+						<h3>Cobra接口数据</h3>
+						<ul class="nav side-menu">
+							<li><a href="/cobra/cobra_chart"><i class="fa fa-star"></i> 占比趋势(在建) </a></li>
+							<li><a href="/cobra/cobra_datas"><i class="fa fa-bicycle"></i> 耗时访问量查询  </a></li>
+							<li><a href="/cobra/cobra_trace"><i class="fa fa-automobile"></i> 不稳定接口追踪 </a></li>
 						</ul>
 					</div>
 				</div> 
@@ -89,6 +116,9 @@
               <ul class="nav navbar-nav navbar-right">
                 <li class="">
                   <a href="http://10.113.1.35:8000/"><i class="fa fa-home"></i> HOME </a>
+                </li>
+				<li class="">
+                  <a href="/logout"><i class="fa fa-beer"></i> LOGOUT </a>
                 </li>
               </ul>
             </nav>
@@ -118,7 +148,7 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
     <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
-    <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+	<script src="{% static 'dist/js/bootstrap.min.js' %}"></script>
 	<script src="{% static 'js/bootstrap-table.min.js' %}"></script>
 	<script src="{% static 'js/bootstrap-table-zh-CN.min.js' %}"></script>
     <!-- FastClick -->
@@ -128,6 +158,8 @@
     <script src="{% static 'vendors/nprogress.js' %}"></script>
     <!-- Custom Theme Scripts -->
     <script src="{% static 'vendors/custom.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap-datetimepicker.min.js' %}" charset="UTF-8"></script>
+    <script src="{% static 'js/locales/bootstrap-datetimepicker.zh-CN.js' %}"  charset="UTF-8"></script>
 	<script>
 	$('#myAffix').affix({
 	  offset: {
@@ -137,6 +169,22 @@
 		}
 	  }
 	})
+	</script>
+	<script type="text/javascript">
+		$(".form_date").datetimepicker({
+			language:  'zh-CN',
+			minView: 'month',
+			format: "yyyy-mm-dd ",
+			autoclose: true,
+			todayBtn: true,
+			startDate: "2016-08-14",
+			minuteStep: 10
+		});
+	</script>
+	<script>
+		function runningFormatter(value, row, index) {
+			return index;
+		}
 	</script>
   </body>
 </html>

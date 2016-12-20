@@ -5,7 +5,10 @@ from tyblog.views import *
 
 urlpatterns = [
     url(r'^index/$', index, name='index'),
-    url(r'^tyreport/$', tyreport, name='tyreport'),
+    # url(r'^tyreport/$', tyreport, name='tyreport'),
+	url(r'^login/$', login, name='login'),
+	url(r'^ty_login/$', ty_login, name='ty_login'),
+	url(r'^logout/$', logout, name='logout'),
 	# 听云二期URL↓
 	url(r'^$', ty_Overview, name='ty_Overview'),
 	url(r'^ty_Overview$', ty_Overview, name='ty_Overview'),

@@ -26,6 +26,9 @@
                 <table data-toggle="table" data-striped="true" data-show-refresh="true" data-show-columns="true" data-search="true" data-row-style="rowStyle" style="word-break:break-all;" class="table table-hover table-striped">
                     <thead>
                         <tr>
+							<th style="width: 1%; " data-formatter="runningFormatter" data-field="ID">
+								#
+							</th>
                             <th style="width: 1%; " data-field="HOST" data-sortable="true">
                                 HOST
                             </th>
@@ -58,6 +61,7 @@
                     <tbody>
 					{% for x in v %}
 						<tr>
+						<td style="width: 1%; "></td>
 						<td style="width: 1%; ">{{ x.hostId }}</td>
 						<td style="width: 1%; ">{{ x.des }}</td>
 						<td style="width: 40%; ">{{ x.method }}</td>

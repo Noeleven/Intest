@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf8 -*-
 import django
-import os, io, json, pycurl, time
+import os, io, json, pycurl, time, re
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myweb.settings')
 django.setup()
@@ -126,7 +126,8 @@ def do_db():
 	url_path = "api3g2.lvmama.com/api/router/rest.do?method="
 	method_list = Ints.objects.filter(inuse=1).values('method_version').order_by('method_version').distinct()
 	n = 1
-	# lvsessionid = '&lvsessionid=7c204ec3-04ef-4ed9-8643-4ed64ac3f5fe'
+	old = "f36bb2d7-c95e-495f-8ce8-827b4664beb6"
+	new = "f4591872-54c4-427a-a6bb-751cb5330f4b"
 	for x in method_list:
 		# 这里也顺便维护下DB，我们保留最新和最老的数据，其他的都删除
 		todel = Ints.objects.all().filter(method_version=x['method_version']).order_by('timestamp')
@@ -140,7 +141,8 @@ def do_db():
 		url_api = i.method_version
 		
 		url_params = i.params
-		
+		if old in url_params:
+			url_params = re.sub(old, new, url_params)
 		if i.isget.lower() == "get":
 			url_method = "GET"
 		else:

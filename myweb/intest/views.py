@@ -42,7 +42,6 @@ def tee(method, show_dict, date_from, date_to):
 			'method_version': method,
 			'download_size': ready_list[0]['download_size'],
 		}
-		print("11%s" % pp_value)
 		time_name = ['log_time', 'dns_time', 'tcp_time', 'server_time', 'download_time', 'total_time']
 		for name in time_name:  # slow======6
 			# r = [eval('y.' + name) for y in ready_list]  # 转换成字符串
@@ -54,7 +53,6 @@ def tee(method, show_dict, date_from, date_to):
 				pp_value["%s_95line" % name] = Decimal(round(sum(rr) / len(rr), 2))
 				pp_value["%s_range" % name] = ("%s ~ %s" % (min(r), max(r)))
 		# 进度条显示，默认都分配10，剩余60%在均分，然后累加显示
-		print("22%s" % pp_value)
 		base_rate = 10
 		total = pp_value['dns_time_avg'] + pp_value['tcp_time_avg'] + pp_value['server_time_avg'] + pp_value['download_time_avg']
 		pp_value['dns_time_rate'] = base_rate + (pp_value['dns_time_avg'] / total) * 60

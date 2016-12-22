@@ -157,7 +157,7 @@ def do_db():
 			req_url = url_http + url_path + url_api + url_params
 		n += 1
 		j.apply_async(do_curl, args=(n, req_url, url_method, method_name, url_api))
-	print("=====")
+
 	return
 
 

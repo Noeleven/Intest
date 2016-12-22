@@ -1,0 +1,227 @@
+{% extends "ty_base.html" %}
+{% block content %}
+<h3>概览图表</h3>
+
+<div class="row">
+	<div class="col-md-6 col-lg-4 col-xs-6 col-sm-6">
+		<form role="form" method="get">
+			<div class="form-group">
+				<label for="dtp_input2">开始时间</label>
+				<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+					<input name="from_date" size="16"  class="form-control" type="text" value="" readonly>
+					<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+				</div>
+				<input type="hidden" id="dtp_input2" value="" />
+			</div>
+			<div class="form-group">
+				<label for="dtp_input2">结束时间</label>
+				<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+					<input name="to_date" size="16"  class="form-control" type="text" value="" readonly>
+					<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+				</div>
+				<input type="hidden" id="dtp_input2" value="" />
+			</div>
+			<button class="btn btn-warning" type="submit"><span class="glyphicon glyphicon-search"></span> 查询</button> (默认显示近一个月的结果)
+		</form>				
+	</div>
+</div>
+<div class="panel panel-success">
+	<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> Cobra 接口占比趋势 </div>
+</div>
+<div class="row">
+	<div class="col-lg-12 col-md-12 col-sm-12 col-sx-12">
+		<div id="server" style="height:500px">
+		</div>
+	</div>
+	<div class="col-lg-12 col-md-12 col-sm-12 col-sx-12">
+		<h3> Cobra 所选区间每日接口占比</h3> 
+		<table class="table table-hover table-condensed table-responsive">
+		<thead>
+		<tr class="info">
+		<th>时间区间</th><th>接口数量</th><th>毫秒级</th><th>1~2秒</th><th>2~3秒</th><th>3~4秒</th><th>4~5秒</th><th>5秒以上</th></tr></thead>
+		<tbody>
+		{% for x in show_data %}
+		{% for k, v in x.items %}
+		<TR><TD>{{ k }}</TD>
+		<TD>{{ v.num }}</TD>
+		<TD>{{ v.ms }}%</TD>
+		<TD>{{ v.os }}%</TD>
+		<TD>{{ v.ts }}%</TD>
+		<TD>{{ v.tts }}%</TD>
+		<TD>{{ v.fs }}%</TD>
+		<TD>{{ v.ffs }}%</TD></TR>
+		{% endfor %}
+		{% endfor %}
+		</tbody></TABLE>
+	</div>
+</div>
+<script>
+        // 基于准备好的dom，初始化echarts图表		
+        var myChart = echarts.init(document.getElementById('server')); 
+        var option = {
+			title : {
+				text: '接口处理耗时占比趋势',
+				subtext: '数据来源于cobra线上真实用户，但仅包含接口处理逻辑的时间'
+			},
+			tooltip : {
+				trigger: 'axis'
+			},
+			legend: {
+				y: 'top', // 'center' | 'bottom' | {number}
+				data:['毫秒', '1-2秒', '2-3秒', '3-4秒', '4-5秒', '>5秒', ]
+			},
+			toolbox: {
+				show : true,
+				orient : 'vertical',
+				feature : {
+					 mark : {
+						show : true,
+						title : {
+							mark : '辅助线开关',
+							markUndo : '删除辅助线',
+							markClear : '清空辅助线'
+						},
+						lineStyle : {
+							width : 2,
+							color : '#1e90ff',
+							type : 'dashed'
+						}
+					},
+					magicType: {
+						show: true,
+						type: ['line', 'bar', 'stack', 'tiled']
+					},
+					restore : {show: true},
+					saveAsImage : {show: true}
+				}
+			},
+			calculable : true,
+			xAxis : [
+				{
+					type : 'category',
+					boundaryGap : false,
+					data : [
+					{% for a in show_data %}
+					{% for x, y in a.items %}
+					'{{ x }}',
+					{% endfor %}
+					{% endfor %}
+					]
+				}
+			],
+			yAxis : [
+				{
+					type : 'value',
+					axisLabel : {
+						formatter: '{value} %'
+					}
+				}
+			],
+			dataZoom: [
+				{   // 这个dataZoom组件，默认控制x轴。
+					type: 'slider', // 这个 dataZoom 组件是 slider 型 dataZoom 组件
+					start: 60,      // 左边在 10% 的位置。
+					end: 100         // 右边在 60% 的位置。
+				},
+				{   // 这个dataZoom组件，也控制x轴。
+					type: 'inside', // 这个 dataZoom 组件是 inside 型 dataZoom 组件
+					start: 60,      // 左边在 10% 的位置。
+					end: 100         // 右边在 60% 的位置。
+				}
+			],
+			series : [
+				{
+					name:'毫秒',
+					type:'line',
+					smooth:true,
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					markPoint : {
+						data : [
+							{type : 'max', name: '最大值'},
+							{type : 'min', name: '最小值'}
+						]
+					},
+					markLine : {
+						data : [
+							{type : 'average', name: '平均值'}
+						]
+					},
+					data:[
+					{% for a in show_data %}
+					{% for x, y in a.items %}
+					{{ y.ms }},
+					{% endfor %}
+					{% endfor %}
+					]
+				},
+				{
+					name:'1-2秒',
+					type:'line',
+					smooth:true,
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:[
+					{% for a in show_data %}
+					{% for x, y in a.items %}
+					{{ y.os }},
+					{% endfor %}
+					{% endfor %}
+					]
+				},
+				{
+					name:'2-3秒',
+					type:'line',
+					smooth:true,
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:[
+					{% for a in show_data %}
+					{% for x, y in a.items %}
+					{{ y.ts }},
+					{% endfor %}
+					{% endfor %}
+					]
+				},
+				{
+					name:'3-4秒',
+					type:'line',
+					smooth:true,
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:[
+					{% for a in show_data %}
+					{% for x, y in a.items %}
+					{{ y.tts }},
+					{% endfor %}
+					{% endfor %}
+					]
+				},
+				{
+					name:'4-5秒',
+					type:'line',
+					smooth:true,
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:[
+					{% for a in show_data %}
+					{% for x, y in a.items %}
+					{{ y.fs }},
+					{% endfor %}
+					{% endfor %}
+					]
+				},
+				{
+					name:'>5秒',
+					type:'line',
+					smooth:true,
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:[
+					{% for a in show_data %}
+					{% for x, y in a.items %}
+					{{ y.ffs }},
+					{% endfor %}
+					{% endfor %}
+					]
+				},
+			]
+		};
+
+        myChart.setOption(option); 	
+</script>
+{% endblock %}

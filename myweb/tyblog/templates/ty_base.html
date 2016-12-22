@@ -51,10 +51,10 @@
 				<div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
 					<div class="menu_section">
 						<hr>
-						<h3>听云接口数据</h3>
+						<h3>听云 App端接口全国数据</h3>
 						<ul class="nav side-menu">
 							<li><a href="/tyblog/ty_Overview"><i class="fa fa-area-chart"></i> 图表汇总 </a></li>
-							<li><a><i class="fa fa-edit"></i> 按Host分
+							<li><a><i class="fa fa-edit"></i> 服务域名
 								<span class="fa fa-chevron-down"></span></a>
 							<ul class="nav child_menu">
 								<li><a  href="/tyblog/ty_siteApi3g2">api3g2</a></li>
@@ -62,7 +62,7 @@
 								<li><a href="/tyblog/ty_siteM">m站</a></li>
 							</ul>
 							</li>
-							<li><a><i class="fa fa-desktop"></i> 按客户端版本分
+							<li><a><i class="fa fa-desktop"></i> 客户端版本
 								<span class="fa fa-chevron-down"></span></a>
 							<ul class="nav child_menu">
 								<li><a href="/tyblog/ty_IOS_All">IOS</a></li>
@@ -72,33 +72,33 @@
 							<li><a><i class="fa fa-table"></i> 汇总数据
 							<span class="fa fa-chevron-down"></span></a>
 							<ul class="nav child_menu">
-								<li><a href="/tyblog/ty_rpmAll">汇总访问量</a></li>
-								<li><a href="/tyblog/ty_fullLists">本期源数据</a></li>
+								<li><a href="/tyblog/ty_rpmAll">汇总同接口同版本调用量</a></li>
+								<li><a href="/tyblog/ty_fullLists">不区分原始数据</a></li>
 							</ul>
 							</li>
 							<!-- <li><a href="ty_keyElements"><i class="fa fa-windows"></i> 关键元素采集 (建设中)</a></li> -->
 						</ul>
 						
 						<hr>
-						<h3>内网测试数据</h3>
+						<h3>自测 上海公司网络测速</h3>
 						<ul class="nav side-menu">
 							<li><a href="/intest/int_percent"><i class="fa fa-flag"></i> 占比趋势 </a></li>
 							<li><a><i class="fa fa-windows"></i> 测试数据
 								<span class="fa fa-chevron-down"></span></a>
 								<ul class="nav child_menu">
-									<li><a  href="/intest/int_table">性能详细</a></li>
-									<li><a  href="/intest/int_trace">波动接口追踪</a></li>
-									<li><a  href="/intest/int_err">错误详情</a></li>
+									<li><a  href="/intest/int_table">性能详情</a></li>
+									<li><a  href="/intest/int_trace">追踪不稳定接口</a></li>
+									<li><a  href="/intest/int_err">供调试</a></li>
 								</ul>
 							</li>
 						</ul>
 						<hr>
 						
-						<h3>Cobra接口数据</h3>
+						<h3>Cobra 接口后台时间</h3>
 						<ul class="nav side-menu">
-							<li><a href="/cobra/cobra_chart"><i class="fa fa-star"></i> 占比趋势(在建) </a></li>
-							<li><a href="/cobra/cobra_datas"><i class="fa fa-bicycle"></i> 耗时访问量查询  </a></li>
-							<li><a href="/cobra/cobra_trace"><i class="fa fa-automobile"></i> 不稳定接口追踪 </a></li>
+							<li><a href="/cobra/cobra_chart"><i class="fa fa-star"></i> 占比趋势</a></li>
+							<li><a href="/cobra/cobra_datas"><i class="fa fa-bicycle"></i> 耗时&访问量  </a></li>
+							<li><a href="/cobra/cobra_trace"><i class="fa fa-automobile"></i> 追踪不稳定接口 </a></li>
 						</ul>
 					</div>
 				</div> 
@@ -126,7 +126,7 @@
         </div>
 
         <!-- page content -->
-		<script src="{% static 'js/echarts-all.js' %}" charset="UTF-8"></script>
+		<script src="{% static 'js/echarts.min.js' %}" charset="UTF-8"></script>
         <div class="right_col" role="main">
 		{% block content %}
 		{% endblock content %}

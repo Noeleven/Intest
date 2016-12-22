@@ -1,0 +1,97 @@
+{% extends "ty_base.html" %}
+{% block content %}
+<ul class="nav nav-pills nav-justified" role="tablist">
+	<li role="presentation" class="active"><a href="#autoerror" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-flag"></span> 对于波动接口做追踪 </a></li>
+</ul>
+<div class="tab-content">	
+	<div role="tabpanel" class="tab-pane fade in active" id="autoerror"><br />
+		<div class="panel panel-default">
+			<div class="panel-heading">展示近一个月都没有进入毫秒级的接口所处的level趋势</div>
+			<div class="panel-body">
+			
+				<nav>
+				  <ul class="pagination pagination-sm">
+					{% if show_list.has_previous %}
+					<li><a  href="?page={{ show_list.previous_page_number }}">Previous</a></li>
+					{% endif %}
+					
+					<li  class="active"><a  href="?page={{ show_list.number }}">Page {{ show_list.number }} of {{ show_list.paginator.num_pages }}</a></li>
+					
+					{% if show_list.has_next %}
+					<li><a href="?page={{ show_list.next_page_number }}">Next</a></li>
+					{% endif %}
+				  </ul>
+				</nav>
+				<table class="table table-hover table-condensed table-bordered"  style="word-break:break-all;">
+					<tbody>
+					{% for x in show_list %}
+						<tr class="info">
+							<th class="col-md-4">品类</th>
+							<th  class="col-md-8">接口名称</th>
+						</tr>
+						<tr>
+							<td>{{ x.type }}</td><td>{{ x.des }}</td>
+						</tr>
+						<tr><td colspan=2>
+							<div id="{{ x.method|slugify }}" style="height:200px"></div>
+						</td></tr>
+					{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	{% for v in show_list %}
+	var myChart = echarts.init(document.getElementById('{{ v.method|slugify  }}')); 
+	var {{ v.method|slugify }} = {
+		title : {
+			text: '{{ v.method }}',
+			subtext: '服务器处理时间'
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:['耗时']
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for x in v.time %}
+				'{{ x.create_time }}',
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value'
+			}
+		],
+		series : [
+			{
+				name:'时间level',
+				type:'line',
+				smooth:true,
+				itemStyle: {normal: {areaStyle: {type: 'default'}}},
+				data:[
+				{% for x in v.time %}
+				{{ x.res }},
+				{% endfor %}
+				]
+			},
+		]
+	};
+	
+	myChart.setOption({{ v.method|slugify }});   
+	{% endfor %}
+</script>
+
+{% endblock %}

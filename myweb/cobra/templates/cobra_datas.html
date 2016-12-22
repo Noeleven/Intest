@@ -1,0 +1,54 @@
+{% extends "ty_base.html" %}
+{% block content %}
+<div class="row">
+	<div class="col-md-6 col-lg-4 col-xs-6 col-sm-6">
+		<form role="form" method="get">
+			<div class="form-group">
+				<label for="dtp_input2">开始时间</label>
+				<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+					<input name="from_date" size="16"  class="form-control" type="text" value="" readonly>
+					<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+				</div>
+				<input type="hidden" id="dtp_input2" value="" />
+			</div>
+			<div class="form-group">
+				<label for="dtp_input2">结束时间</label>
+				<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+					<input name="to_date" size="16"  class="form-control" type="text" value="" readonly>
+					<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+				</div>
+				<input type="hidden" id="dtp_input2" value="" />
+			</div>
+			<button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span> 查询</button> （默认最近一个月）
+		</form>				
+	</div>
+</div>
+
+<ul class="nav nav-pills nav-justified" role="tablist">
+	<li role="presentation" class="active"><a href="#autoint" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-tasks"></span> 接口(以平均总耗时排序)<span class="badge"> {{ show_data|length }}</span></a></li>
+</ul>
+<div class="tab-content">
+	<div role="tabpanel" class="tab-pane fade in active" id="autoint"><br />
+		<table data-toggle="table" data-striped="true" data-show-refresh="true" data-show-columns="true" data-search="true" data-row-style="rowStyle" style="word-break:break-all;" data-height='1000'>
+			<thead><tr>
+				<th data-field="接口">接口</th>
+				<th data-field="名称" data-sortable="true">名称</th>
+				<th data-field="品类" data-sortable="true">品类</th>
+				<th data-field="平均耗时" data-sortable="true">平均耗时/秒</th>
+				<th data-field="调用量" data-sortable="true">调用量</th>
+				</tr></thead>
+			<tbody>
+			{% for x in show_data %}
+			<tr>
+				<td>{{ x.method }}</td>
+				<td>{{ x.des }}</td>
+				<td>{{ x.type }}</td>
+				<td>{{ x.res }}</td>
+				<td>{{ x.rpm }}</td></tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{% endblock %}

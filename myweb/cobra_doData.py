@@ -4,6 +4,7 @@
 import mysql.connector
 import configparser
 import os
+import sys
 import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myweb.settings')
 django.setup()
@@ -20,11 +21,13 @@ def get_dates():
 	user = cf.get('cobra', 'user')
 	password = cf.get('cobra', 'password')
 	host = cf.get('cobra', 'host')
+
 	try:
 		conn = mysql.connector.connect(user=user, password=password, database='cobra', host=host)
 		cursor = conn.cursor()
 	except:
 		print("connection timeout")
+		sys.exit(0)
 	# 获取接口表数据
 	cursor.execute("select id, name, description, type, version  from api_method where enabled = %s" % ('1',))
 	values = cursor.fetchall()

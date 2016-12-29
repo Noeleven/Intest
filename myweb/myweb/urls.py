@@ -29,4 +29,5 @@ urlpatterns = [
 	url(r'^accounts/login/', RedirectView.as_view(url=r'/tyblog/login')),
 	url(r'^favicon.ico$',RedirectView.as_view(url=r'static/favicon.ico')),
 	url(r'^logout/$', RedirectView.as_view(url=r"/tyblog/logout/")),
+    url(r'^YPFC/', include('YPFC.urls')),
 ]

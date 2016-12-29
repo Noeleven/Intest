@@ -38,13 +38,13 @@ def err_list():
 		return err_list
 	else:
 		sys.exit(0)
-	
+
 def do_contents():
 	my_lists = err_list()
-	html_string0 = "<h3><font face='微软雅黑'>以下是今天仿真环境测试结果</font></h3><h4><span style='font-weight: normal;'><font face='微软雅黑'><font size='3'></font>&nbsp;<a href='http://10.113.1.35:8000/admin/fz/ints/' target='_blank'>后台</a> <a href='http://10.113.1.35:8000/fz/' target='_blank'>监控平台</a></font></span></h4>"
-	
+	html_string0 = "<h3><font face='微软雅黑'>今日 仿真 环境测试结果</font></h3><h4><span style='font-weight: normal;'><font face='微软雅黑'><font size='3'></font>&nbsp;<a href='http://10.113.1.35:8000/admin/fz/ints/' target='_blank'>后台</a> <a href='http://10.113.1.35:8000/fz/' target='_blank'>监控平台</a></font></span></h4>"
+
 	# 500的部分
-	
+
 	html_string111 = ""
 	if len(my_lists[0]) is 0:
 		html_string1 = ''
@@ -67,15 +67,15 @@ def do_contents():
 				patterns.append(line)
 		html_string111 = ''.join(patterns)
 		html_string1 = html_string11 + html_string111 + "</table>"
-		
+
 	#200返回错误的部分
-	
+
 	html_string222 = ''
 	if len(my_lists[1]) is 0:
 		html_string2 = ''
 	else:
 	# 获取PID
-		html_string22 = ("<h3>【接口返回错误:%s -- 仿真环境下，重新验证接口返回，如正常请邮件回复有效产品ID 或 管理后台修复请求参数（抓包替换）】</h3><table border=1 width=100%%><tr style=\'background-color:cadetblue\'><th>HttpCode</th><th>Name</th><th>Method</th><th>LogCode</th><th>debugMsg</th><th>Error</th><th>Message</th><th>ProductId</th><th>URL</th></tr>\n\r" % len(my_lists[1]))
+		html_string22 = ("<h3>【接口返回错误:%s -- 仿真环境重新验证下】</h3><table border=1 width=100%%><tr style=\'background-color:cadetblue\'><th>HttpCode</th><th>Name</th><th>Method</th><th>LogCode</th><th>debugMsg</th><th>Error</th><th>Message</th><th>ProductId</th><th>URL</th></tr>\n\r" % len(my_lists[1]))
 		for x in my_lists[1]:
 			temp_list = x['url'].split('&')
 			for z in temp_list:
@@ -92,7 +92,7 @@ def do_contents():
 				patterns.append(line)
 		html_string222 = ''.join(patterns)
 		html_string2 = html_string22 + html_string222 + "</table>"
-		
+
 	# 成功的列表
 	html_string333 = ''
 	if len(my_lists[2]) is 0:
@@ -116,25 +116,25 @@ def do_contents():
 				patterns.append(line)
 		html_string333 = ''.join(patterns)
 		html_string3 = html_string33 + html_string333 + "</table>"
-		
+
 	html_string = html_string0 + html_string1 + html_string2 + html_string3
 	# print(html_string)
 	return html_string
-	
+
 def do_mail():
 	cf = configparser.ConfigParser()
 	cf.read("/rd/pystudy/conf")
 	sender = cf.get('mail', 'username')
-	receiverlist = [x for x in cf.get('mail', 'FZreceiverlist').split(',')] 
-	subject = "[仿真环境 接口测试]--错误日志"
-	smtpserver = cf.get('mail','smtpserver') 
-	username = cf.get('mail','username') 
-	password = cf.get('mail','password') 
+	receiverlist = [x for x in cf.get('mail', 'FZreceiverlist').split(',')]
+	subject = "[仿真接口测试]"
+	smtpserver = cf.get('mail','smtpserver')
+	username = cf.get('mail','username')
+	password = cf.get('mail','password')
 
 	html_string = do_contents()
-	
+
 	msg=MIMEText(html_string,'html','utf-8')
-	msg['From'] = _format_addr("管理员 <%s>" % sender) 
+	msg['From'] = _format_addr("管理员 <%s>" % sender)
 	msg['to'] = '%s' % ','.join([_format_addr('<%s>' % x) for x in receiverlist])
 	msg['Subject'] = Header("%s" % subject , 'utf-8').encode()
 
@@ -145,7 +145,7 @@ def do_mail():
 	smtp.login(username, password)
 	smtp.sendmail(msg['From'],receiverlist,msg.as_string())
 	smtp.quit()
-	
+
 if __name__ == '__main__':
 	# do_contents()
 	do_mail()

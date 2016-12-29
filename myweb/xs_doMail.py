@@ -31,12 +31,12 @@ def err_list():
 		return error_list
 	else:
 		sys.exit(0)
-	
+
 def do_contents():
 	my_lists = err_list()
-	html_string0 = "<h3>以下是今天产生的错误列表，测试组童鞋 还请查看有日志返回的错误异常信息，验证线上产品是否有异常</h3><br /><h4>响应码非200的接口说明线上服务有几率会挂。参数错误（如产品下架等）导致的，可以访问<a href='http://10.113.1.35:8000/admin/intest/ints/' target=_blank>接口管理地址</a>修改参数，也可以等管理员修改。</h4><table border=1 width=100%><tr style='background-color:cadetblue'><th>HttpCode</th><th>Name</th><th>Method</th><th>LogCode</th><th>Error</th><th>Message</th><th>ProductId</th><th>URL</th><th>Time</th></tr>\n\r"
+	html_string0 = "<h3>今天发生错误的接口 有明显异常的，请验证下线上服务<br>其他产品失效等错误，管理员会及时处理</h3><br /><h4><a href='http://10.113.1.35:8000/admin/intest/ints/' target=_blank>接口配置管理</a></h4><table border=1 width=100%><tr style='background-color:cadetblue'><th>HttpCode</th><th>Name</th><th>Method</th><th>LogCode</th><th>Error</th><th>Message</th><th>ProductId</th><th>URL</th></tr>\n\r"
 	html_string1 = ""
-	
+
 	for x in my_lists:
 		temp_list = x.url.split('&')
 		for z in temp_list:
@@ -45,7 +45,7 @@ def do_contents():
 				break
 			else:
 				pId = 'null'
-		html_string1 += ("<tr><td>%s</td><td>%s</td><td style='word-break:break-all'>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href='%s'>url</a></td><td>%s</td></tr>\n\r" %( x.httpcode, x.name, x.method_version, x.log_code, x.error, x.message, pId, x.url, x.timestamp.strftime("%Y-%m-%d %H:%M:%S")))
+		html_string1 += ("<tr><td>%s</td><td>%s</td><td style='word-break:break-all'>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href='%s'>url</a></td></tr>\n\r" %( x.httpcode, x.name, x.method_version, x.log_code, x.error, x.message, pId, x.url))
 	patterns = []
 	#去重
 	for line in html_string1.split("\n\r"):
@@ -54,23 +54,22 @@ def do_contents():
 	html_string2 = "".join(patterns)
 	html_string3="</table><h4><a href='http://10.113.1.35:8000/' target=_blank>性能监控平台</a></h4>"
 	html_string = html_string0 + html_string2 + html_string3
-	#print (html_string)
 	return html_string
-	
+
 def do_mail():
 	cf = configparser.ConfigParser()
 	cf.read("/rd/pystudy/conf")
 	sender = cf.get('mail', 'username')
-	receiverlist = [x for x in cf.get('mail', 'receiverlist').split(',')] 
-	subject = "[接口性能自动化]--错误日志"
-	smtpserver = cf.get('mail','smtpserver') 
-	username = cf.get('mail','username') 
-	password = cf.get('mail','password') 
+	receiverlist = [x for x in cf.get('mail', 'receiverlist').split(',')]
+	subject = "[接口自动化检测]--线上环境"
+	smtpserver = cf.get('mail','smtpserver')
+	username = cf.get('mail','username')
+	password = cf.get('mail','password')
 
 	html_string = do_contents()
-	
+
 	msg=MIMEText(html_string,'html','utf-8')
-	msg['From'] = _format_addr("管理员 <%s>" % sender) 
+	msg['From'] = _format_addr("管理员 <%s>" % sender)
 	msg['to'] = '%s' % ','.join([_format_addr('<%s>' % x) for x in receiverlist])
 	msg['Subject'] = Header("%s" % subject , 'utf-8').encode()
 
@@ -81,6 +80,6 @@ def do_mail():
 	smtp.login(username, password)
 	smtp.sendmail(msg['From'],receiverlist,msg.as_string())
 	smtp.quit()
-	
+
 if __name__ == '__main__':
 	do_mail()

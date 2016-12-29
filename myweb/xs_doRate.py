@@ -43,29 +43,29 @@ def time_des():
 		des = ''
 		pass
 	return date_from, date_to, des, flag
-	
-	
+
+
 # 计算周占比 存Rate表
 def doRate():
 	date_from = time_des()[0]
 	date_to = time_des()[1]
 	des = time_des()[2]
-	
-	range_list = Ddata.objects.all().filter(timestamp__range=(date_from, date_to)) 
+
+	range_list = Ddata.objects.all().filter(timestamp__range=(date_from, date_to))
 	# err_list = Errs.objects.all().filter(timestamp__range=(date_from, date_to)).exclude(httpcode=200)
 	# err_rate = round(len(err_list) * 100 / len(range_list), 2)
 	if range_list:
 		pass
 	else:
 		sys.exit(0)
-	
+
 	method_list_src = range_list.values('method_version').distinct().order_by('method_version')
 	method_list = [x['method_version'] for x in method_list_src]
 	# 首包占比
 	server_li = []
 	# 总时间占比
 	total_li = []
-	
+
 	for method in method_list:
 		my_list = range_list.filter(method_version=method)
 		# 算该接口的平均首包和平均总时间
@@ -98,7 +98,7 @@ def doRate():
 	p.ffs = round((len([x for x in total_li if x>5])  *100 / total_len), 2)
 	p.save()
 
-	
+
 # 计算按照首批测试数据的优化趋势
 # todo:Sdata 换Ddata
 # def doRunData():
@@ -111,18 +111,18 @@ def doRate():
 	# orig_method_l = [x['method_version'] for x in orig_method_leg]
 	# orig_method_list = list(set(orig_method_h) & set(orig_method_b) & set(orig_method_l))
 	# print(len(orig_method_list))
-	
+
 	# date_from = time_des()[0]
 	# date_to = time_des()[1]
 	# des = time_des()[2]
 	# print(date_to.strftime("%Y-%m-%d"))
-	# range_list = Ddata.objects.filter(timestamp__range=(date_from, date_to)) 
-	
+	# range_list = Ddata.objects.filter(timestamp__range=(date_from, date_to))
+
 	# if range_list:
 		# pass
 	# else:
 		# sys.exit(0)
-	
+
 	# limit = []
 	# # 按照时间周期将数据占比存入到各个时间点
 	# n = 0
@@ -147,25 +147,33 @@ def doRate():
 	# p.fs = round((len([x for x in limit if 4<=x<5])  *100 / limit_len), 2)
 	# p.ffs = round((len([x for x in limit if x>5]) *100  / limit_len), 2)
 	# p.save()
-	
+
 
 # 归纳Sdata到周数据，每周更新一次
-def doWdata():	
+def doWdata():
 	date_from = time_des()[0]
 	date_to = time_des()[1]
 	now = time_des()[1].strftime("%Y-%m-%d")
+	# 调试
+	# date_from = datetime.datetime(2016, 12, 22, 00, 00)
+	# date_to = datetime.datetime(2016, 12, 28, 23, 59)
+	# now = "2016-12-28"
 	# 计算数据平均值
 	range_list = Ddata.objects.filter(timestamp__range=(date_from, date_to))
 	method_list_src = range_list.values('method_version').distinct().order_by('method_version')
 	method_list = [x['method_version'] for x in method_list_src]
-	print(now)
+	print("now is %s" % now)
 	Wdata.objects.filter(timestamp=now).delete()
 	for method in method_list:
 		p = Wdata(method_version=method)
 		rr = range_list.filter(method_version=method).order_by('-timestamp')
 		total = len([x.dns_time for x in rr])
 		p.url = rr[0].url
-		p.name = rr[0].name
+		print(method)
+		try:
+			p.name = Ints.objects.filter(method_version=method)[0].name
+		except:
+			print("method %s name error!" % method)
 		p.log_time = sum([x.log_time for x in rr if x.log_time]) / total
 		p.dns_time = sum([x.dns_time for x in rr]) / total
 		p.tcp_time = sum([x.tcp_time for x in rr]) / total
@@ -178,7 +186,7 @@ def doWdata():
 		p.timestamp = now
 		p.save()
 
-		
+
 # 归纳Sdata到日数据，每周更新一次
 def doDdata():
 	now = datetime.datetime.now()
@@ -194,7 +202,7 @@ def doDdata():
 		my_range = Sdata.objects.filter(timestamp__contains=stamp)
 		# 先删除之前存入的重复数据
 		Ddata.objects.filter(timestamp__contains=stamp).delete()
-		
+
 		day_list = my_range.values('method_version').distinct().order_by('method_version')
 		method_list = [x['method_version'] for x in day_list]
 		n = 0
@@ -219,26 +227,14 @@ def doDdata():
 			else:
 				print("%s %s" % (n, method))
 	Sdata.objects.filter(timestamp__range=(date_from, date_to)).delete()
-	
-	
+
+
 if __name__ == '__main__':
-	print(time_des()[3])
+	print("周flag:%s" % time_des()[3])
+	# 判断指定日，不是指定日，只归纳日数据
 	if time_des()[3] == 0:
 		doDdata()
 	else:
 		doDdata()
 		doRate()
 		doWdata()
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	

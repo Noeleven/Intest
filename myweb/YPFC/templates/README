@@ -1,0 +1,4 @@
+memberView 成员列表详情，首页
+	cashView 添加现金流，表单页
+		saveData 保存信息，回首页
+	cashDetail 某成员现金流信息页，返回首页

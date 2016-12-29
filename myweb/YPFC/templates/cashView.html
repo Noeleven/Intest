@@ -1,0 +1,72 @@
+{% extends "fc_base.html" %} {% block content %}
+<div class="row">
+    <div class="panel panel-primary">
+        <div class="panel-heading"> 记账啦 </div>
+        <form class="form-horizontal" role="form" method='POST' action="/YPFC/saveDate">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="inputData" class="col-sm-2 control-label">日期</label>
+                <div class="col-sm-10">
+                    <input class="form-control date form_date" name="inputData" data-link-format="yyyy-mm-dd">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="income" class="col-sm-2 control-label">收入</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" name="income" placeholder="{{ form.income.help_text }}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="from" class="col-sm-2 control-label">收入来源</label>
+                <div class="col-sm-10 form-inline" id='test'>
+                    <div id='test1'>
+                        <select class="form-control" name='income_mem'>
+                        {% for x in name_list %}
+                          <option >{{ x }}</option>
+                        {% endfor %}
+                        </select>
+                        <input type="text" class="form-control" name="income_self" placeholder="{{ form.pay.help_text }}">
+                        <a type='button' class="btn-primary form-control"  onclick="myFunction()"> 添加</a>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="pay" class="col-sm-2 control-label">支出</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" name="pay" placeholder="{{ form.pay.help_text }}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="pay_mem" class="col-sm-2 control-label">参与人员</label>
+                <div class="col-sm-10">
+                {% for x in name_list %}
+                    <label class="checkbox-inline">
+                    <input type="checkbox" name="pay_mem" value="{{ x }}"> {{ x }}
+                </label>
+                {% endfor %}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="des" class="col-sm-2 control-label">备注</label>
+                <div class="col-sm-10">
+                    <textarea class="form-control" rows="5" name="des"></textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-warning">提交</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    function myFunction(){
+        var
+            list = document.getElementById('test');
+            new_list = document.getElementById('test1');
+        list.appendChild(new_list.cloneNode(true));
+    }
+</script>
+{% endblock content %}

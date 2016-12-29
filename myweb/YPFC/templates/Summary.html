@@ -1,0 +1,93 @@
+{% extends "fc_base.html" %} {% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="x_panel">
+          <div class="x_content">
+              <div class="">
+                <button id="compose" class="btn btn-sm btn-success btn-block" type="button">COMPOSE</button>
+                <a href="#">
+                  <div class="mail_list">
+                    <div class="left">
+                      <i class="fa fa-star"></i> </i>
+                    </div>
+                    <div class="right">
+                      <h3>总收入<span class="label label-success pull-right">{{summary_dict.incomeAll}}</span></h3>
+                    </div>
+                  </div>
+                </a>
+                <a href="#">
+                  <div class="mail_list">
+                    <div class="left">
+                      <i class="fa fa-star"></i> </i>
+                    </div>
+                    <div class="right">
+                      <h3>总支出<span class="label label-danger pull-right">{{summary_dict.payAll}}</span></h3>
+                    </div>
+                  </div>
+                </a>
+                <a href="#">
+                  <div class="mail_list">
+                    <div class="left">
+                      <i class="fa fa-star"></i> </i>
+                    </div>
+                    <div class="right">
+                      <h3>余额<span class="label label-default pull-right">{{summary_dict.balance}}</span></h3>
+                    </div>
+                  </div>
+                </a>
+                <a href="#">
+                  <div class="mail_list">
+                    <div class="left">
+                      <i class="fa fa-star"></i> </i>
+                    </div>
+                    <div class="right">
+                      <h3>成员数量<span class="label label-primary pull-right">{{summary_dict.memNum}}</span></h3>
+                    </div>
+                  </div>
+                </a>
+              </div>
+          </div>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="panel panel-primary">
+            <div class="panel-heading">活动记录</div>
+            <div class="panel-body">
+                总量：{{ datas|length }}
+            </div>
+            <table data-toggle="table" data-striped="true" data-show-refresh="true" data-show-columns="true" data-search="true" data-row-style="rowStyle" style="word-break:break-all;" class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th style="width: 1%; " data-formatter="runningFormatter" data-field="ID">
+                            #
+                        </th>
+                        <th style="width: 40%; " data-field="Des" data-sortable="true">
+                            Des
+                        </th>
+                        <th style="width: 40%; " data-field="Data" data-sortable="true">
+                            Data
+                        </th>
+                        <th style="width: 1%; " data-field="Income">
+                            Income
+                        </th>
+                        <th style="width: 1%; " data-field="Pay">
+                            Pay
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for x in datas %}
+                    <tr>
+                        <td style="width: 1%; "></td>
+                        <td style="width: 1%; ">{{ x.des }}</td>
+                        <td style="width: 1%; ">{{ x.timestamp }}</td>
+                        <td style="width: 40%; ">{{ x.income }}</td>
+                        <td style="width: 40%; ">{{ x.pay }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}

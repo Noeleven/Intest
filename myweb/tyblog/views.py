@@ -22,17 +22,22 @@ from django.contrib import auth
 from django.views.decorators.cache import cache_page
 
 def time_des():
-	d = datetime.datetime.now()
+	d =  datetime.datetime.now()
 	this_year = d.year
+	last_year = (d - datetime.timedelta(days=d.day)).year
 	this_month = d.month
 	last_month = (d - datetime.timedelta(days=d.day)).month
+	if this_month < 10:
+		this_month = '0' + str(this_month)
+	if last_month < 10:
+		last_month = '0' + str(last_month)
 	if d.day < 15:
-		des = str(this_year) + str(last_month) + "月下"
+		des = str(last_year) + str(last_month) + "月下"
 	else:
 		des = str(this_year) + str(this_month) + "月上"
 	return des
-	
-	
+
+
 def count_All(a, b):
 	#a 平台 b 版本数量
 	if b > 0:
@@ -50,17 +55,17 @@ def count_All(a, b):
 			datas[x] = data
 		else:
 			continue
-	return datas		
-	
+	return datas
+
 # Create your views here.
 # 老听云项目
 # def tyreport(request):
 	# return render(request, 'TYreport.html')
-	
+
 # 总导航页
 def index(request):
 	return render(request, 'index.html')
-	
+
 # 登录页面
 def login(request):
 	return render(request, 'login.html')
@@ -80,15 +85,15 @@ def ty_login(request):
 		else:
 			return render(request, 'login.html', {'error' : '用户密码错误'})
 
-			
-def logout(request):			
+
+def logout(request):
 	try:
 		del request.session['user']
 		print('yes')
 	except KeyError as e:
 		print(e)
 	return render(request, 'login.html')
-	
+
 # 概览
 @login_required
 @cache_page(300)
@@ -108,9 +113,9 @@ def ty_Overview(request):
 	crash_t_list = [x['des'] for x in crash_time]
 	crash_t_list.reverse()
 	# 开始过滤
-	other_list = ['alog.umeng.com', 'loc.map.baidu.com', 'resolver.gslb.mi-idc.com', 'sapi.map.baidu.com', 
+	other_list = ['alog.umeng.com', 'loc.map.baidu.com', 'resolver.gslb.mi-idc.com', 'sapi.map.baidu.com',
 					'api.weixin.qq.com', 'collect.dsp.chinanetcenter.com', 'mauth.chinanetcenter.com', 'm.api.baifengdian.com',						 'data.cn.coremetrics.com', 'api.weibo.com', 'pingma.qq.com', 'api.share.mob.com',
-					'api.share.mob.com:80', 'libs.cn.coremetrics.com', 'tmscdn.cn.coremetrics.com', 'scs.openspeech.cn', 
+					'api.share.mob.com:80', 'libs.cn.coremetrics.com', 'tmscdn.cn.coremetrics.com', 'scs.openspeech.cn',
 					'data.openspeech.cn', 'hm.baidu.com'
 					]
 	crash_show_a = {}
@@ -133,7 +138,7 @@ def ty_Overview(request):
 			else:
 				datas.append('0')
 		crash_show_ios[x] = datas
-	
+
 	#错误率
 	err_sub_a = errs.objects.all().filter(plantform='android').values('name').distinct().order_by('name')
 	err_sub_ios = errs.objects.all().filter(plantform='ios').values('name').distinct().order_by('name')
@@ -149,7 +154,7 @@ def ty_Overview(request):
 				datas.append(value[0].value)
 			else:
 				datas.append('0')
-		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com', 
+		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com',
 						# 'iguide.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com'
 						]
 		if x['name'] in self_list:
@@ -164,7 +169,7 @@ def ty_Overview(request):
 				datas.append(value[0].value)
 			else:
 				datas.append('0')
-		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com', 
+		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com',
 						# 'iguide.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com'
 						]
 
@@ -187,7 +192,7 @@ def ty_Overview(request):
 				datas.append(value[0].value)
 			else:
 				datas.append('0')
-		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com', 
+		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com',
 						# 'iguide.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com'
 						]
 		if x['name'] in self_list:
@@ -202,7 +207,7 @@ def ty_Overview(request):
 				datas.append(value[0].value)
 			else:
 				datas.append('0')
-		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com', 
+		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com',
 						# 'iguide.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com'
 						]
 		if x['name'] in self_list:
@@ -250,8 +255,8 @@ def ty_Overview(request):
 																	'view_show_a': view_show_a,
 																	'view_show_ios': view_show_ios,
 																	})
-	
-	
+
+
 # 版本分
 @login_required
 @cache_page(300)
@@ -266,10 +271,10 @@ def ty_Android_All(request):
 			datas = count_All('android', 3)
 	except:
 		datas = count_All('android', 3)
-	
+
 	return render_to_response('ty_Android_All.html', {'datas':datas,})
 
-	
+
 @login_required
 @cache_page(300)
 def ty_IOS_All(request):
@@ -282,10 +287,10 @@ def ty_IOS_All(request):
 			datas = count_All('ios', 3)
 	except:
 		datas = count_All('ios', 3)
-	
+
 	return render_to_response('ty_IOS_All.html', {'datas':datas,})
-	
-	
+
+
 # 主机分布
 @login_required
 @cache_page(300)
@@ -300,22 +305,22 @@ def ty_siteApi3g2(request):
 	except:
 		datas = RR.objects.filter(hostId='Api3g2').filter(response__gt=2).filter(rpm__gt=100)
 	return render_to_response('ty_siteApi3g2.html', {'datas':datas,})
-	
-	
+
+
 @login_required
 @cache_page(300)
 def ty_siteApi3g(request):
 	datas = RR.objects.filter(hostId='Api3g')
 	return render_to_response('ty_siteApi3g.html', {'datas':datas,})
-	
-	
+
+
 @login_required
-@cache_page(300)	
+@cache_page(300)
 def ty_siteM(request):
 	datas = RR.objects.filter(hostId='siteM')
 	return render_to_response('ty_siteM.html', {'datas':datas,})
 
-	
+
 # 汇总
 @login_required
 @cache_page(300)
@@ -337,15 +342,15 @@ def ty_rpmAll(request):
 		}
 		datas.append(dict)
 	return render_to_response('ty_rpmAll.html', {'datas':datas,})
-	
-	
+
+
 @login_required
 @cache_page(300)
 def ty_fullLists(request):
 	datas = RR.objects.all().filter(time=time_des())
 	return render_to_response('ty_fullLists.html', {'datas':datas,})
 
-	
+
 #关键元素
 @login_required
 def ty_keyElements(request):

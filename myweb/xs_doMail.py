@@ -34,7 +34,7 @@ def err_list():
 
 def do_contents():
 	my_lists = err_list()
-	html_string0 = "<h3>今天发生错误的接口 有明显异常的，请验证下线上服务<br>其他产品失效等错误，管理员会及时处理</h3><br /><h4><a href='http://10.113.1.35:8000/admin/intest/ints/' target=_blank>接口配置管理</a></h4><table border=1 width=100%><tr style='background-color:cadetblue'><th>HttpCode</th><th>Name</th><th>Method</th><th>LogCode</th><th>Error</th><th>Message</th><th>ProductId</th><th>URL</th></tr>\n\r"
+	html_string0 = "<h3>今天发生错误的接口 有明显异常的，请验证下线上服务<br>其他产品失效等错误，管理员会及时处理</h3><br /><h4><a href='http://10.113.1.35:8000/admin/intest/ints/' target=_blank>接口配置管理</a></h4><table border=1 width=100%><tr style='background-color:cadetblue'><th>HttpCode</th><th>Type</th><th>Name</th><th>Method</th><th>LogCode</th><th>Error</th><th>Message</th><th>ProductId</th><th>URL</th></tr>\n\r"
 	html_string1 = ""
 
 	for x in my_lists:
@@ -45,7 +45,7 @@ def do_contents():
 				break
 			else:
 				pId = 'null'
-		html_string1 += ("<tr><td>%s</td><td>%s</td><td style='word-break:break-all'>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href='%s'>url</a></td></tr>\n\r" %( x.httpcode, x.name, x.method_version, x.log_code, x.error, x.message, pId, x.url))
+		html_string1 += ("<tr><td>%s</td><td>%s</td><td>%s</td><td style='word-break:break-all'>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href='%s'>url</a></td></tr>\n\r" %( x.httpcode,x.type,  x.name, x.method_version, x.log_code, x.error, x.message, pId, x.url))
 	patterns = []
 	#去重
 	for line in html_string1.split("\n\r"):

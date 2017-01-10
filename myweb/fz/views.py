@@ -13,12 +13,12 @@ from io import StringIO
 from multiprocessing import Pool, Manager
 
 class DecimalJSONEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, decimal.Decimal):
-            return str(o)
-        return super(DecimalJSONEncoder, self).default(o)
+	def default(self, o):
+		if isinstance(o, decimal.Decimal):
+			return str(o)
+		return super(DecimalJSONEncoder, self).default(o)
 
-	
+
 def fz_home(request):
 	if  'from_date' and 'to_date' in request.GET and request.GET['from_date'] is not '' and request.GET['to_date'] is not '':
 		y = int(request.GET['from_date'].split('-')[0])
@@ -33,33 +33,20 @@ def fz_home(request):
 		date_from = datetime.datetime(time.localtime().tm_year,time.localtime().tm_mon,time.localtime().tm_mday, 0, 0)
 		date_to = datetime.datetime(time.localtime().tm_year,time.localtime().tm_mon,time.localtime().tm_mday, 23, 59)
 	start = time.time()
-	range_list = Sdata.objects.values('name', 'method_version', 'url', 'code', 'log_code', 'debugmsg', 'error', 'message').filter(timestamp__range=(date_from, date_to))
-	
-	#请求成功的比例 分为200的1成功比例，和500的比例
-	code_500 = range_list.filter(code="500").count()
-	code_404 = range_list.filter(code="404").count()
-	code_1 = range_list.filter(log_code="1").count()
-	code_not1 = range_list.filter(code='200').exclude(log_code='1').count()
-	total_value = range_list.count()
-	code_other = total_value - code_500 - code_404 - code_1 - code_not1
-	if total_value is not 0:
-		succ_dict = {}
-		succ_dict['code500'] = round((code_500 *100 / total_value),2)
-		succ_dict['code404'] = round((code_404 *100 / total_value),2)
-		succ_dict['code1'] = round((code_1 *100 / total_value),2)
-		succ_dict['codenot1'] = round((code_not1 *100 / total_value),2)
-		succ_dict['other'] = round((code_other *100 / total_value),2)
-	else:
-		succ_dict = {'code500':0, 'code404':0, 'code1':0, 'codenot1':0, 'other':0}
-	
-	# 分别统计500错误列表、log错误列表、404错误列表
-	err_500 = range_list.filter(code="500").distinct().order_by('name')
-	err_404 = range_list.filter(code="404").distinct().order_by('name')
-	err_200 = range_list.filter(code='200').exclude(log_code="1").distinct().order_by('name')
-	succ_200 = Sdata.objects.values('name', 'method_version', 'url', 'code', 'log_code',  'error', 'message').filter(timestamp__range=(date_from, date_to)).filter(log_code="1").distinct().order_by('name')
-	end = time.time()
-	print ('Time: %s' % (end - start))
-	return render_to_response('fz_home.html', {'succ_200':succ_200,'err_500': err_500,'err_404': err_404,'err_200': err_200, 'succ_dict':json.dumps(succ_dict),})
+	range_list = Sdata.objects.values('method_version', 'url', 'code', 'log_code', 'debugmsg', 'error', 'message').filter(timestamp__range=(date_from, date_to))
 
-def fz_notin(request):
-	return render(request, 'fz_notin.html')
+	# 分别统计500错误列表、log错误列表、404错误列表
+	err_500 = range_list.filter(code="500").distinct().order_by('method_version')
+	err_404 = range_list.filter(code="404").distinct().order_by('method_version')
+	err_200 = range_list.filter(code='200').exclude(log_code="1").distinct().order_by('method_version')
+	succ_200 = range_list.filter(log_code='1').distinct().order_by('method_version')
+	show_list = [err_500, err_404, err_200, succ_200]
+	for show in show_list:
+		for x in show:
+			home = Ints.objects.filter(method_version=x['method_version'])
+			x['name'] = home[0].name
+			x['type'] = home[0].type
+	end = time.time()
+
+	print ('Time: %s' % (end - start))
+	return render_to_response('fz_home.html', {'succ_200':succ_200,'err_500': err_500,'err_404': err_404,'err_200': err_200})

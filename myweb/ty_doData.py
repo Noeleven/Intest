@@ -45,8 +45,8 @@ if args.verbose:
 	logger.setLevel(logging.DEBUG)
 else:
 	logger.setLevel(logging.INFO)
-	
-	
+
+
 def _format_addr(s):
 	name, addr = parseaddr(s)
 	return formataddr((Header(name, 'utf-8').encode(), addr))
@@ -176,24 +176,19 @@ def judge_host(s):
 
 #获取时间描述信息
 def time_des():
-	d = datetime.datetime.now()
+	d =  datetime.datetime.now()
 	this_year = d.year
+	last_year = (d - datetime.timedelta(days=d.day)).year
 	this_month = d.month
 	last_month = (d - datetime.timedelta(days=d.day)).month
-	# 调试拉数据
-	# des = str(this_year) + '12' + "月上"
-	# crash_one = str(this_year) + '12' + "第1周"
-	# crash_two = str(this_year) + '12' + "第2周"
-	
-	# des = str(this_year) + '12' + "月下"
-	# crash_one = str(this_year) + '12' + "第3周"
-	# crash_two = str(this_year) + '12' + "第4周"
-	# 调试结束
-	
+	if this_month < 10:
+		this_month = '0' + str(this_month)
+	if last_month < 10:
+		last_month = '0' + str(last_month)
 	if d.day < 15:
-		des = str(this_year) + str(last_month) + "月下"
-		crash_one = str(this_year) + str(last_month) + "第3周"
-		crash_two = str(this_year) + str(last_month) + "第4周"
+		des = str(last_year) + str(last_month) + "月下"
+		crash_one = str(last_year) + str(last_month) + "第3周"
+		crash_two = str(last_year) + str(last_month) + "第4周"
 	else:
 		des = str(this_year) + str(this_month) + "月上"
 		crash_one = str(this_year) + str(this_month) + "第1周"
@@ -443,14 +438,14 @@ def do_db():
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'], ) for x in b]
 			host_list = ['V5IndextFragment2', 'GuessLikeFragment', 'ImageGalleryActivity', 'V7BaseSearchFragment',
-							'TicketDetailFootBranchesFragment', 'HolidayAbroadListFragment', 'HolidayNearByListFragment2', 
-							'TicketDetailActivity', 'CommentListFragment', 'SplashActivity700', 'WelcomeActivity', 
+							'TicketDetailFootBranchesFragment', 'HolidayAbroadListFragment', 'HolidayNearByListFragment2',
+							'TicketDetailActivity', 'CommentListFragment', 'SplashActivity700', 'WelcomeActivity',
 							'MainActivity', 'V5IndextFragment', 'LvmmWebIndexFragment', 'WebViewIndexActivity',
 							'LVNavigationController#loading','StartUpViewController#loading','LVMMTabBarController#loading',
 							'IndexSearchViewController#loading','GrouponDetailViewController#loading','FocusWebViewController#loading',
 							'RouteDetailViewController#loading','RouteSearchListViewController#loading','LVRouteCalendarCollectionController#loading',
 							'RouteGnyDetailController#loading','RouteCjyDetailController#loading','RouteZbyDetailController#loading',
-							'MyLvmamaController#loading', 'HomeSearchViewController#loading','Filter2ViewController#loading', 
+							'MyLvmamaController#loading', 'HomeSearchViewController#loading','Filter2ViewController#loading',
 							'RouteSearchTableViewController#loading',
 							]
 			for x in newb:
@@ -499,7 +494,7 @@ def do_db():
 				else:
 					continue
 
-					
+
 #计算接口占比
 def do_rates():
 	x = Res.objects.all().filter(hostId='Api3g2').filter(time=time_des()[0]) #过滤这期所有api3g2的res数据
@@ -513,7 +508,7 @@ def do_rates():
 		p = [y.response for y in datas]
 		value = sum(p) / len(p)
 		all_list.append(value)
-	
+
 	ms_count = len([x for x in all_list if x < 1])
 	one_count = len([x for x in all_list if 1 <= x < 2])
 	two_count = len([x for x in all_list if 2 <= x < 3])
@@ -534,7 +529,7 @@ def do_rates():
 	except:
 		print("计算占比出错")
 
-		
+
 # 合并res和rpm数据
 def do_rr():
 	# 现存android
@@ -563,7 +558,7 @@ def do_rr():
 			p.rpm = Decimal('0')
 		p.save()
 
-		
+
 def do_contents():
 	# 第一部分 头
 	html_string0 = "<h3><font face='微软雅黑'> 简要接口报告 </font></h3><h4><span style='font-weight: normal;'><font face='微软雅黑'><font size='3'></font>&nbsp;<a href='http://10.113.1.35:8000/tyblog/' target='_blank'>查看更多图表和丰富数据</a></font></span></h4>"
@@ -583,22 +578,22 @@ def do_contents():
 	html_string = html_string0 + html_string1 + html_string2 + html_string3 + html_string4
 
 	return html_string
-	
-	
+
+
 def do_mail():
 	cf = configparser.ConfigParser()
 	cf.read("/rd/pystudy/conf")
 	sender = cf.get('mail', 'username')
-	receiverlist = [x for x in cf.get('mail', 'ty_receiver').split(',')] 
+	receiverlist = [x for x in cf.get('mail', 'ty_receiver').split(',')]
 	subject = "[听云 接口报告]"
-	smtpserver = cf.get('mail','smtpserver') 
-	username = cf.get('mail','username') 
-	password = cf.get('mail','password') 
+	smtpserver = cf.get('mail','smtpserver')
+	username = cf.get('mail','username')
+	password = cf.get('mail','password')
 
 	html_string = do_contents()
-	
+
 	msg=MIMEText(html_string,'html','utf-8')
-	msg['From'] = _format_addr("性能测试 <%s>" % sender) 
+	msg['From'] = _format_addr("性能测试 <%s>" % sender)
 	msg['to'] = '%s' % ','.join([_format_addr('<%s>' % x) for x in receiverlist])
 	msg['Subject'] = Header("%s" % subject , 'utf-8').encode()
 
@@ -610,11 +605,11 @@ def do_mail():
 	smtp.sendmail(msg['From'],receiverlist,msg.as_string())
 	smtp.quit()
 
-	
+
 if __name__ == '__main__':
-	# urls = get_urls() #拼接URL
-	# get_data(urls) #通过听云获取数据
-	# do_db() # 存储数据库
-	# do_rates() # 计算接口占比 
-	# do_rr()
+	urls = get_urls() #拼接URL
+	get_data(urls) #通过听云获取数据
+	do_db() # 存储数据库
+	do_rates() # 计算接口占比
+	do_rr()
 	do_mail()

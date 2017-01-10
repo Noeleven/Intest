@@ -21,7 +21,7 @@ def do_curl(n, req_url, url_method="GET", method_name="未定义名称", url_api
 	c.setopt(pycurl.MAXREDIRS, 5)
 	# 对付ssl，目前是不校验，等https上线后就要校验了
 	if 'https://' in req_url:
-		c.setopt(pycurl.SSL_VERIFYPEER, 0)   
+		c.setopt(pycurl.SSL_VERIFYPEER, 0)
 		c.setopt(pycurl.SSL_VERIFYHOST, 0)
 	# 连接超时设置
 	c.setopt(pycurl.CONNECTTIMEOUT, 20)
@@ -41,6 +41,7 @@ def do_curl(n, req_url, url_method="GET", method_name="未定义名称", url_api
 		e = Errs(method_version=url_api)
 		e.name = method_name
 		e.url = req_url
+		e.type = Ints.objects.filter(method_version=url_api).values('type')[0]['type']
 		e.httpcode = '600'
 		e.error = e[:199]
 		e.save()
@@ -71,18 +72,19 @@ def do_curl(n, req_url, url_method="GET", method_name="未定义名称", url_api
 				p.total_time = round(c.getinfo(c.TOTAL_TIME), 2)
 				try:
 					debug_msg = html_json['debugMsg']
-					if debug_msg == '':				
+					if debug_msg == '':
 						p.log_time = 0
 					else:
 						p.log_time = round((int((debug_msg.split('costTime:', 1)[1]).split('ms', 1)[0]) / 1000), 2)
 				except:
 					print('no debugmsg')
 				p.save()
-				
+
 				if p.log_code is not '1':
 					e = Errs(method_version=url_api)
 					e.name = method_name
 					e.url = req_url
+					e.type = Ints.objects.filter(method_version=url_api).values('type')[0]['type']
 					e.httpcode = c.getinfo(c.HTTP_CODE)
 					e.log_code = html_json['code']
 					try:
@@ -111,11 +113,12 @@ def do_curl(n, req_url, url_method="GET", method_name="未定义名称", url_api
 			e = Errs(method_version=url_api)
 			e.name = method_name
 			e.url = req_url
+			e.type = Ints.objects.filter(method_version=url_api).values('type')[0]['type']
 			e.httpcode = c.getinfo(c.HTTP_CODE)
 			e.error = b.getvalue()[-199:]
 			e.save()
 		end = time.time()
-		print('%s %s 执行完毕 runs %0.2f S' % (n, method_name, (end - start)))
+	#	print('%s %s 执行完毕 runs %0.2f S' % (n, method_name, (end - start)))
 	finally:
 		b.close()
 		c.close()
@@ -131,22 +134,21 @@ def do_db():
 	for x in method_list:
 		# 这里也顺便维护下DB，我们保留最新和最老的数据，其他的都删除
 		todel = Ints.objects.all().filter(method_version=x['method_version']).order_by('timestamp')
-		if len(todel) > 2:
+		if len(todel) > 1:
 			first = todel[0].id
 			last = todel.reverse()[0].id
-			todel.exclude(Q(id=first)|Q(id=last)).delete()
+			todel.exclude(id=last).delete()
 		# 只取最新的一个数据做测试
 		i = Ints.objects.all().filter(method_version=x['method_version']).order_by('-timestamp')[0]
 		method_name = i.name
 		url_api = i.method_version
-		
 		url_params = i.params
 		if old in url_params:
 			url_params = re.sub(old, new, url_params)
-		if i.isget.lower() == "get":
-			url_method = "GET"
-		else:
+		if i.isget.lower() == "post":
 			url_method = "POST"
+		else:
+			url_method = "GET"
 		if 'http://' in url_params or 'https://' in url_params:
 			req_url = url_params
 		else:
@@ -157,7 +159,6 @@ def do_db():
 			req_url = url_http + url_path + url_api + url_params
 		n += 1
 		j.apply_async(do_curl, args=(n, req_url, url_method, method_name, url_api))
-
 	return
 
 

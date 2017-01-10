@@ -15,20 +15,19 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-
+get_path = lambda x: os.path.join(BASE_DIR, x)
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.9/howto/static-files/
+SITE_ID = 1
+WIKI_LANGUAGE = 'markdown'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'x%3m$%xz38ez*z%4*^6bh2efiv#mhpo^rnme11mvb0-h1pzv+)'
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 ALLOWED_HOSTS = []
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,6 +42,17 @@ INSTALLED_APPS = [
 	'fz',
 	'cobra',
     'YPFC',
+	'django.contrib.sites', # django 1.6.2+
+	'django.contrib.humanize',
+	'django_nyt',
+	'mptt',
+	'sekizai',
+	'sorl.thumbnail',
+	'wiki',
+	'wiki.plugins.attachments',
+	'wiki.plugins.notifications',
+	'wiki.plugins.images',
+	'wiki.plugins.macros',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -69,13 +79,17 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
+                "sekizai.context_processors.sekizai",
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'myweb.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
@@ -92,7 +106,6 @@ DATABASES = {
 		'PASSWORD': 'lvmama',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
@@ -112,30 +125,21 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
-LANGUAGE_CODE = 'zh-Hans'
+# LANGUAGE_CODE = 'zh-Hans'
 #LANGUAGE_CODE = 'en-us'
-
+LANGUAGE_CODE = 'zh_CN'
 TIME_ZONE = 'Asia/Shanghai'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = False
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.9/howto/static-files/
-
 STATIC_URL = '/static/'
-#STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
-#STATICFILES_DIRS = (
-#	os.path.join(BASE_DIR, "common_static")
-#)
+STATIC_ROOT = get_path('myweb/static/')
+MEDIA_URL  = '/media/'
+MEDIA_ROOT = get_path('myweb/media/')
 
 CACHES = {
     'default': {

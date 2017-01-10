@@ -6,5 +6,4 @@ from fz.views import *
 
 urlpatterns = [
 	url(r'^$', fz_home, name='fz_home'),
-	url(r'^notin$', fz_notin, name='fz_notin'),
    ]

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-  
+
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -61,23 +61,22 @@
 		<ul class="nav navbar-nav">
 			<li></li>
 	    </ul>
-        <div id="navbar" class="navbar-collapse collapse">	
+        <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
             <li><a href="http://10.113.1.35:8000/admin/fz/ints/" target=_blank><span class="glyphicon glyphicon-cog"></span> 配置后台</a></li>
-			<li><a href="http://10.113.1.35:8000/fz/notin" target=_blank><span class="glyphicon glyphicon-cloud"></span> 未录入接口</a></li>
           </ul>
         </div>
         <!--/.nav-collapse -->
 	</div>
     </nav>
-	
+
     <div  id="top" style="padding:80px">
       <div class="row" style="padding-left:20px;padding-right:20px">
 {% block content %}
 {% endblock %}
         </div>
     </div>
-	
+
 	<a class="x-goto-top" style="display: block;">
         <div class="x-arrow"></div>
         <div class="x-stick"></div>
@@ -89,7 +88,7 @@
     <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
     <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
     <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-	
+
 	<script type="text/javascript" src="{% static 'js/bootstrap-table.min.js' %}" charset="UTF-8"></script>
 	<script type="text/javascript" src="{% static 'js/bootstrap-table-zh-CN.min.js' %}" charset="UTF-8"></script>
 	<script type="text/javascript" src="{% static 'js/bootstrap-datetimepicker.min.js' %}" charset="UTF-8"></script>
@@ -107,7 +106,7 @@
 	</script>
 	<script>
 	$(document).ready(function(){
-		$('.x-goto-top').click(function(){$('html,body').animate({scrollTop: '0px'}, 800);}); 
+		$('.x-goto-top').click(function(){$('html,body').animate({scrollTop: '0px'}, 800);});
 	})
 	</script>
 	<script>$(function() {

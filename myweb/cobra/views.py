@@ -28,7 +28,7 @@ def cobra_chart(request):
 		# 默认展示一个月的占比趋势
 		now = datetime.datetime.now()
 		week_ago = now - datetime.timedelta(days=30)
-		date_from = datetime.datetime(now.year, week_ago.month, week_ago.day)
+		date_from = datetime.datetime(week_ago.year, week_ago.month, week_ago.day)
 		date_to = datetime.datetime(now.year, now.month, now.day)
 	range_list = Datas.objects.filter(create_time__range=(date_from, date_to))
 	# 判断间隔周期生产占比数据
@@ -41,21 +41,20 @@ def cobra_chart(request):
 		total = len(all_list)
 		rate = {}
 		rate[label] = {
-							'ms':round(len([x for x in all_list if x < 1]) * 100 / total, 2),
-							'os':round(len([x for x in all_list if 0.999 < x < 2]) * 100 / total, 2),
-							'ts':round(len([x for x in all_list if 2 <= x < 3]) * 100 / total, 2),
-							'tts':round(len([x for x in all_list if 3 <= x < 4]) * 100 / total, 2),
-							'fs':round(len([x for x in all_list if 4 <= x < 5]) * 100 / total, 2),
-							'ffs':round(len([x for x in all_list if x >= 5]) * 100 / total, 2),
-							'num':total,
-							}
+			'ms':round(len([x for x in all_list if x < 1]) * 100 / total, 2),
+			'os':round(len([x for x in all_list if 0.999 < x < 2]) * 100 / total, 2),
+			'ts':round(len([x for x in all_list if 2 <= x < 3]) * 100 / total, 2),
+			'tts':round(len([x for x in all_list if 3 <= x < 4]) * 100 / total, 2),
+			'fs':round(len([x for x in all_list if 4 <= x < 5]) * 100 / total, 2),
+			'ffs':round(len([x for x in all_list if x >= 5]) * 100 / total, 2),
+			'num':total,
+			}
 		show_data.append(rate)
 	return render(request, 'cobra_chart.html', {'show_data':show_data})
 
 @login_required
-@cache_page(300)
 def cobra_datas(request):
-	
+
 	if 'from_date' and 'to_date' in request.GET and request.GET['from_date'] is not '' and request.GET[
 		'to_date'] is not '':
 		y = int(request.GET['from_date'].split('-')[0])
@@ -69,7 +68,7 @@ def cobra_datas(request):
 	else:
 		now = datetime.datetime.now()
 		week_ago = now - datetime.timedelta(days=30)
-		date_from = datetime.datetime(now.year, week_ago.month, week_ago.day)
+		date_from = datetime.datetime(week_ago.year, week_ago.month, week_ago.day)
 		date_to = datetime.datetime(now.year, now.month, now.day)
 	range_list = Datas.objects.filter(create_time__range=(date_from, date_to))
 	# 统计时间范围内接口的平均耗时，访问量 访问量趋势图
@@ -104,7 +103,7 @@ def cobra_trace(request):
 	# 确定近一个月的范围
 	now = datetime.datetime.now()
 	week_ago = now - datetime.timedelta(days=30)
-	date_from = datetime.datetime(now.year, week_ago.month, week_ago.day)
+	date_from = datetime.datetime(week_ago.year, week_ago.month, week_ago.day)
 	date_to = datetime.datetime(now.year, now.month, now.day)
 	range_list = Datas.objects.filter(create_time__range=(date_from, date_to))
 	time_label = [ x['create_time'] for x in range_list.values('create_time').distinct().order_by('create_time')]
@@ -145,5 +144,5 @@ def cobra_trace(request):
 	except EmptyPage:
 		# If page is out of range (e.g. 9999), deliver last page of results.
 		show_list = paginator.page(paginator.num_pages)
-		
+
 	return render_to_response('cobra_trace.html', {'show_list' : show_list})

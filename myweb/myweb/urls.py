@@ -14,9 +14,14 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+import django
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.views.generic.base import RedirectView
+from wiki.urls import get_pattern as get_wiki_pattern
+from django_nyt.urls import get_pattern as get_nyt_pattern
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.conf import settings
 
 
 urlpatterns = [
@@ -30,4 +35,7 @@ urlpatterns = [
 	url(r'^favicon.ico$',RedirectView.as_view(url=r'static/favicon.ico')),
 	url(r'^logout/$', RedirectView.as_view(url=r"/tyblog/logout/")),
     url(r'^YPFC/', include('YPFC.urls')),
+	url(r'^wiki/notifications/', get_nyt_pattern()),
+    url(r'^wiki/', get_wiki_pattern()),
+	url(r'^media/(?P<path>.*)$',django.views.static.serve,{'document_root': settings.MEDIA_ROOT,}),
 ]

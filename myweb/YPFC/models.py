@@ -16,7 +16,7 @@ class member(models.Model):
     number = models.CharField(max_length=10,null=True,blank=True)
     like = models.TextField(null=True,blank=True)
     saying = models.TextField(null=True,blank=True)
-    BOOL_CHOICES = ((1, '在队'), (0, '离队'))
+    BOOL_CHOICES = (('1', '在队'), ('0', '离队'))
     status = models. CharField(max_length=2,
         choices=BOOL_CHOICES,
         default='1')

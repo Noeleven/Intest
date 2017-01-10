@@ -76,8 +76,18 @@ def saveDate(request):
 	# initial
 	y,m,d = time.strptime(inputData, "%Y-%m-%d ")[:3]
 	inputData = datetime.datetime(y, m, d)
-	income = Decimal(income)
-	pay = Decimal(pay)
+	if income:
+		income = Decimal(income)
+	else:
+		income = 0
+	if pay:
+		pay = Decimal(pay)
+	else:
+		pay = 0
+	if income_self[0]:
+		pass
+	else:
+		income_mem = []
 
 	# mark in db
 	ma = mark(income=income)
@@ -87,7 +97,10 @@ def saveDate(request):
 	ma.save()
 	# counts
 	income_dict = dict(zip(income_mem,income_self))
-	single_pay = round(pay / len(pay_mem), 1)
+	try:
+		single_pay = round(pay / len(pay_mem), 1)
+	except:
+		single_pay = 0
 	print(income_dict)
 	#everyone's in db
 	name_list = set(income_mem + pay_mem)

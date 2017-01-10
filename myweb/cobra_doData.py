@@ -12,8 +12,8 @@ from cobra.models import *
 import datetime
 
 
-# ¸üĞÂÏßÉÏmethod±íµ½cobra_method±í
-# »ñÈ¡Ö¸¶¨ÈÕÆÚµÄ½Ó¿Ú±í£¬resÊı¾İ£¬rpmÊı¾İ£¬´æÈëÎÒµÄ¿â
+# æ›´æ–°çº¿ä¸Šmethodè¡¨åˆ°cobra_methodè¡¨
+# è·å–æŒ‡å®šæ—¥æœŸçš„æ¥å£è¡¨ï¼Œresæ•°æ®ï¼Œrpmæ•°æ®ï¼Œå­˜å…¥æˆ‘çš„åº“
 
 def get_dates():
 	cf = configparser.ConfigParser()
@@ -28,36 +28,37 @@ def get_dates():
 	except:
 		print("connection timeout")
 		sys.exit(0)
-	# »ñÈ¡½Ó¿Ú±íÊı¾İ
+	# è·å–æ¥å£è¡¨æ•°æ®
 	cursor.execute("select id, name, description, type, version  from api_method where enabled = %s" % ('1',))
 	values = cursor.fetchall()
 
-	# ¼ÆËã×òÌìµÄday_num£¬Ëã·¨ÊÇ¾àÀë20160101ÓĞ¶àÉÙÌì£¬Èç12,22ºÅÊÇ356
+	# è®¡ç®—æ˜¨å¤©çš„day_numï¼Œç®—æ³•æ˜¯è·ç¦»20160101æœ‰å¤šå°‘å¤©ï¼Œå¦‚12,22å·æ˜¯356
 	today = datetime.datetime.now()
+	# today = datetime.datetime(2017, 1, 3)
 	begin = datetime.datetime(2016, 1, 1)
-	
-	#ÕıÊ½Ê¹ÓÃÊ±£¬ÏÂÃæ2ĞĞ£¬ÒòÎªÊı¾İ¿â²»ÊÇÊµÊ±Í¬²½£¬Òò´Ë½ñÌì»ØÊÕ×òÌìµÄÊı¾İ
+
+	#æ­£å¼ä½¿ç”¨æ—¶ï¼Œä¸‹é¢2è¡Œï¼Œå› ä¸ºæ•°æ®åº“ä¸æ˜¯å®æ—¶åŒæ­¥ï¼Œå› æ­¤ä»Šå¤©å›æ”¶æ˜¨å¤©çš„æ•°æ®
 	yestoday_num =  (today - begin).days - 1
 	print("day_index: %s" % yestoday_num)
-	
-	# ÒÔÏÂ2ĞĞµ÷ÊÔ this_dayÊÇÎªÁËÉ¾³ıÒÑ¾­´æÈëµÄÊı¾İ
+
+	# ä»¥ä¸‹2è¡Œè°ƒè¯• this_dayæ˜¯ä¸ºäº†åˆ é™¤å·²ç»å­˜å…¥çš„æ•°æ®
 	# yestoday_num = daynum
-	
-	# daynum×ªÈÕÆÚĞÍ£¬ÎªÁËÇåÀíÒÑÓĞµÄÊı¾İ
+
+	# daynumè½¬æ—¥æœŸå‹ï¼Œä¸ºäº†æ¸…ç†å·²æœ‰çš„æ•°æ®
 	this_day = datetime.datetime(2016, 1, 1) + datetime.timedelta(days=(yestoday_num))
 	Datas.objects.filter(create_time=this_day).delete()
 	print(this_day.date())
-	
-	# ²éÑ¯×òÈÕÍÌÍÂÁ¿±í
+
+	# æŸ¥è¯¢æ˜¨æ—¥ååé‡è¡¨
 	cursor.execute("select method_id, sum, day_num  from api_overview where day_num = %s" % yestoday_num)
 	rpms = cursor.fetchall()
-	# ²éÑ¯×òÈÕÏìÓ¦Ê±¼ä±í
+	# æŸ¥è¯¢æ˜¨æ—¥å“åº”æ—¶é—´è¡¨
 	cursor.execute("select method_id, cost_time, create_time, count_index, day_num  from stat_performance where day_num = %s and cost_time  > %s" % (yestoday_num, 0))
 	ress = cursor.fetchall()
-	
+
 	cursor.close
 	conn.close()
-	
+
 	return values, rpms, ress
 
 
@@ -82,11 +83,11 @@ def save_datas(values, rpms, ress):
 	# ress = [method_id, cost_time, create_time, count_index, day_num]
 	# rpms = [method_id, sum, day_num]
 	ress_IdList = [x[0] for x in ress]
-	# ±éÀúËùÓĞ½Ó¿Ú£¬¹ıÂËµ±ÈÕÃ»ÓĞÊı¾İµÄ½Ó¿Ú
+	# éå†æ‰€æœ‰æ¥å£ï¼Œè¿‡æ»¤å½“æ—¥æ²¡æœ‰æ•°æ®çš„æ¥å£
 	for x in method_IdList:
 		if x in ress_IdList:
 			y = Datas(method_id=x)
-			# »ã×Ü¸Ã½Ó¿ÚËùÓĞµÄresÖµ£¬ÇóÆ½¾ù
+			# æ±‡æ€»è¯¥æ¥å£æ‰€æœ‰çš„reså€¼ï¼Œæ±‚å¹³å‡
 			cost_List = [z[1] for z in ress if z[0] == x]
 			total = sum(cost_List)
 			length = len(cost_List)
@@ -98,20 +99,16 @@ def save_datas(values, rpms, ress):
 				y.rpm = [r[1] for r in rpms if r[0] == x][0]
 			except:
 				print("rpm %s count failed" % x)
-			# Ö±½ÓÈ¡cobra±íÖĞµÄcreate_time
+			# ç›´æ¥å–cobraè¡¨ä¸­çš„create_time
 			b = ress[0][2]
 			y.create_time = b
 			y.save()
 		else:
 			continue
-		
+
 if __name__ == '__main__':
 	start = get_dates()
 	values = start[0]
 	rpms = start[1]
 	ress = start[2]
 	save_datas(values, rpms, ress)
-
-
-
-

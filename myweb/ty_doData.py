@@ -609,6 +609,7 @@ def do_mail():
 if __name__ == '__main__':
 	urls = get_urls() #拼接URL
 	get_data(urls) #通过听云获取数据
+	time.sleep(10)
 	do_db() # 存储数据库
 	do_rates() # 计算接口占比
 	do_rr()

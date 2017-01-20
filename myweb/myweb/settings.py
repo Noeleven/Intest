@@ -19,7 +19,6 @@ get_path = lambda x: os.path.join(BASE_DIR, x)
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 SITE_ID = 1
-WIKI_LANGUAGE = 'markdown'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
@@ -53,6 +52,7 @@ INSTALLED_APPS = [
 	'wiki.plugins.notifications',
 	'wiki.plugins.images',
 	'wiki.plugins.macros',
+	'simplemde',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -149,5 +149,17 @@ CACHES = {
         'OPTIONS': {
             'MAX_ENTRIES': 1000
         }
+    }
+}
+
+SIMPLEMDE_OPTIONS = {
+    'hideIcons':["guide", "heading"],
+    'showIcons':["heading-2"],
+    'promptURLs': True,
+    'spellChecker': False,
+    'placeholder': 'hi, i am simplemde',
+    'status': False,
+    'autosave': {
+        'enabled': True
     }
 }

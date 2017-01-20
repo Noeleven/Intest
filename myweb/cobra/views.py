@@ -81,7 +81,7 @@ def cobra_datas(request):
 			continue
 		method = source['method']
 		# 去空值和非正数
-		rpm_src = [x['rpm'] for x in range_list.filter(method_id=x).values('rpm') if x['rpm']]
+		rpm_src = [x['rpm'] for x in range_list.filter(method_id=x).values('rpm') if x['rpm'] ]
 		my_dict = {
 						'method' : method,
 						'des' : source['des'],

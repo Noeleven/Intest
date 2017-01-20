@@ -10,6 +10,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myweb.settings')
 django.setup()
 from cobra.models import *
 import datetime
+import time
 
 
 # 更新线上method表到cobra_method表
@@ -22,19 +23,24 @@ def get_dates():
 	password = cf.get('cobra', 'password')
 	host = cf.get('cobra', 'host')
 
-	try:
-		conn = mysql.connector.connect(user=user, password=password, database='cobra', host=host)
-		cursor = conn.cursor()
-	except:
-		print("connection timeout")
-		sys.exit(0)
+	for i in range(5):
+		try:
+			conn = mysql.connector.connect(user=user, password=password, database='cobra', host=host)
+			cursor = conn.cursor()
+			break
+		except:
+			print("connection timeout")
+			if i == 5:
+				sys.exit(0)
+		finally:
+			time.sleep(10)
 	# 获取接口表数据
 	cursor.execute("select id, name, description, type, version  from api_method where enabled = %s" % ('1',))
 	values = cursor.fetchall()
 
 	# 计算昨天的day_num，算法是距离20160101有多少天，如12,22号是356
 	today = datetime.datetime.now()
-	# today = datetime.datetime(2017, 1, 3)
+	# today = datetime.datetime(2017, 1, 16)
 	begin = datetime.datetime(2016, 1, 1)
 
 	#正式使用时，下面2行，因为数据库不是实时同步，因此今天回收昨天的数据

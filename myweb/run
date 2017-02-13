@@ -1,0 +1,2 @@
+nohup /root/.pyenv/versions/3.5.1/bin/python3 /rd/pystudy/Intest/myweb/manage.py runserver 0.0.0.0:8000 &
+exit 0

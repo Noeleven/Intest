@@ -40,15 +40,13 @@ def get_dates():
 
 	# 计算昨天的day_num，算法是距离20160101有多少天，如12,22号是356
 	today = datetime.datetime.now()
-	# today = datetime.datetime(2017, 1, 16)
 	begin = datetime.datetime(2016, 1, 1)
 
-	#正式使用时，下面2行，因为数据库不是实时同步，因此今天回收昨天的数据
+	# 正式使用时，下面2行，因为数据库不是实时同步，因此今天回收昨天的数据
 	yestoday_num =  (today - begin).days - 1
+	# 调试 this_day是为了删除已经存入的数据
+	# yestoday_num = 390
 	print("day_index: %s" % yestoday_num)
-
-	# 以下2行调试 this_day是为了删除已经存入的数据
-	# yestoday_num = daynum
 
 	# daynum转日期型，为了清理已有的数据
 	this_day = datetime.datetime(2016, 1, 1) + datetime.timedelta(days=(yestoday_num))

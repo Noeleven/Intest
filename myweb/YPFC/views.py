@@ -5,11 +5,15 @@ from decimal import Decimal
 import time
 
 # Create your views here.
+# 需要一个总览的页面截图 报告给群里人知晓
+# 可能包含 球队成员/总费用/散客费用/个人明细/最近活动一览
 
 # memberList
 def memView(request):
 	# 计算表中每个id的总收入和支出，在求余额、状态等信息
-	datas = []
+	vip_normal = []
+	vip_loser = []
+	no_vip = []
 	name_list = [x['name'] for x in member.objects.values('name')]
 	for name in name_list:
 		mem_content = {}
@@ -18,19 +22,31 @@ def memView(request):
 		mem_content['income'] = sum([x['income'] for x in cash.objects.filter(member_id=id).values('income')])
 		mem_content['pay'] = sum([x['pay'] for x in cash.objects.filter(member_id=id).values('pay')])
 		mem_content['balance'] = mem_content['income'] - mem_content['pay']
-		if mem_content['balance'] > 0:
+		# 判断非会员的
+		if member.objects.get(id=id).status == '0':
+			if mem_content['balance'] > 0:
+				mem_content['status'] = '未退还'
+				no_vip.append(mem_content)
+			else:
+				mem_content['status'] = '已清'
+				no_vip.append(mem_content)
+			continue
+		else:
+			pass
+		# 判断会员的
+		if mem_content['balance'] >= 0:
 			mem_content['status'] = '正常'
-		elif mem_content['balance'] == 0:
-			mem_content['status'] = '待缴费'
+			vip_normal.append(mem_content)
 		else:
 			mem_content['status'] = '欠费'
-		datas.append(mem_content)
-	return render(request, 'memView.html', {'datas':datas})
+			vip_loser.append(mem_content)
+
+	return render(request, 'memView.html', {'vip_normal':vip_normal, 'vip_loser':vip_loser, 'no_vip':no_vip})
 
 # cash write
 def cashView(request):
 	# 需要给页面提供人员名单
-	name_list = [x['name'] for x in member.objects.values('name')]
+	name_list = [x['name'] for x in member.objects.values('name','status') if x['status']=='1']
 	if request.method == 'POST': # 如果表单被提交
 		form = myFrom(request.POST) # 获取Post表单数据
 		if form.is_valid(): # 验证表单
@@ -134,6 +150,7 @@ def cashDetail(request, name):
 	print(range)
 	for i in range:
 		try:
+			# 这里要求记录的时间不能一样，不然会导致描述不匹配，日后再修复
 			des = mark.objects.filter(timestamp=i.timestamp)[0].des
 		except:
 			des = ''

@@ -1,0 +1,311 @@
+{% extends "auto_base.html" %} {% block content %}
+<div class="row">
+    <div class="panel panel-primary">
+        <div class="panel-heading"> 添加用例 </div>
+        <div class="panel-body">
+            <form class="form-horizontal" role="form" method='POST' action="/auto/auto_save">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="caseName" class="col-sm-2 control-label">用例名称</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control focus" name="caseName" autofocus="autofocus" placeholder="格式建议：品类-用例名" required="required" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="type" class="col-sm-2 control-label">品类</label>
+                    <div class="col-sm-10 form-inline">
+                        <select class="form-control" name='type'>
+                            {% for x in type_list %}
+                            <option>{{ x.type_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="version" class="col-sm-2 control-label">版本</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" name="version" placeholder="如：7.9.0" required="required" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="plantform" class="col-sm-2 control-label">平台</label>
+                    <div class="col-sm-10">
+                        <label class="radio-inline">
+                          <input type="radio" name="plantform" id="Android" value="Android" checked="True"> Android
+                        </label>
+                        <!-- <label class="radio-inline">
+                          <input type="radio" name="plantform" id="IOS" value="IOS"> IOS
+                        </label>
+                        <label class="radio-inline">
+                          <input type="radio" name="plantform" id="M" value="M"> M
+                        </label> -->
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="from" class="col-sm-2 control-label">步骤 </label>
+                    <div class="col-sm-10">
+                        <table class='table table-striped table-bordered table-condensed table-responsive' name="allstep">
+                            <thead><tr class="info"><th>序号</th><th>用例步骤</th><th>操作</th></tr></thead>
+                            <tbody id='l1tb'>
+                                <tr id='l1tr'>
+                                    <td id='index_1' name="index_1">1</td>
+                                    <td>
+                                        <div class="form-group">
+                                            <label for="storyDescription" class="col-sm-2 control-label">描述</label>
+                                            <div class="col-sm-10">
+                                                <input type="text" class="form-control focus" name="storyDescription" placeholder="如：点击首页门票标签进入门票频道页" required="required" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="where" class="col-sm-2 control-label">起点</label>
+                                            <div class="col-sm-10">
+                                                <select class="form-control" name="where">
+                                                    {% for x in where_list %}
+                                                    <option>{{ x.controlName }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="stepDes" class="col-sm-2 control-label">动作</label>
+                                            <div class="col-sm-10">
+                                                <table class='table table-striped table-bordered table-condensed table-responsive'>
+                                                    <thead>
+                                                        <tr class="danger">
+                                                            <th>序号</th>
+                                                            <th>谁</th>
+                                                            <th>输入</th>
+                                                            <th>干什么</th>
+                                                            <th>等不</th>
+                                                            <th>操作</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id='l2tb'>
+                                                        <tr id='l2tr'>
+                                                            <td id='index_1_1'>
+                                                                <div class="form-group">
+                                                                    <input type="text" class="form-control" name="index_1_1" value="1-1" required="required">
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div class="form-group">
+                                                                    <label for="targetName">目标元素名</label>
+                                                                    <input type="text" class="form-control focus" name="targetName" placeholder="如：门票标签">
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="itemName">特殊元素名称</label>
+                                                                    <input type="text" class="form-control focus" name="itemName" placeholder="如成人票、优待票、组合套餐票、老人票等"/>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="selectorType">定位方式</label>
+                                                                    <select class="form-control" name="selectorType">
+                                                                        <option>ID</option>
+                                                                        <option>XPATH</option>
+                                                                        <option>CLASS</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="elementName">定位代码</label>
+                                                                    <input type="text" class="form-control focus" name="elementName" placeholder="如:com.gift.android:id/tv_amount">
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div class="form-group">
+                                                                    <textarea class="form-control" name="inputValue" placeholder="如果元素是input输入框，就输入内容，否则留空" rows="3" /></textarea>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <select class="form-control" name="actionCode">
+                                                                    {% for x in control_list %}
+                                                                    <option>{{ x.controlName }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </td>
+                                                            <td>
+                                                                <div class="form-group">
+                                                                    <label for="elementName">该步骤慢就等等</label>
+                                                                    <select class="form-control" name="needWait">
+                                                                        <option>不等待</option>
+                                                                        <option>等待</option>
+                                                                    </select>
+                                                                </div>
+                                                            </td>
+                                                            <td><button type="button" class="btn-warning form-control btn-sm" onclick="setpAdd(this)">+</button>
+                                                                <button type="button" class="btn-danger form-control btn-sm" data-toggle="modal" onclick="myDel(this)">-</button></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="expeted" class="col-sm-2 control-label">预期</label>
+                                            <div class="col-sm-10">
+                                                <textarea class="form-control" name="expeted" placeholder="描述此步骤结束后的预期结果" rows="3" required="required" /></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="check" class="col-sm-2 control-label">校验</label>
+                                            <div class="col-sm-10">
+                                                <table class='table table-striped table-bordered table-condensed table-responsive'>
+                                                    <thead>
+                                                        <tr class="danger">
+                                                            <th>是否校验执行结果</th>
+                                                            <th>校验方法</th>
+                                                            <th>校验值(根据校验方法选一种)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>
+                                                                <div class="form-group">
+                                                                    <select class="form-control" name="needCheck">
+                                                                        <option>校验</option>
+                                                                        <option>不校验</option>
+                                                                    </select>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div class="form-group">
+                                                                    <select class="form-control" name="checkType">
+                                                                        <option>是否进入目标页面</option>
+                                                                        <option>是否是指定元素</option>
+                                                                    </select>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div class="form-group">
+                                                                    <select class="form-control" name="enterActivity">
+                                                                        <option></option>
+                                                                        {% for x in where_list %}
+                                                                        <option>{{ x.controlName }}</option>
+                                                                        {% endfor %}
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <input type="text" class="form-control focus" name="elementname" placeholder="指定元素 如：com.gift.android:id/tv_amount"/>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><button type="button" class="btn-success form-control btn-sm" onclick="myAdd()">+</button>
+                                        <button type="button" class="btn-danger form-control btn-sm" data-toggle="modal" onclick="myDel(this)" >-</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="canUse" class="col-sm-2 control-label">用例状态</label>
+                    <div class="col-sm-10" name='use_or_not'>
+                        <label class="radio-inline">
+                          <input type="radio" name="canUse" id="inlineRadio1" value="use" checked="True"> 在用
+                        </label>
+                        <label class="radio-inline">
+                          <input type="radio" name="canUse" id="inlineRadio2" value="nouse"> 弃用
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="caseDes" class="col-sm-2 control-label">描述</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control focus" name="caseDes" placeholder="特殊描述" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <input type="submit" class="btn btn-primary" name='yes' value="提交">
+                        <!-- 提交并继续 需要上下文渲染器 -->
+                        <a type="submit" class="btn btn-default" href='/auto/'>返回</a>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Modal -->
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">⊙▂⊙</h4>
+                  </div>
+                  <div id='message1' class="modal-body">
+                    {{ message }}
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script>
+    function myAdd(){
+        var
+            trlen = document.getElementById('l1tb').rows.length;
+            model = document.getElementById('l1tr');
+            //克隆节点，并设置id,为了和根区分
+            new_son = model.cloneNode(true);
+            new_son.id = 'clonetr';
+            // 定位该table最后一行
+            lasttr = document.getElementById('l1tb').rows[trlen-1];
+            // 行号 = 最后一行的行号 + 1
+            linenum = parseInt(lasttr.innerText) + 1;
+            // 下面获取克隆元素的二层table的index序号
+            new_son.getElementsByTagName('input').index_1_1.value = linenum + '-1'
+        // 克隆元素
+        document.getElementById('l1tb').appendChild(new_son);
+        // 给新加的元素设置行号，重新算行数
+        trlen = document.getElementById('l1tb').rows.length;
+        document.getElementById('l1tb').rows[trlen-1].cells[0].innerHTML = linenum
+    }
+
+    function setpAdd(node){
+        var
+            // tr节点
+            child = node.parentNode.parentNode;
+            // tbody节点
+            father = child.parentNode;
+            model = document.getElementById('l2tr');
+            //克隆节点，并设置id
+            new_son = model.cloneNode(true);
+            new_son.id = 'clone2tr';
+            target_id = new_son.id;
+            // 获取父节点的index值
+            firstnum = father.getElementsByTagName('input').index_1_1.value[0];
+            // 获取父节点下所有节点的最后一个的index值
+            trlen = father.parentNode.rows.length;
+            lasttd = father.parentNode.rows[trlen-1].getElementsByTagName('input').index_1_1.value[2];
+            lastnum = parseInt(lasttd) + 1;
+            // 改其为index前半 + 后半
+            new_son.getElementsByTagName('input').index_1_1.value = firstnum + '-' + lastnum;
+        father.appendChild(new_son);
+    }
+
+    function myDel(node){
+        var
+            child = node.parentNode.parentNode;
+            // father = document.getElementById('test_tb');
+            father = child.parentNode;
+        if(child.id=='l1tr' || child.id=='l2tr')
+            {
+                node.setAttribute('data-target','#myModal');
+                document.getElementById('message1').innerHTML = '不能删除根节点';
+            }
+        else
+            {
+                node.setAttribute('data-target','');
+                father.removeChild(child);
+            }
+    }
+
+
+</script>
+{% endblock content %}

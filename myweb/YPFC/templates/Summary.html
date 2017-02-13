@@ -55,22 +55,22 @@
             <div class="panel-body">
                 总量：{{ datas|length }}
             </div>
-            <table data-toggle="table" data-striped="true" data-show-refresh="true" data-show-columns="true" data-search="true" data-row-style="rowStyle" style="word-break:break-all;" class="table table-hover table-striped">
+            <table data-toggle="table" data-striped="true" data-show-refresh="true" data-show-columns="true" data-search="true" data-row-style="rowStyle" style="word-break:break-all;" class="table table-hover table-striped table-responsive">
                 <thead>
                     <tr>
-                        <th style="width: 1%; " data-formatter="runningFormatter" data-field="ID">
+                        <th class="col-xs-1" data-formatter="runningFormatter" data-field="ID">
                             #
                         </th>
-                        <th style="width: 40%; " data-field="Des" data-sortable="true">
+                        <th class="col-xs-5" data-field="Des" data-sortable="true">
                             Des
                         </th>
-                        <th style="width: 40%; " data-field="Data" data-sortable="true">
+                        <th class="col-xs-2" data-field="Data" data-sortable="true">
                             Data
                         </th>
-                        <th style="width: 1%; " data-field="Income">
+                        <th class="col-xs-2" data-field="Income">
                             Income
                         </th>
-                        <th style="width: 1%; " data-field="Pay">
+                        <th class="col-xs-2" data-field="Pay">
                             Pay
                         </th>
                     </tr>
@@ -78,11 +78,11 @@
                 <tbody>
                     {% for x in datas %}
                     <tr>
-                        <td style="width: 1%; "></td>
-                        <td style="width: 1%; ">{{ x.des }}</td>
-                        <td style="width: 1%; ">{{ x.timestamp }}</td>
-                        <td style="width: 40%; ">{{ x.income }}</td>
-                        <td style="width: 40%; ">{{ x.pay }}</td>
+                        <td></td>
+                        <td>{{ x.des }}</td>
+                        <td>{{ x.timestamp }}</td>
+                        <td>{{ x.income }}</td>
+                        <td>{{ x.pay }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

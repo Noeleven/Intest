@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 	'fz',
 	'cobra',
     'YPFC',
+    'automation',
 	'django.contrib.sites', # django 1.6.2+
 	'django.contrib.humanize',
 	'django_nyt',
@@ -84,6 +85,7 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'django.template.context_processors.tz',
                 "sekizai.context_processors.sekizai",
+                # 'django.template.context_processors.nav_list',
             ],
         },
     },

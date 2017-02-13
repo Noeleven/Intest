@@ -35,6 +35,7 @@ urlpatterns = [
 	url(r'^favicon.ico$',RedirectView.as_view(url=r'static/favicon.ico')),
 	url(r'^logout/$', RedirectView.as_view(url=r"/tyblog/logout/")),
     url(r'^YPFC/', include('YPFC.urls')),
+    url(r'^auto/', include('automation.urls')),
 	url(r'^wiki/notifications/', get_nyt_pattern()),
     url(r'^wiki/', get_wiki_pattern()),
 	url(r'^media/(?P<path>.*)$',django.views.static.serve,{'document_root': settings.MEDIA_ROOT,}),

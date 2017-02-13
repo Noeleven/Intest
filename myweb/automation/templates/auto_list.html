@@ -1,0 +1,55 @@
+{% extends "auto_base.html" %}
+{% block content %}
+<div class="row">
+    <div class="panel panel-primary">
+        <div class="panel-heading"> 用例列表 品类：{{ my_type }} </div>
+		<div class="panel-body">
+            <a href='/auto/auto_add' type='button' class='btn btn-primary btn-sm'><span class="glyphicon glyphicon-plus"></span> 添加用例</a>
+		</div>
+		<table data-toggle="table" data-striped="true" data-show-refresh="true" data-show-columns="true" data-search="true" data-row-style="rowStyle" style="word-break:break-all;" class="table table-hover table-striped">
+			<thead>
+				<tr>
+					<th style="width: 1%; " data-field="ID">
+						ID
+					</th>
+					<th style="width: 1%; " data-field="用例名称" data-sortable="true">
+						用例名称
+					</th>
+					<th style="width: 40%; " data-field="品类" data-sortable="true">
+						品类
+					</th>
+					<th style="width: 1%; " data-field="版本" data-sortable="true">
+					    版本
+					</th>
+					<th style="width: 1%; " data-field="平台" data-sortable="true">
+					    平台
+					</th>
+					<th style="width: 40%; " data-field="备注" data-sortable="true">
+						备注
+					</th>
+					<th style="width: 40%; " data-field="修改时间" data-sortable="true">
+						修改时间
+					</th>
+                    <th style="width: 40%; " data-field="操作" data-sortable="true">
+						操作
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+			{% for x in show_list %}
+				<tr>
+				<td>{{ x.id }}</td>
+				<td>{{ x.caseName }}</td>
+				<td>{{ x.type_field }}</td>
+				<td>{{ x.version }}</td>
+				<td>{{ x.plantform }}</td>
+				<td>{{ x.des }}</td>
+				<td>{{ x.modify_time|date:"Y-m-d H:i:s" }}</td>
+				<td><a type='button' class="btn btn-sm btn-primary" href="/auto/auto_edit/{{ x.id }}/">编辑</button></td>
+                </tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+{% endblock content %}

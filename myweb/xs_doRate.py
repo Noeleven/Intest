@@ -16,15 +16,15 @@ from cobra.models import Method
 # 时间函数 求一周前开始、今天结束时间、时间描述
 def time_des():
 	d = datetime.datetime.now()
+	# 调试，下面doDdata也要改改
+	# d = datetime.datetime(2017, 2, 5, 23, 50, 00, 000000)
+
 	this_year = d.year
 	this_month = d.month
 	this_day = d.day
-	week_from = (d - datetime.timedelta(days=6)).day
-	# 调试
-	# this_month = 11
-	# this_day = 7
-	# week_from = this_day - 6
-	date_from = datetime.datetime(this_year, this_month, week_from, 00, 00)
+	week_from = d - datetime.timedelta(days=6)
+
+	date_from = datetime.datetime(week_from.year, week_from.month, week_from.day, 00, 00)
 	date_to = datetime.datetime(this_year, this_month, this_day, 23, 59)
 	flag = 0
 	if this_day == 7:
@@ -193,8 +193,8 @@ def doDdata():
 	date_from = datetime.datetime(now.year, now.month, now.day, 00, 00)
 	date_to = datetime.datetime(now.year, now.month, now.day, 23, 59)
 	# 历史数据生成，这里没有处理跨月的，因此开始结束时间请不要跨月
-	# date_from = datetime.datetime(2016, 12, 15, 00, 00)
-	# date_to = datetime.datetime(2016, 12, 18, 23, 59)
+	# date_from = datetime.datetime(2017, 2, 5, 00, 00)
+	# date_to = datetime.datetime(2017, 2, 5, 23, 59)
 	for day in range(date_from.day, date_to.day + 1):
 		print("day%s begin" % day)
 		stamp = datetime.datetime(date_from.year, date_from.month, day).strftime("%Y-%m-%d")
@@ -233,8 +233,10 @@ if __name__ == '__main__':
 	print("周flag:%s" % time_des()[3])
 	# 判断指定日，不是指定日，只归纳日数据
 	if time_des()[3] == 0:
+		print("非指定日")
 		doDdata()
 	else:
+		print("指定日")
 		doDdata()
 		doRate()
 		doWdata()

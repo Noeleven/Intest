@@ -80,6 +80,7 @@ def get_data(urls):
 def save_datas(name, content):
 	with open(('/rd/pystudy/Intest/myweb/tyblog/src/%s' % name), 'w', encoding='utf-8', errors='ignore') as f:
 		f.write(content)
+		print("%s file save done!" % name)
 
 # 拼接URL
 def get_urls():
@@ -211,7 +212,7 @@ def do_db():
 	crashes.objects.all().filter(des=time_des()[1]).delete()
 	crashes.objects.all().filter(des=time_des()[2]).delete()
 	for i in res_file:
-		with open(('tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
+		with open(('/rd/pystudy/Intest/myweb/tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'], ) for x in b]
 			host_id = judge_host(i)[0]
@@ -313,7 +314,7 @@ def do_db():
 				else:
 					continue
 	for i in rpm_file:
-		with open(('tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
+		with open(('/rd/pystudy/Intest/myweb/tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'], ) for x in b]
 			host_id = judge_host(i)[0]
@@ -415,13 +416,13 @@ def do_db():
 				else:
 					continue
 	for i in err_file:
-		with open(('tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
+		with open(('/rd/pystudy/Intest/myweb/tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'], ) for x in b]
 			host_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com',
 							'iguide.lvmama.com', 'api3g.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com',
 							'loc.map.baidu.com', 'resolver.gslb.mi-idc.com', 'sapi.map.baidu.com', 'scs.openspeech.cn', 'data.openspeech.cn',
-							'mauth.chinanetcenter.com', 'alog.umeng.com', 'data.cn.coremetrics.com', 'collect.dsp.chinanetcenter.com',
+							'mauth.chinanetcenter.com', 'alog.umeng.com', 'data.de.coremetrics.com', 'collect.dsp.chinanetcenter.com',
 							'api.share.mob.com', 'pingma.qq.com', 'hm.baidu.com',
 							'api.weibo.com', 'api.weixin.qq.com']
 			for x in newb:
@@ -434,7 +435,7 @@ def do_db():
 						p.save()
 	# 交互应用
 	for i in view_file:
-		with open(('tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
+		with open(('/rd/pystudy/Intest/myweb/tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'], ) for x in b]
 			host_list = ['V5IndextFragment2', 'GuessLikeFragment', 'ImageGalleryActivity', 'V7BaseSearchFragment',
@@ -458,14 +459,14 @@ def do_db():
 						p.save()
 	# 服务响应
 	for i in resite_file:
-		with open(('tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
+		with open(('/rd/pystudy/Intest/myweb/tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'], ) for x in b]
 			host_list = ['pic.lvmama.com', 'iguide.lvmama.com', 'api3g.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com',
 						 'login.lvmama.com', 'zt1.lvmama.com', 'super.lvmama.com', 'alog.umeng.com',
 						 'loc.map.baidu.com', 'resolver.gslb.mi-idc.com', 'sapi.map.baidu.com', 'api.weixin.qq.com',
 						 'collect.dsp.chinanetcenter.com', 'mauth.chinanetcenter.com', 'm.api.baifengdian.com',
-						 'data.cn.coremetrics.com', 'api.weibo.com', 'pingma.qq.com', 'api.share.mob.com',
+						 'data.de.coremetrics.com', 'api.weibo.com', 'pingma.qq.com', 'api.share.mob.com',
 						 'api.share.mob.com:80', 'libs.cn.coremetrics.com', 'tmscdn.cn.coremetrics.com', 'scs.openspeech.cn', 'data.openspeech.cn', 'hm.baidu.com']
 			for x in newb:
 				for y in host_list:
@@ -476,7 +477,7 @@ def do_db():
 						p.value = x['value']
 						p.save()
 	for i in crash_file:
-		with open(('tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
+		with open(('/rd/pystudy/Intest/myweb/tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'],) for x in b]
 			for x in newb:
@@ -490,7 +491,11 @@ def do_db():
 					p.value = x['value']
 					logger.debug('crash %s' % x)
 					logger.debug('crash %s' % p.value)
-					p.save()
+					# 有异常数据会是1000.0 报错
+					if p.value >= 1000:
+						continue
+					else:
+						p.save()
 				else:
 					continue
 
@@ -609,7 +614,12 @@ def do_mail():
 if __name__ == '__main__':
 	urls = get_urls() #拼接URL
 	get_data(urls) #通过听云获取数据
-	time.sleep(60)
+	for x in range(120):
+		time.sleep(1)
+		if (x % 10) == 0:
+			print('. + %s' % x)
+		else:
+			print('.',end="")
 	do_db() # 存储数据库
 	do_rates() # 计算接口占比
 	do_rr()

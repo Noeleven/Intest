@@ -6,15 +6,21 @@
             <form class="form-horizontal" role="form" method='POST' action="/auto/auto_save">
                 {% csrf_token %}
                 <div class="form-group">
-                    <label for="caseName" class="col-sm-2 control-label">用例名称</label>
+                    <label for="caseName" class="col-sm-2 control-label" readonly></label>
+                    <div class="col-sm-10"><strong class="text-danger">带 <strong class="text-danger">*</strong> 为必填项</strong></div>
+                </div>
+
+                <div id="helpBlock1" class="form-group">
+                    <label for="caseName" class="col-sm-2 control-label">用例名称 <strong class="text-danger">*</strong> </label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control focus" name="caseName" autofocus="autofocus" placeholder="格式建议：品类-用例名" required="required" />
+                        <input type="text" class="form-control focus input-sm" name="caseName" autofocus="autofocus" placeholder="格式建议：品类-用例名" required="required" />
+                        <span id="helpBlock2" class="help-block" style='display:none'>用例名称已存在</span>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="type" class="col-sm-2 control-label">品类</label>
+                    <label for="type" class="col-sm-2 control-label">品类 <strong class="text-danger">*</strong> </label>
                     <div class="col-sm-10 form-inline">
-                        <select class="form-control" name='type'>
+                        <select class="form-control input-sm" name='type'>
                             {% for x in type_list %}
                             <option>{{ x.type_name }}</option>
                             {% endfor %}
@@ -22,13 +28,13 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="version" class="col-sm-2 control-label">版本</label>
-                    <div class="col-sm-10">
-                        <input type="text" class="form-control" name="version" placeholder="如：7.9.0" required="required" />
+                    <label for="version" class="col-sm-2 control-label">版本 <strong class="text-danger">*</strong> </label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control input-sm" name="version" placeholder="如：7.9.0" required="required" />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="plantform" class="col-sm-2 control-label">平台</label>
+                    <label for="plantform" class="col-sm-2 control-label">平台 <strong class="text-danger">*</strong> </label>
                     <div class="col-sm-10">
                         <label class="radio-inline">
                           <input type="radio" name="plantform" id="Android" value="Android" checked="True"> Android
@@ -41,25 +47,26 @@
                         </label> -->
                     </div>
                 </div>
+                <!-- 步骤 -->
                 <div class="form-group">
-                    <label for="from" class="col-sm-2 control-label">步骤 </label>
+                    <label for="from" class="col-sm-2 control-label">步骤 <strong class="text-danger">*</strong> </label>
                     <div class="col-sm-10">
-                        <table class='table table-striped table-bordered table-condensed table-responsive' name="allstep">
-                            <thead><tr class="info"><th>序号</th><th>用例步骤</th><th>操作</th></tr></thead>
-                            <tbody id='l1tb'>
-                                <tr id='l1tr'>
-                                    <td id='index_1' name="index_1">1</td>
+                        <table class='table table-striped table-bordered table-condensed table-responsive'>
+                            <thead><tr class="info"><th>#</th><th>用例步骤</th><th>操作</th></tr></thead>
+                            <tbody id='L1TB'>
+                                <tr id='L1TR'>
+                                    <td name="index_main">1</td>
                                     <td>
                                         <div class="form-group">
-                                            <label for="storyDescription" class="col-sm-2 control-label">描述</label>
+                                            <label for="storyDescription" class="col-sm-2 control-label">描述 <strong class="text-danger">*</strong> </label>
                                             <div class="col-sm-10">
-                                                <input type="text" class="form-control focus" name="storyDescription" placeholder="如：点击首页门票标签进入门票频道页" required="required" />
+                                                <input type="text" class="form-control focus input-sm" name="storyDescription" placeholder="如：点击首页门票标签进入门票频道页" required="required" />
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label for="where" class="col-sm-2 control-label">起点</label>
+                                            <label for="where" class="col-sm-2 control-label"><span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="第一个步骤, 一般从首页或频道页开始；其他步骤, 一般是上一个步骤的终点页"></span> 起点 <strong class="text-danger">*</strong></label>
                                             <div class="col-sm-10">
-                                                <select class="form-control" name="where">
+                                                <select class="form-control input-sm" name="where" required="required">
                                                     {% for x in where_list %}
                                                     <option>{{ x.controlName }}</option>
                                                     {% endfor %}
@@ -72,50 +79,25 @@
                                                 <table class='table table-striped table-bordered table-condensed table-responsive'>
                                                     <thead>
                                                         <tr class="danger">
-                                                            <th>序号</th>
-                                                            <th>谁</th>
-                                                            <th>输入</th>
-                                                            <th>干什么</th>
-                                                            <th>等不</th>
-                                                            <th>操作</th>
+                                                            <th class="col-sm-1">## <strong class="text-danger">*</strong> </th>
+                                                            <th class="col-sm-3">做什么动作 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="标记需要配置元素的选型，一定要配置元素，除此之外都可以不要"></span></th>
+                                                            <th class="col-sm-3 ">什么元素
+                                                                <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="选择或输入, 页面上可见的图标、文字、按钮都是元素. 元素分2类, 1 带文字的, 如首页'门票频道', 直接写门票频道;2 不带文字的, 如首页搜索框, 下拉选择 3 图标类, 如小人,电话图标 下拉选择    ."></span>
+                                                            </th>
+                                                            <th >要不要输入</th>
+                                                            <th >是否等待 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="该步骤执行完毕, 经常要转圈的, 建议等待, 增加用例稳定性;"></span></th>
+                                                            <th></th><th></th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody id='l2tb'>
-                                                        <tr id='l2tr'>
-                                                            <td id='index_1_1'>
+                                                    <tbody id='L2TB'>
+                                                        <tr id='L2TR'>
+                                                            <td>
                                                                 <div class="form-group">
-                                                                    <input type="text" class="form-control" name="index_1_1" value="1-1" required="required">
+                                                                    <input type="text" class="form-control input-sm" name="index_step" required="required" value='1-1'>
                                                                 </div>
                                                             </td>
                                                             <td>
-                                                                <div class="form-group">
-                                                                    <label for="targetName">目标元素名</label>
-                                                                    <input type="text" class="form-control focus" name="targetName" placeholder="如：门票标签">
-                                                                </div>
-                                                                <div class="form-group">
-                                                                    <label for="itemName">特殊元素名称</label>
-                                                                    <input type="text" class="form-control focus" name="itemName" placeholder="如成人票、优待票、组合套餐票、老人票等"/>
-                                                                </div>
-                                                                <div class="form-group">
-                                                                    <label for="selectorType">定位方式</label>
-                                                                    <select class="form-control" name="selectorType">
-                                                                        <option>ID</option>
-                                                                        <option>XPATH</option>
-                                                                        <option>CLASS</option>
-                                                                    </select>
-                                                                </div>
-                                                                <div class="form-group">
-                                                                    <label for="elementName">定位代码</label>
-                                                                    <input type="text" class="form-control focus" name="elementName" placeholder="如:com.gift.android:id/tv_amount">
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <div class="form-group">
-                                                                    <textarea class="form-control" name="inputValue" placeholder="如果元素是input输入框，就输入内容，否则留空" rows="3" /></textarea>
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <select class="form-control" name="actionCode">
+                                                                <select class="form-control input-sm" name="actionCode" required="required">
                                                                     {% for x in control_list %}
                                                                     <option>{{ x.controlName }}</option>
                                                                     {% endfor %}
@@ -123,24 +105,44 @@
                                                             </td>
                                                             <td>
                                                                 <div class="form-group">
-                                                                    <label for="elementName">该步骤慢就等等</label>
-                                                                    <select class="form-control" name="needWait">
-                                                                        <option>不等待</option>
-                                                                        <option>等待</option>
+                                                                    <select id="editable-select" class="form-control input-sm" name="targetName" placeholder="选择或输入">
+                                                                        {% for x in target_list %}
+                                                                        <option>{{ x.controlName }}</option>
+                                                                        {% endfor %}
                                                                     </select>
                                                                 </div>
                                                             </td>
-                                                            <td><button type="button" class="btn-warning form-control btn-sm" onclick="setpAdd(this)">+</button>
-                                                                <button type="button" class="btn-danger form-control btn-sm" data-toggle="modal" onclick="myDel(this)">-</button></td>
+                                                            <td>
+                                                                <div class="form-group">
+                                                                    <textarea class="form-control input-sm" name="inputValue" placeholder="如果元素是input输入框，就输入内容，否则留空" rows="3" /></textarea>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div class="form-group">
+                                                                    <select class="form-control input-sm" name="needWait">
+                                                                        <option>等待</option>
+                                                                        <option>不等待</option>
+                                                                    </select>
+                                                                </div>
+                                                            </td>
+                                                            <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="ActionAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></td>
+                                                            <td><button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)"style="height:30px;width:30px"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label for="expeted" class="col-sm-2 control-label">预期</label>
+                                            <label for="check" class="col-sm-2 control-label">终点</label>
                                             <div class="col-sm-10">
-                                                <textarea class="form-control" name="expeted" placeholder="描述此步骤结束后的预期结果" rows="3" required="required" /></textarea>
+                                                <div class="form-group">
+                                                    <select class="form-control input-sm" name="enterActivity">
+                                                        <option></option>
+                                                        {% for x in where_list %}
+                                                        <option>{{ x.controlName }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="form-group">
@@ -149,50 +151,46 @@
                                                 <table class='table table-striped table-bordered table-condensed table-responsive'>
                                                     <thead>
                                                         <tr class="danger">
-                                                            <th>是否校验执行结果</th>
+                                                            <th class="col-sm-1">##</th>
+                                                            <th>预期描述</th>
                                                             <th>校验方法</th>
-                                                            <th>校验值(根据校验方法选一种)</th>
+                                                            <th>校验元素</th>
+                                                            <th></th><th></th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr>
+                                                        <tr id="L3TR">
                                                             <td>
-                                                                <div class="form-group">
-                                                                    <select class="form-control" name="needCheck">
-                                                                        <option>校验</option>
-                                                                        <option>不校验</option>
-                                                                    </select>
-                                                                </div>
+                                                                <input class="form-control input-sm" name="index_expend" placeholder="序号" value='1-1'/>
                                                             </td>
                                                             <td>
-                                                                <div class="form-group">
-                                                                    <select class="form-control" name="checkType">
-                                                                        <option>是否进入目标页面</option>
-                                                                        <option>是否是指定元素</option>
-                                                                    </select>
-                                                                </div>
+                                                                <input class="form-control input-sm" name="expeted" placeholder="预期结果"/>
                                                             </td>
                                                             <td>
-                                                                <div class="form-group">
-                                                                    <select class="form-control" name="enterActivity">
-                                                                        <option></option>
-                                                                        {% for x in where_list %}
-                                                                        <option>{{ x.controlName }}</option>
-                                                                        {% endfor %}
-                                                                    </select>
-                                                                </div>
-                                                                <div class="form-group">
-                                                                    <input type="text" class="form-control focus" name="elementname" placeholder="指定元素 如：com.gift.android:id/tv_amount"/>
-                                                                </div>
+                                                                <select class="form-control input-sm" name="checkType">
+                                                                    <option></option>
+                                                                    {% for x in checkType_list %}
+                                                                    <option>{{ x.controlName }}</option>
+                                                                    {% endfor %}
+                                                                </select>
                                                             </td>
+                                                            <td>
+                                                                <select id="editable-select1" class="form-control input-sm" name="elementname" placeholder="选择或输入元素">
+                                                                    {% for x in target_list %}
+                                                                    <option>{{ x.controlName }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </td>
+                                                            <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="expendAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                                                            <td><button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
                                             </div>
                                         </div>
                                     </td>
-                                    <td><button type="button" class="btn-success form-control btn-sm" onclick="myAdd()">+</button>
-                                        <button type="button" class="btn-danger form-control btn-sm" data-toggle="modal" onclick="myDel(this)" >-</button>
+                                    <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="StepAdd()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                                        <button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)" ><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -200,7 +198,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="canUse" class="col-sm-2 control-label">用例状态</label>
+                    <label for="canUse" class="col-sm-2 control-label">用例状态 <strong class="text-danger">*</strong> </label>
                     <div class="col-sm-10" name='use_or_not'>
                         <label class="radio-inline">
                           <input type="radio" name="canUse" id="inlineRadio1" value="use" checked="True"> 在用
@@ -211,20 +209,174 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="caseDes" class="col-sm-2 control-label">描述</label>
+                    <label for="owner" class="col-sm-2 control-label">创建者 <strong class="text-danger">*</strong> </label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control focus" name="caseDes" placeholder="特殊描述" />
+                        <input type="text" class="form-control input-sm" name="owner" placeholder="提交人姓名" required="required"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="caseDes" class="col-sm-2 control-label">备注</label>
+                    <div class="col-sm-10">
+                        <textarea type="text" class="form-control input-sm" name="caseDes" placeholder="备注说明" rows='3'/></textarea>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
-                        <input type="submit" class="btn btn-primary" name='yes' value="提交">
+                        <input type="submit" class="btn btn-success btn-sm" id="followMe" name='yes' value="提交">
                         <!-- 提交并继续 需要上下文渲染器 -->
-                        <a type="submit" class="btn btn-default" href='/auto/'>返回</a>
+                        <a type="submit" class="btn btn-default btn-sm" href='/auto/'>返回</a>
                     </div>
                 </div>
             </form>
 
+            <div style="display:none">
+                <table class='table table-striped table-bordered table-condensed table-responsive'>
+                    <thead><tr class="info"><th>#</th><th>用例步骤</th><th>操作</th></tr></thead>
+                    <tbody id='L1TB'>
+                        <tr id='L1Model'>
+                            <td name="index_main">1</td>
+                            <td>
+                                <div class="form-group">
+                                    <label for="storyDescription" class="col-sm-2 control-label">描述 <strong class="text-danger">*</strong> </label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control focus input-sm" name="storyDescription" placeholder="如：点击首页门票标签进入门票频道页" required="required" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="where" class="col-sm-2 control-label"><span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="第一个步骤, 一般从首页或频道页开始；其他步骤, 一般是上一个步骤的终点页"></span> 起点 <strong class="text-danger">*</strong></label>
+                                    <div class="col-sm-10">
+                                        <select class="form-control input-sm" name="where" required="required">
+                                            {% for x in where_list %}
+                                            <option>{{ x.controlName }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="stepDes" class="col-sm-2 control-label">动作</label>
+                                    <div class="col-sm-10">
+                                        <table class='table table-striped table-bordered table-condensed table-responsive'>
+                                            <thead>
+                                                <tr class="danger">
+                                                    <th class="col-sm-1">## <strong class="text-danger">*</strong> </th>
+                                                    <th class="col-sm-3">做什么动作 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="标记需要配置元素的选型，一定要配置元素，除此之外都可以不要"></span></th>
+                                                    <th class="col-sm-3">什么元素
+                                                        <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="选择或输入, 页面上可见的图标、文字、按钮都是元素. 元素分2类, 1 带文字的, 如首页'门票频道', 直接写门票频道;2 不带文字的, 如首页搜索框, 下拉选择 3 图标类, 如小人,电话图标 下拉选择    ."></span>
+                                                    </th>
+                                                    <th>要不要输入</th>
+                                                    <th >是否等待 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="该步骤执行完毕, 经常要转圈的, 建议等待, 增加用例稳定性;"></span></th>
+                                                    <th></th><th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id='L2TB'>
+                                                <tr id='L2Model'>
+                                                    <td >
+                                                        <div class="form-group">
+                                                            <input type="text" class="form-control input-sm" name="index_step" required="required" value='1-1'>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <select class="form-control input-sm" name="actionCode" required="required">
+                                                            {% for x in control_list %}
+                                                            <option>{{ x.controlName }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <div class="form-group">
+                                                            <select id="editable-select" class="form-control input-sm" name="targetName" placeholder="选择或输入">
+                                                                {% for x in target_list %}
+                                                                <option>{{ x.controlName }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="form-group">
+                                                            <textarea class="form-control input-sm" name="inputValue" placeholder="如果元素是input输入框，就输入内容，否则留空" rows="3" /></textarea>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="form-group">
+                                                            <!-- <label for="elementName"></label> -->
+                                                            <select class="form-control input-sm" name="needWait">
+                                                                <option>等待</option>
+                                                                <option>不等待</option>
+                                                            </select>
+                                                        </div>
+                                                    </td>
+                                                    <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="ActionAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></td>
+                                                    <td><button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="check" class="col-sm-2 control-label">终点</label>
+                                    <div class="col-sm-10">
+                                        <div class="form-group">
+                                            <select class="form-control input-sm" name="enterActivity">
+                                                <option></option>
+                                                {% for x in where_list %}
+                                                <option>{{ x.controlName }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="check" class="col-sm-2 control-label">校验</label>
+                                    <div class="col-sm-10">
+                                        <table class='table table-striped table-bordered table-condensed table-responsive'>
+                                            <thead>
+                                                <tr class="danger">
+                                                    <th class="col-sm-1">##</th>
+                                                    <th>预期描述</th>
+                                                    <th>校验方法</th>
+                                                    <th>校验元素</th>
+                                                    <th></th><th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="L3TB">
+                                                <tr id="L3Model">
+                                                    <td>
+                                                        <input class="form-control input-sm" name="index_expend" placeholder="序号" required="required" value='1-1'/>
+                                                    </td>
+                                                    <td>
+                                                        <input class="form-control input-sm" name="expeted" placeholder="预期结果"/>
+                                                    </td>
+                                                    <td>
+                                                        <select class="form-control input-sm" name="checkType">
+                                                            <option></option>
+                                                            {% for x in checkType_list %}
+                                                            <option>{{ x.controlName }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <select id="editable-select1" class="form-control input-sm" name="elementname" placeholder="选择或输入元素">
+                                                            {% for x in target_list %}
+                                                            <option>{{ x.controlName }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </td>
+                                                    <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="expendAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                                                    <td><button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="StepAdd()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                                <button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)" ><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
             <!-- Modal -->
             <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
               <div class="modal-dialog" role="document">
@@ -237,7 +389,7 @@
                     {{ message }}
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning" data-dismiss="modal">Close</button>
                   </div>
                 </div>
               </div>
@@ -247,46 +399,62 @@
     </div>
 </div>
 <script>
-    function myAdd(){
+    //大行增加
+    function StepAdd(){
         var
-            trlen = document.getElementById('l1tb').rows.length;
-            model = document.getElementById('l1tr');
-            //克隆节点，并设置id,为了和根区分
-            new_son = model.cloneNode(true);
-            new_son.id = 'clonetr';
-            // 定位该table最后一行
-            lasttr = document.getElementById('l1tb').rows[trlen-1];
-            // 行号 = 最后一行的行号 + 1
-            linenum = parseInt(lasttr.innerText) + 1;
+            trlen = document.getElementById('L1TB').rows.length;
+            model = document.getElementById('L1Model');
+            new_son = model.cloneNode(true); //克隆节点，并设置id,为了和根区分
+            lasttr = document.getElementById('L1TB').rows[trlen-1]; // 定位该table最后一行
+            linenum = parseInt(lasttr.innerText) + 1; // 行号 = 最后一行的行号 + 1
             // 下面获取克隆元素的二层table的index序号
-            new_son.getElementsByTagName('input').index_1_1.value = linenum + '-1'
-        // 克隆元素
-        document.getElementById('l1tb').appendChild(new_son);
+            new_son.getElementsByTagName('input').index_step.value = linenum + '-1'
+            new_son.getElementsByTagName('input').index_expend.value = linenum + '-1'
+            new_son.id = 'L1TR' + linenum;
+            // 避免改模板的属性，模板不带类名，每次复制时赋予类名 还有L2的ID
+            new_son.getElementsByTagName('tr')[1].id = 'L2TR'
+            new_son.getElementsByTagName('tr')[3].id = 'L3TR'
+            new_son.getElementsByTagName('select')[2].className = 'form-control editable input-sm'
+            new_son.getElementsByTagName('select')[6].className = 'form-control editable input-sm'
+        document.getElementById('L1TB').appendChild(new_son); // 克隆元素
         // 给新加的元素设置行号，重新算行数
-        trlen = document.getElementById('l1tb').rows.length;
-        document.getElementById('l1tb').rows[trlen-1].cells[0].innerHTML = linenum
+        trlen = document.getElementById('L1TB').rows.length;
+        document.getElementById('L1TB').rows[trlen-1].cells[0].innerHTML = linenum
+        $('.editable').editableSelect({ filter: false });
     }
-
-    function setpAdd(node){
+    // 动作行+
+    function ActionAdd(node){
         var
-            // tr节点
-            child = node.parentNode.parentNode;
-            // tbody节点
-            father = child.parentNode;
-            model = document.getElementById('l2tr');
-            //克隆节点，并设置id
-            new_son = model.cloneNode(true);
-            new_son.id = 'clone2tr';
-            target_id = new_son.id;
-            // 获取父节点的index值
-            firstnum = father.getElementsByTagName('input').index_1_1.value[0];
-            // 获取父节点下所有节点的最后一个的index值
-            trlen = father.parentNode.rows.length;
-            lasttd = father.parentNode.rows[trlen-1].getElementsByTagName('input').index_1_1.value[2];
-            lastnum = parseInt(lasttd) + 1;
-            // 改其为index前半 + 后半
-            new_son.getElementsByTagName('input').index_1_1.value = firstnum + '-' + lastnum;
+            model = document.getElementById('L2Model'); // model tr
+            child = node.parentNode.parentNode; //self tr
+            father = child.parentNode; // tbody
+            new_son = model.cloneNode(true); //克隆节点
+            firstnum = father.getElementsByTagName('input').index_step.value[0]; // 获取父节点的index_main值
+            trlen = father.parentNode.rows.length; // 动作行数
+            lasttd = father.parentNode.rows[trlen-1].getElementsByTagName('input').index_step.value[2]; // 获取父节点下所有节点的最后一个的index值
+            lastnum = parseInt(lasttd) + 1; // 明确子序号
+            new_son.getElementsByTagName('input').index_step.value = firstnum + '-' + lastnum; // 改其为index前半 + 后半
+            new_son.id = 'L2TR' + lastnum;
+            new_son.getElementsByTagName('select')[1].className = 'form-control editable input-sm'// 避免改模板的属性，模板不带类名，每次复制时赋予类名
         father.appendChild(new_son);
+        $('.editable').editableSelect({ filter: false });
+    }
+    // 预期行++
+    function expendAdd(node){
+        var
+            model = document.getElementById('L3Model'); // model tr
+            child = node.parentNode.parentNode; //self tr
+            father = child.parentNode; // tbody
+            new_son = model.cloneNode(true); //克隆节点
+            firstnum = father.getElementsByTagName('input').index_expend.value[0]; // 获取父节点的index_main值
+            trlen = father.parentNode.rows.length; // 预期行数
+            lasttd = father.parentNode.rows[trlen-1].getElementsByTagName('input').index_expend.value[2]; // 获取父节点下所有节点的最后一个的index值
+            lastnum = parseInt(lasttd) + 1; // 明确子序号
+            new_son.getElementsByTagName('input').index_expend.value = firstnum + '-' + lastnum; // 改其为index前半 + 后半
+            new_son.id = 'L3TR' + lastnum;
+            new_son.getElementsByTagName('select')[1].className = 'form-control editable input-sm'// 避免改模板的属性，模板不带类名，每次复制时赋予类名
+        father.appendChild(new_son);
+        $('.editable').editableSelect({ filter: false });
     }
 
     function myDel(node){
@@ -294,7 +462,7 @@
             child = node.parentNode.parentNode;
             // father = document.getElementById('test_tb');
             father = child.parentNode;
-        if(child.id=='l1tr' || child.id=='l2tr')
+        if(child.id=='L1TR' || child.id=='L2TR' || child.id=='L3TR')
             {
                 node.setAttribute('data-target','#myModal');
                 document.getElementById('message1').innerHTML = '不能删除根节点';
@@ -305,7 +473,23 @@
                 father.removeChild(child);
             }
     }
-
-
+</script>
+<script>
+    var casenames = {{ casenames|safe }}
+    $('input[name="caseName"]').bind('input propertychange', function() {
+        console.log($(this).val());
+        for(arr in casenames){
+            if($(this).val() == casenames[arr]){
+                $('#helpBlock1').attr('class','form-group has-error');
+                $('#helpBlock2').css('display','block');
+                $('#followMe').attr('disabled',true);
+            }
+            else{
+                $('#helpBlock1').attr('class','form-group');
+                $('#helpBlock2').css('display','none');
+                $('#followMe').attr('disabled',false);
+            }
+        }
+    });
 </script>
 {% endblock content %}

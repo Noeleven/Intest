@@ -18,6 +18,10 @@
     <!-- Custom Theme Style -->
     <link href="{% static 'vendors/custom.min.css' %}" rel="stylesheet">
 	<link href="{% static 'css/bootstrap-table.min.css' %}" rel="stylesheet">
+    <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <!-- jquery-editable-select -->
+    <script src="{% static 'vendors/jquery-editable-select.min.js' %}"></script>
+	<link href="{% static 'vendors/jquery-editable-select.min.css' %}" rel="stylesheet">
 	<!--[if lt IE 9]>
 	<script src="assets/js/ie8-responsive-file-warning.js"></script>
 	<![endif]-->
@@ -28,11 +32,13 @@
 	  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 	<![endif]-->
 	<style>
-	.tooltip-inner {
-    text-align:left;
-	word-break:break-all;
-	}
-	.nav-tabs.nav-justified>.active>a, .nav-tabs.nav-justified>.active>a:focus, .nav-tabs.nav-justified>.active>a:hover { border-bottom-color: #a94442; border-bottom-width: 3px; }</style>
+    	.tooltip-inner {
+        text-align:left;
+    	word-break:break-all;
+    	}
+    	.nav-tabs.nav-justified>.active>a, .nav-tabs.nav-justified>.active>a:focus, .nav-tabs.nav-justified>.active>a:hover { border-bottom-color: #a94442; border-bottom-width: 3px; }
+        .btn-me { height:30px; width:30px; }
+    </style>
   </head>
 
   <body class="nav-md">
@@ -78,7 +84,7 @@
 		{% block content %}
 		{% endblock content %}
 		</div>
-
+        <p id="mm">{{message}}</p>
         <!-- footer content -->
         <footer>
           <div class="pull-right">
@@ -90,8 +96,25 @@
       </div>
     </div>
 
+    <!-- Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="delModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">⊙o⊙!</h4>
+                </div>
+                <div id='mess' class="modal-body">考虑清楚了吗?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning"  name="delSure"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Yes !</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancle ~</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="http://cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
     <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
@@ -107,15 +130,23 @@
     <script src="{% static 'vendors/custom.min.js' %}"></script>
 	<script src="{% static 'js/bootstrap-datetimepicker.min.js' %}" charset="UTF-8"></script>
     <script src="{% static 'js/locales/bootstrap-datetimepicker.zh-CN.js' %}"  charset="UTF-8"></script>
+
+    <script>
+        // add什么元素改
+        $('#editable-select').editableSelect({ filter: false });
+        // add目标元素改
+        $('#editable-select1').editableSelect({ filter: false });
+        // edit默认要改类
+    </script>
 	<script>
-	$('#myAffix').affix({
-	  offset: {
-		top: 100,
-		bottom: function () {
-		  return (this.bottom = $('.footer').outerHeight(true))
-		}
-	  }
-	})
+    	$('#myAffix').affix({
+    	  offset: {
+    		top: 100,
+    		bottom: function () {
+    		  return (this.bottom = $('.footer').outerHeight(true))
+    		}
+    	  }
+    	})
 	</script>
 	<script type="text/javascript">
 		$(".form_date").datetimepicker({
@@ -129,9 +160,32 @@
 		});
 	</script>
 	<script>
-		function runningFormatter(value, row, index) {
+		function runningFormatter(value, row, index){
 			return index;
-		}
+		};
 	</script>
+    <script>
+        $(document).ready(function(){
+            $('#deleteModal').on('show.bs.modal', function (e) {
+                var btn = $(e.relatedTarget),
+                    id = btn.data("index");
+                console.log(id)
+                $(this).find('[name="delSure"]').click(function(){
+                    $.get("/auto/auto_del",{'id':id}, function(data,status){
+                        if (status == 'success' && data == 'success') {
+                            $('.modal-body').text('删除成功');
+                        //提交失败的操作
+                        } else {
+                            $('.modal-body').text('删除失败，请联系管理员查看');
+                        };
+                    });
+                });
+            });
+
+            $('#deleteModal').on('hide.bs.modal', function (){
+                window.location.reload();
+            });
+        });
+    </script>
   </body>
 </html>

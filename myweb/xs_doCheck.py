@@ -15,7 +15,7 @@ from multiprocessing import Process, Pool
 消灭线上下的单，添加的游玩人等
 '''
 #UIautomation for clear_add
-lvse='6d9e4409-60da-4787-a560-3cd84e91d5aa'
+lvse='b81abf32-4277-42eb-87e9-0feaeca5eca0'
 #APIautomation for clear_order
 llse = "f4591872-54c4-427a-a6bb-751cb5330f4b"
 addressNo = []
@@ -41,7 +41,7 @@ def do_curl(a):
 	c.close()
 	return html_json
 
-	
+
 def get_order(orderNo):
 	getOrderAdd = "http://api3g2.lvmama.com/api/router/rest.do?method=api.com.order.getOrderList&version=1.0.0&osVersion=6.0.1&lvversionCode=68&lvversion=7.8.2&page=1&pageSize=10&queryType=WAIT_PAY&lvsessionid=" + llse
 	html_json = do_curl(getOrderAdd)
@@ -52,8 +52,8 @@ def get_order(orderNo):
 		print("get_order failed")
 	print(orderNo)
 	return orderNo
-	
-	
+
+
 def cancel_Order(orderNo):
 	cancelOrderAdd = 'http://api3g2.lvmama.com/api/router/rest.do?method=api.com.order.cancellOrder&version=1.0.0&osVersion=6.0.1&lvversionCode=65&lvversion=7.7.3&lvsessionid=' + llse
 	c = pycurl.Curl()
@@ -70,7 +70,7 @@ def cancel_Order(orderNo):
 		c.perform()
 	c.close()
 
-	
+
 def do_address():
 	getAddress = "http://api3g2.lvmama.com/api/router/rest.do?method=api.com.user.getAddress&version=1.0.0&lvsessionid=" + lvse
 	delAddress = "http://api3g2.lvmama.com/api/router/rest.do?method=api.com.user.deleteAddress&version=1.0.0&lvsessionid=" + lvse + "&addressNo="
@@ -85,8 +85,8 @@ def do_address():
 			do_curl(delAdd)
 	except:
 		print("do_address failed")
-	
-	
+
+
 def do_contact():
 	getContact = "http://api3g2.lvmama.com/api/router/rest.do?method=api.com.user.getContact&version=1.0.0&receiversType=Address&lvsessionid=" + lvse
 	delContact = "http://api3g2.lvmama.com/api/router/rest.do?method=api.com.user.removeContact&version=1.0.0&receiversType=Address&lvsessionid=" + lvse + "&receiverId="
@@ -104,14 +104,14 @@ def do_contact():
 		print("do_contact failed")
 	return
 
-	
+
 def sign_in():
 	now = datetime.datetime.now()
 	day = now.strftime("%a")
 	month = now.strftime("%b")
 	UA = "Mozilla/5.0 (Linux; Android 6.0.1; MI 5 Build/MXB48T) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/37.0.0.0 Mobile MQQBrowser/6.8 TBS/036887 Safari/537.36 MicroMessenger/6.3.31.940 NetType/WIFI Language/zh_CN"
 	target = ("http://wechatlh.chujian.com/dosignin.page?t=%s%%20%s%%2012%%202016%%2006%%3A30%%3A30%%20GMT%%200800%%20%%28CST%%29&qid=51c8442a87fd6df6" % (day, month))
-	
+
 	c = pycurl.Curl()
 	c.setopt(pycurl.FOLLOWLOCATION, 1)
 	c.setopt(pycurl.MAXREDIRS, 5)
@@ -124,8 +124,8 @@ def sign_in():
 	c.perform()
 	c.close()
 	pass
-	
-	
+
+
 if __name__ == '__main__':
 	# 清理添加的地址
 	do_address()

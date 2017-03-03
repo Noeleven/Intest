@@ -37,7 +37,25 @@
     	word-break:break-all;
     	}
     	.nav-tabs.nav-justified>.active>a, .nav-tabs.nav-justified>.active>a:focus, .nav-tabs.nav-justified>.active>a:hover { border-bottom-color: #a94442; border-bottom-width: 3px; }
-        .btn-me { height:30px; width:30px; }
+        .xwcms {
+        	margin: 0 auto;
+        	-webkit-background-size: 220px 220px;
+        	-moz-background-size: 220px 220px;
+        	background-size: 220px 220px;
+        	-webkit-border-radius: 110px;
+        	border-radius: 110px;
+        	-webkit-transition: -webkit-transform 1s ease-out;
+        	-moz-transition: -moz-transform 1s ease-out;
+        	-o-transition: -o-transform 1s ease-out;
+        	-ms-transition: -ms-transform 1s ease-out;
+        }
+        .xwcms:hover {
+        	-webkit-transform: rotateZ(360deg) scale(1.5);
+        	-moz-transform: rotateZ(360deg) scale(1.5);
+        	-o-transform: rotateZ(360deg) scale(1.5);
+        	-ms-transform: rotateZ(360deg) scale(1.5);
+        	transform: rotateZ(360deg) scale(1.5);
+        }
     </style>
   </head>
 
@@ -58,7 +76,7 @@
 						<h3></h3>
 						<ul class="nav side-menu">
                             {% for x in nav_list %}
-							<li><a href="/auto/auto_list/{{x.type}}" name="{{ x.type }}"><i class="fa fa-star"></i> {{ x.type }} <span class="label label-primary">{{ x.num }}</span></a>
+							<li><a href="/auto/auto_list/{{x.type}}" name="{{ x.type }}"><i class="fa fa-{% if x.type == '废弃' %}trash{% elif x.type == '全部' %}paw{% else %}paperclip{% endif %}  xwcms"></i> {{ x.type }} <span class="label label-primary">{{ x.num }}</span></a>
 							</li>
                             {% endfor %}
 						</ul>
@@ -102,18 +120,41 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">⊙o⊙!</h4>
+                    <h4 class="modal-title"> 删除用例 ⊙o⊙!</h4>
                 </div>
                 <div id='mess' class="modal-body">考虑清楚了吗?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-warning"  name="delSure"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Yes !</button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancle ~</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span> 返回</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <div class="modal fade" id="copyModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title"> 用例复制 </h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="recipient-name" class="control-label">用例重命名</label>
+                            <input type="text" class="form-control" id="recipientName" required="required">
+                        </div>
+                    </form>
+                    <div id='copymess' class="alert alert-info" style="display:none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success"  name="copyThis"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 提交</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span> 返回</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
@@ -169,14 +210,14 @@
             $('#deleteModal').on('show.bs.modal', function (e) {
                 var btn = $(e.relatedTarget),
                     id = btn.data("index");
-                console.log(id)
+                // console.log(id)
                 $(this).find('[name="delSure"]').click(function(){
                     $.get("/auto/auto_del",{'id':id}, function(data,status){
                         if (status == 'success' && data == 'success') {
                             $('.modal-body').text('删除成功');
                         //提交失败的操作
                         } else {
-                            $('.modal-body').text('删除失败，请联系管理员查看');
+                            $('.modal-body').text('已删除或删除失败，请联系管理员');
                         };
                     });
                 });
@@ -185,6 +226,47 @@
             $('#deleteModal').on('hide.bs.modal', function (){
                 window.location.reload();
             });
+        });
+    </script>
+    <script>
+        $(document).ready(function(){
+            $('#copyModal').on('show.bs.modal', function (e) {
+                // 通过data-xxx 传递参数
+                var btn = $(e.relatedTarget),
+                    id = btn.data("index");
+                $(this).find('[name="copyThis"]').click(function(){
+                    cName = $('#recipientName').val();
+                    $.get("/auto/auto_copy",{'id':id,'cName':cName}, function(data,status){
+                        if (status == 'success' && data == '0') {
+                            $('#copymess').text('用例名称已存在，请重新输入');
+                        } else if (status == 'success' && data == '1') {
+                            $('#copymess').text('复制成功');
+                        } else if (status == 'success' && data == '3') {
+                            $('#copymess').text('请输入用例名称');
+                        } else {
+                            $('#copymess').text('copy请求失败，请联系管理员确认服务');
+                        };
+                    });
+                    $('#copymess').css('display','block');
+                });
+            });
+
+            $('#copyModal').on('hide.bs.modal', function (){
+                window.location.reload();
+            });
+        });
+    </script>
+    <script>
+        $('input').bind('input propertychange', function() {
+            // console.log($(this).val());
+            var regu = /([a-zA-Z0-9]|[,_+-=&%$#@?(){}\[\]\s]|[\u4e00-\u9fa5])/
+                myText = $(this).val();
+            for(x in myText){
+                if(!regu.exec(myText[x])){
+                    alert('有特殊字符,请检查');
+                    break;
+                }
+            }
         });
     </script>
   </body>

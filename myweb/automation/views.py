@@ -13,6 +13,11 @@ import datetime
 # 定义品类列表
 def nav_list():
     nav_list = []
+    all = {
+        'type':'全部',
+        'num':len(caseList.objects.filter(in_use='1')),
+    }
+    nav_list.append(all)
     for t in caseType.objects.all():
         show_type = {
             'type':t.type_name,
@@ -23,12 +28,13 @@ def nav_list():
         'type':'废弃',
         'num':len(caseList.objects.filter(in_use='0')),
     }
+
     nav_list.append(nouse)
     return nav_list
 # 定义下拉内容
 def select_list(controlListType):
     # 设置目标元素列表
-    target_all = controlList.objects.filter(TYPE=controlListType)
+    target_all = controlList.objects.filter(TYPE=controlListType).order_by('controlName')
     target_list = [x for x in target_all]
     return target_list
 # controllist翻译
@@ -49,12 +55,33 @@ def trans_me(aname, type, ptype):
     else:
         bname = aname
     return bname
+# NORMAL DB
+def doDB(method, myList):
+    # myList = [caseName, bigstep, my_case, caseStatus, csType, caseVersion]
+    conn = mysql.connector.connect(user='root', password='lvmama', database='lmmpicTest', host='127.0.0.1')
+    cursor = conn.cursor()
+    cursor = conn.cursor(buffered=True)
+    inputTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    if method == 'insert':
+        cursor.execute('insert into bookShelf (caseName, needTest, inputTime, classType, appVersion) values (%s, %s, %s, %s, %s)', [myList[0], myList[3], inputTime, myList[4], myList[5]])
+        cursor.execute('insert into testStory (caseName, caseLength, jsonStory, caseUpdateTime, caseType) values (%s, %s,%s, %s,%s)', [myList[0], myList[1], myList[2], inputTime, myList[4]])
+    elif method == 'update':
+        cursor.execute('update bookShelf set needTest=%s, classType=%s, appVersion=%s where caseName=%s', [myList[3], myList[4], myList[5], myList[0]])
+        cursor.execute('update testStory set caseLength=%s, jsonStory=%s, caseUpdateTime=%s, caseType=%s where caseName=%s', [myList[1], myList[2], inputTime, myList[4], myList[0]])
+    elif method == 'delete':
+        cursor.execute('delete from bookShelf where caseName=%s', [myList[0]])
+        cursor.execute('delete from testStory where caseName=%s', [myList[0]])
+    else:
+        print('doDB unknow!')
+    conn.commit()
+    cursor.close()
+    conn.close()
 # 导航list
-def auto_list(request, my_type='all'):
+def auto_list(request, my_type='全部'):
     # 右侧对应品类的用例列表
     if my_type == '废弃':
         show_list = caseList.objects.filter(in_use='0')
-    elif my_type != 'all':
+    elif my_type != '全部':
         type_id = caseType.objects.filter(type_name=my_type)[0].id
         show_list = caseList.objects.filter(in_use='1').filter(type_field=type_id)
     else:
@@ -84,30 +111,25 @@ def auto_add(request):
 # 添加保存
 def auto_save(request):
     my_form = dict(request.POST)
+    print(my_form)
     try:
         caseName = my_form.get('caseName')[0]
         csType = caseType.objects.get(type_name=my_form.get('type')[0]).type_field
         caseVersion = my_form.get('version')[0]
-        casePlantform = my_form.get('plantform')[0]
-        PlantformDict = {'Android':'0', 'IOS':'1', 'M':'2'}
-        PlantformNum = PlantformDict[casePlantform]
+        casePlantform = 'Android'
         caseStatus = my_form.get('canUse')[0]
         caseDes = my_form.get('caseDes')[0]
         owner = my_form.get('owner')[0]
     except TypeError as e:
         print('oh my god!! %s' % e)
 
-    if caseStatus == 'use':
-        caseStatus = '1'
-    else:
-        caseStatus = '0'
+    caseStatus = '1' if caseStatus=='use' else '0'
     # 处理生成json,等json格式，根据plantform类型生成不同的json
     json_home = []
     # 统计有多少大步
     bigstep = len(set([x.split('-')[0] for x in my_form.get('index_step')]))
     #起始下标
-    startIndex = 0
-    expendIndex = 0
+    startIndex = expendIndex = 0
     for bgSub in range(bigstep):
         # 大步字典
         bgElement = {
@@ -152,14 +174,9 @@ def auto_save(request):
     my_case = json.dumps(json_home, ensure_ascii=False)
     print(('*' * 20 + '\n' + '%s') % my_case)
     # 存储DB
-    conn = mysql.connector.connect(user='root', password='lvmama', database='lmmpicTest', host='127.0.0.1')
-    cursor = conn.cursor()
-    inputTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    cursor.execute('insert into bookShelf (caseName, needTest, inputTime, classType, appVersion) values (%s, %s, %s, %s, %s)', [caseName, caseStatus, inputTime, csType, caseVersion])
-    cursor.execute('insert into testStory (caseName, caseLength, jsonStory, caseUpdateTime, caseType) values (%s, %s,%s, %s,%s)', [caseName, bigstep, my_case, inputTime, csType])
-    conn.commit()
-    cursor.close()
-    conn.close()
+    mydbList = [caseName, bigstep, my_case, caseStatus, csType, caseVersion]
+    doDB('insert', mydbList)
+
     p = caseList(caseName=caseName)
     p.type_field = caseType.objects.get(id=caseType.objects.filter(type_field=csType)[0].id)
     p.plantform = casePlantform
@@ -169,7 +186,6 @@ def auto_save(request):
     p.in_use = caseStatus
     p.owner = owner
     p.save()
-    message = "提交成功"
     # 判断动作
     return HttpResponseRedirect("/auto/auto_list/%s" % my_form.get('type')[0])
 # 编辑页面list
@@ -188,7 +204,7 @@ def auto_edit(request, id):
         targetname = []
         elementname = []
 
-        print(BgStep)
+        # print(BgStep)
         # 转义json字符串中的字符串为中文
         for x in BgStep:
             x['enterActivity'] = trans_me(x['enterActivity'],'where',json_dict['plantform'])
@@ -199,7 +215,6 @@ def auto_edit(request, id):
                 y['target']['targetName'] = trans_me(y['target']['targetName'],'targetName',json_dict['plantform'])
                 targetname.append(y['target']['targetName'])
                 y['actionCode'] = trans_me(y['actionCode'],'action',json_dict['plantform'])
-                print(y['needWait'])
                 if y['needWait'] == True:
                     y['needWait'] = '等待'
                 else:
@@ -238,26 +253,20 @@ def auto_edit_save(request, id):
         caseName = case_obj.caseName
         csType = caseType.objects.get(type_name=my_form.get('type')[0]).type_field
         caseVersion = my_form.get('version')[0]
-        casePlantform = my_form.get('plantform')[0]
-        PlantformDict = {'Android':'0', 'IOS':'1', 'M':'2'}
-        PlantformNum = PlantformDict[casePlantform]
+        casePlantform = 'Android'
         caseStatus = my_form.get('canUse')[0]
         caseDes = my_form.get('caseDes')[0]
         owner = my_form.get('owner')[0]
     except TypeError as e:
         print('oh my god!! %s' % e)
 
-    if caseStatus == 'use':
-        caseStatus = '1'
-    else:
-        caseStatus = '0'
+    caseStatus = '1' if caseStatus=='use' else '0'
     # 处理生成json,等json格式，根据plantform类型生成不同的json
     json_home = []
     # 统计有多少大步
     bigstep = len(set([x.split('-')[0] for x in my_form.get('index_step')]))
     #起始下标
-    startIndex = 0
-    expendIndex = 0
+    startIndex = expendIndex = 0
     for bgSub in range(bigstep):
         # 大步字典
         bgElement = {
@@ -304,22 +313,24 @@ def auto_edit_save(request, id):
     my_case = json.dumps(json_home, ensure_ascii=False)
     print(('*' * 20 + '\n' + '%s') % my_case)
     # 存储DB
+    mydbList = [caseName, bigstep, my_case, caseStatus, csType, caseVersion]
     conn = mysql.connector.connect(user='root', password='lvmama', database='lmmpicTest', host='127.0.0.1')
     cursor = conn.cursor(buffered=True)
     inputTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     cursor.execute('select * from testStory where caseName=%s', (caseName,))
     values = cursor.fetchall()
     if values:
-        cursor.execute('update bookShelf set needTest=%s, classType=%s, appVersion=%s where caseName=%s', [caseStatus, csType, caseVersion, caseName])
-        cursor.execute('update testStory set caseLength=%s, jsonStory=%s, caseUpdateTime=%s, caseType=%s where caseName=%s', [bigstep, my_case, inputTime, csType, caseName])
+        doDB('update', mydbList)
     else:
-        cursor.execute('insert into bookShelf (caseName, needTest, inputTime, classType, appVersion) values (%s, %s, %s, %s, %s)', [caseName, caseStatus, inputTime, csType, caseVersion])
-        cursor.execute('insert into testStory (caseName, caseLength, jsonStory, caseUpdateTime, caseType) values (%s, %s,%s, %s,%s)', [caseName, bigstep, my_case, inputTime, csType])
+        doDB('insert', mydbList)
     conn.commit()
     cursor.close()
     conn.close()
     p = case_obj
     p.case = my_case
+    p.type_field = caseType.objects.get(id=caseType.objects.filter(type_field=csType)[0].id)
+    p.plantform = casePlantform
+    p.version = caseVersion
     p.owner = owner
     p.des = caseDes
     p.in_use = caseStatus
@@ -335,11 +346,11 @@ def auto_config(request):
     print(device)
     if device == '62001':
         device = '127.0.0.1:62001'
-        APPIUMSERVERSTART = "D:\\nodejs\\appium.cmd -a 10.113.2.70 -p 47231 -bp 47241 --chromedriver-port 95151 --command-timeout 300"
+        APPIUMSERVERSTART = "D:\\nodejs\\appium.cmd -a 10.113.2.70 -p 47231 -bp 47241 --chromedriver-port 19515 --command-timeout 300"
         appiumServicePort = 47231
         lvsessionid = "a69161be-91ec-4e29-8815-36273fdef8d5"
     else:
-        APPIUMSERVERSTART = "D:\\nodejs\\appium.cmd -a 10.113.2.70 -p 47232 -bp 47242 --chromedriver-port 95152 --command-timeout 300"
+        APPIUMSERVERSTART = "D:\\nodejs\\appium.cmd -a 10.113.2.70 -p 47232 -bp 47242 --chromedriver-port 29515 --command-timeout 300"
         device = '127.0.0.1:62025'
         appiumServicePort = 47232
         lvsessionid = "2763ca61-9bd0-44b6-86a3-a3cffcaa78bf"
@@ -352,7 +363,7 @@ def auto_config(request):
         "APPIUMSERVERSTART": APPIUMSERVERSTART,
         "appiumServicePath": "10.113.2.70",
         "appiumServicePort": appiumServicePort,
-        "appVersion": "7.8.3",
+        "appVersion": "7.8.5",
         "deviceName": device,
         "platformVersion": "4.4.2",
         "platformName": "Android",
@@ -382,26 +393,46 @@ def auto_response(request):
         return HttpResponse('No Such Device')
 # 定义删除
 def auto_del(request):
-    # id = request.GET['id']
-    # print(id)
-    # return HttpResponse('ok')
     try:
         id = request.GET['id']
         myCase = caseList.objects.get(id=id)
         caseName = myCase.caseName
-
-        conn = mysql.connector.connect(user='root', password='lvmama', database='lmmpicTest', host='127.0.0.1')
-        cursor = conn.cursor(buffered=True)
-        cursor.execute('delete from bookShelf where caseName=%s', [caseName])
-        cursor.execute('delete from testStory where caseName=%s', [caseName])
-        conn.commit()
-        cursor.close()
-        conn.close()
-
+        myList = [caseName]
+        doDB('delete', myList)
         myCase.delete()
         data = 'success'
         return HttpResponse(data)
     except IOError as e:
         data = 'err'
         print('删除失败，请联系管理员查看.err:%s' % e)
+        return HttpResponse(data)
+
+def auto_copy(request):
+    try:
+        id = request.GET['id']
+        cName = request.GET['cName']
+        if cName:
+            if caseList.objects.filter(caseName=cName):
+                data = '0' # 重复名称
+            else:
+                sorceCase = caseList.objects.get(id=id)
+                p = caseList(caseName=cName)
+                p.type_field = sorceCase.type_field
+                p.plantform = sorceCase.plantform
+                p.version = sorceCase.version
+                p.case = sorceCase.case
+                p.des = sorceCase.des
+                p.in_use = sorceCase.in_use
+                p.owner = sorceCase.owner
+                p.save()
+                bgstep = len(json.loads(sorceCase.case))
+                mydbList = [cName, bgstep, sorceCase.case, sorceCase.in_use, sorceCase.type_field.type_field, sorceCase.version]
+                doDB('insert',mydbList)
+                data = '1' # 用例名OK
+        else:
+            data = '3' # 没输入
+        return HttpResponse(data)
+    except IOError as e:
+        data = '2'
+        print('复制失败，请联系管理员查看.err:%s' % e)
         return HttpResponse(data)

@@ -482,7 +482,7 @@ def do_db():
 			newb = [dict(name=x['name'], value=x['value'],) for x in b]
 			for x in newb:
 				if re.findall(r'\d\.\d\.\d', x['name']):
-					p = crashes(name=x['name'])
+					p = crashes(name=x['name'].split('(')[0])
 					if 'one' in i:
 						p.des = time_des()[1]
 					else:

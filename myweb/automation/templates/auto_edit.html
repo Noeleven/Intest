@@ -7,7 +7,7 @@
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="caseName" class="col-sm-2 control-label" readonly></label>
-                    <div class="col-sm-10"><strong class="text-danger">带 <strong class="text-danger">*</strong> 为必填项</strong></div>
+                    <div class="col-sm-10"><strong class="text-danger">带 <strong class="text-danger">*</strong> 为必填项, 输入框允许符号,_+-=&%$#@?(){}[] 其他禁止输入</strong></div>
                 </div>
                 <div class="form-group">
                     <label for="caseName" class="col-sm-2 control-label">用例名称 <strong class="text-danger">*</strong> </label>
@@ -98,7 +98,7 @@
                                                             </th>
                                                             <th >要不要输入</th>
                                                             <th >是否等待 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="该步骤执行完毕, 经常要转圈的, 建议等待, 增加用例稳定性;"></span></th>
-                                                            <th></th><th></th>
+                                                            <th></th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id='L2TB'>
@@ -141,8 +141,7 @@
                                                                     </select>
                                                                 </div>
                                                             </td>
-                                                            <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="ActionAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></td>
-                                                            <td><button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)"style="height:30px;width:30px"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
+                                                            <td><button type="button" class="btn-success btn btn-xs" onclick="ActionAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button><button type="button" class="btn-danger btn btn-xs" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
                                                         </tr>
                                                         {% endfor %}
                                                     </tbody>
@@ -174,12 +173,12 @@
                                                             <th>预期描述</th>
                                                             <th>校验方法</th>
                                                             <th>校验元素</th>
-                                                            <th></th><th></th>
+                                                            <th></th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {% for y in BG.checkString %}
-                                                        <tr id="L3TR">
+                                                        <tr id="L3TR{{ y.index|slice:"2:" }}">
                                                             <td>
                                                                 <input class="form-control input-sm" name="index_expend" placeholder="序号" value='{{ y.index }}'/>
                                                             </td>
@@ -202,8 +201,7 @@
                                                                     {% endfor %}
                                                                 </select>
                                                             </td>
-                                                            <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="expendAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-                                                            <td><button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
+                                                            <td><button type="button" class="btn-success btn-xs" onclick="expendAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button><button type="button" class="btn-danger btn-xs btn" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
                                                         </tr>
                                                         {% endfor %}
                                                     </tbody>
@@ -211,8 +209,8 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td><button type="button" class="btn-success form-control btn-xs" onclick="StepAdd()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-                                        <button type="button" class="btn-danger form-control btn-xs" data-toggle="modal" onclick="myDel(this)" ><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+                                    <td><button type="button" class="btn-success form-control btn btn-xs" onclick="StepAdd()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                                        <button type="button" class="btn-danger form-control btn btn-xs" data-toggle="modal" onclick="myDel(this)" ><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -310,7 +308,7 @@
                                                     </th>
                                                     <th>要不要输入</th>
                                                     <th >是否等待 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="该步骤执行完毕, 经常要转圈的, 建议等待, 增加用例稳定性;"></span></th>
-                                                    <th></th><th></th>
+                                                    <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody id='L2TB'>
@@ -352,8 +350,7 @@
                                                             </select>
                                                         </div>
                                                     </td>
-                                                    <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="ActionAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></td>
-                                                    <td><button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
+                                                    <td><button type="button" class="btn-success btn btn-xs" onclick="ActionAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button><button type="button" class="btn-danger btn btn-xs" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -382,7 +379,7 @@
                                                     <th>预期描述</th>
                                                     <th>校验方法</th>
                                                     <th>校验元素</th>
-                                                    <th></th><th></th>
+                                                    <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody id="L3TB">
@@ -408,16 +405,15 @@
                                                             {% endfor %}
                                                         </select>
                                                     </td>
-                                                    <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="expendAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-                                                    <td><button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
+                                                    <td><button type="button" class="btn-success btn-xs btn" onclick="expendAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button><button type="button" class="btn-danger btn-xs btn" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
                                                 </tr>
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
                             </td>
-                            <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="StepAdd()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-                                <button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)" ><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+                            <td><button type="button" class="btn-success btn btn-xs form-control" onclick="StepAdd()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                                <button type="button" class="btn-danger btn btn-xs form-control" data-toggle="modal" onclick="myDel(this)" ><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
                             </td>
                         </tr>
                     </tbody>
@@ -444,7 +440,7 @@
         document.getElementsByName('targetName')[x].value = targetname[x];
     }
     for(x=0;x<eleLen;x++){
-        console.log(x)
+        // console.log(x)
         document.getElementsByName('elementname')[x].value = elementname[x];
     }
 </script>
@@ -462,10 +458,10 @@
             new_son.getElementsByTagName('input').index_expend.value = linenum + '-1'
             new_son.id = 'L1TR' + linenum;
             // 避免改模板的属性，模板不带类名，每次复制时赋予类名 还有L2的ID
-            new_son.getElementsByTagName('tr')[1].id = 'L2TR'
-            new_son.getElementsByTagName('tr')[3].id = 'L3TR'
+            new_son.getElementsByTagName('tr')[1].id = 'L2TR1'
+            new_son.getElementsByTagName('tr')[3].id = 'L3TR1'
             new_son.getElementsByTagName('select')[2].className = 'form-control editable input-sm'
-            new_son.getElementsByTagName('select')[5].className = 'form-control editable input-sm'
+            new_son.getElementsByTagName('select')[6].className = 'form-control editable input-sm'
         document.getElementById('L1TB').appendChild(new_son); // 克隆元素
         // 给新加的元素设置行号，重新算行数
         trlen = document.getElementById('L1TB').rows.length;

@@ -7,7 +7,7 @@
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="caseName" class="col-sm-2 control-label" readonly></label>
-                    <div class="col-sm-10"><strong class="text-danger">带 <strong class="text-danger">*</strong> 为必填项</strong></div>
+                    <div class="col-sm-10"><strong class="text-danger">带 <strong class="text-danger">*</strong> 为必填项, 输入框允许符号,_+-=&%$#@?(){}[] 其他禁止输入</strong></div>
                 </div>
 
                 <div id="helpBlock1" class="form-group">
@@ -33,20 +33,20 @@
                         <input type="text" class="form-control input-sm" name="version" placeholder="如：7.9.0" required="required" />
                     </div>
                 </div>
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <label for="plantform" class="col-sm-2 control-label">平台 <strong class="text-danger">*</strong> </label>
                     <div class="col-sm-10">
                         <label class="radio-inline">
                           <input type="radio" name="plantform" id="Android" value="Android" checked="True"> Android
                         </label>
-                        <!-- <label class="radio-inline">
+                        <label class="radio-inline">
                           <input type="radio" name="plantform" id="IOS" value="IOS"> IOS
                         </label>
                         <label class="radio-inline">
                           <input type="radio" name="plantform" id="M" value="M"> M
-                        </label> -->
+                        </label>
                     </div>
-                </div>
+                </div> -->
                 <!-- 步骤 -->
                 <div class="form-group">
                     <label for="from" class="col-sm-2 control-label">步骤 <strong class="text-danger">*</strong> </label>
@@ -86,7 +86,7 @@
                                                             </th>
                                                             <th >要不要输入</th>
                                                             <th >是否等待 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="该步骤执行完毕, 经常要转圈的, 建议等待, 增加用例稳定性;"></span></th>
-                                                            <th></th><th></th>
+                                                            <th></th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id='L2TB'>
@@ -125,8 +125,7 @@
                                                                     </select>
                                                                 </div>
                                                             </td>
-                                                            <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="ActionAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></td>
-                                                            <td><button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)"style="height:30px;width:30px"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
+                                                            <td><button type="button" class="btn btn-success btn-xs " onclick="ActionAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button><button type="button" class="btn btn-danger btn-xs" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -155,7 +154,7 @@
                                                             <th>预期描述</th>
                                                             <th>校验方法</th>
                                                             <th>校验元素</th>
-                                                            <th></th><th></th>
+                                                            <th></th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -181,16 +180,16 @@
                                                                     {% endfor %}
                                                                 </select>
                                                             </td>
-                                                            <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="expendAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-                                                            <td><button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
+                                                            <td><button type="button" class="btn-success  btn-xs btn" onclick="expendAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                                                            <button type="button" class="btn-danger btn-xs btn" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
                                             </div>
                                         </div>
                                     </td>
-                                    <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="StepAdd()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-                                        <button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)" ><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+                                    <td><button type="button" class="btn btn-success form-control btn-xs" onclick="StepAdd()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                                        <button type="button" class="btn btn-danger form-control btn-xs" data-toggle="modal" onclick="myDel(this)" ><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -265,7 +264,7 @@
                                                     </th>
                                                     <th>要不要输入</th>
                                                     <th >是否等待 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="该步骤执行完毕, 经常要转圈的, 建议等待, 增加用例稳定性;"></span></th>
-                                                    <th></th><th></th>
+                                                    <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody id='L2TB'>
@@ -305,8 +304,7 @@
                                                             </select>
                                                         </div>
                                                     </td>
-                                                    <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="ActionAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></td>
-                                                    <td><button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
+                                                    <td><button type="button" class="btn-success btn btn-xs" onclick="ActionAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button><button type="button" class="btn-danger btn btn-xs" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -335,7 +333,7 @@
                                                     <th>预期描述</th>
                                                     <th>校验方法</th>
                                                     <th>校验元素</th>
-                                                    <th></th><th></th>
+                                                    <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody id="L3TB">
@@ -361,16 +359,16 @@
                                                             {% endfor %}
                                                         </select>
                                                     </td>
-                                                    <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="expendAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-                                                    <td><button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
+                                                    <td><button type="button" class="btn-success btn btn-xs" onclick="expendAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                                                    <button type="button" class="btn-danger btn btn-xs" data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
                                                 </tr>
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
                             </td>
-                            <td><button type="button" class="btn-success form-control btn-xs btn-me" onclick="StepAdd()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-                                <button type="button" class="btn-danger form-control btn-xs btn-me" data-toggle="modal" onclick="myDel(this)" ><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+                            <td><button type="button" class="btn btn-success form-control btn-xs" onclick="StepAdd()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                                <button type="button" class="btn btn-danger form-control btn-xs" data-toggle="modal" onclick="myDel(this)" ><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
                             </td>
                         </tr>
                     </tbody>
@@ -477,12 +475,13 @@
 <script>
     var casenames = {{ casenames|safe }}
     $('input[name="caseName"]').bind('input propertychange', function() {
-        console.log($(this).val());
+        // console.log($(this).val());
         for(arr in casenames){
             if($(this).val() == casenames[arr]){
                 $('#helpBlock1').attr('class','form-group has-error');
                 $('#helpBlock2').css('display','block');
                 $('#followMe').attr('disabled',true);
+                break;
             }
             else{
                 $('#helpBlock1').attr('class','form-group');

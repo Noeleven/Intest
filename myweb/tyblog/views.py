@@ -114,7 +114,7 @@ def ty_Overview(request):
 	crash_t_list.reverse()
 	# 开始过滤
 	other_list = ['alog.umeng.com', 'loc.map.baidu.com', 'resolver.gslb.mi-idc.com', 'sapi.map.baidu.com',
-					'api.weixin.qq.com', 'collect.dsp.chinanetcenter.com', 'mauth.chinanetcenter.com', 'm.api.baifengdian.com',						 'data.cn.coremetrics.com', 'api.weibo.com', 'pingma.qq.com', 'api.share.mob.com',
+					'api.weixin.qq.com', 'collect.dsp.chinanetcenter.com', 'mauth.chinanetcenter.com', 'm.api.baifengdian.com', 'api.weibo.com', 'pingma.qq.com', 'api.share.mob.com',
 					'api.share.mob.com:80', 'libs.cn.coremetrics.com', 'tmscdn.cn.coremetrics.com', 'scs.openspeech.cn',
 					'data.openspeech.cn', 'hm.baidu.com'
 					]

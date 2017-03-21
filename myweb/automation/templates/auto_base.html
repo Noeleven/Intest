@@ -33,8 +33,8 @@
 	<![endif]-->
 	<style>
     	.tooltip-inner {
-        text-align:left;
-    	word-break:break-all;
+            text-align:left;
+        	word-break:break-all;
     	}
     	.nav-tabs.nav-justified>.active>a, .nav-tabs.nav-justified>.active>a:focus, .nav-tabs.nav-justified>.active>a:hover { border-bottom-color: #a94442; border-bottom-width: 3px; }
         .xwcms {
@@ -75,10 +75,22 @@
 						<hr>
 						<h3></h3>
 						<ul class="nav side-menu">
-                            {% for x in nav_list %}
+                            <!-- {% for x in nav_list %}
 							<li><a href="/auto/auto_list/{{x.type}}" name="{{ x.type }}"><i class="fa fa-{% if x.type == '废弃' %}trash{% elif x.type == '全部' %}paw{% else %}paperclip{% endif %}  xwcms"></i> {{ x.type }} <span class="label label-primary">{{ x.num }}</span></a>
 							</li>
+                            {% endfor %} -->
+
+                            {% for x in nav_list %}
+                            <li><a><i class="fa fa-{% if x.type == '废弃' %}trash{% elif x.type == '全部' %}paw{% else %}paperclip{% endif %}  xwcms"></i> {{ x.type }}<span class="label label-primary"> {{ x.num }}</span><span class="fa fa-chevron-down"></span></a>
+    							<ul class="nav child_menu">
+                                    {% for y in x.sType %}
+    								<li><a href="/auto/auto_list/{{x.type}}_{{y.type}}"><i class="fa fa-paperclip xwcms"></i> {{ y.type }}<span class="label label-primary"> {{ y.num }}</span></a></li>
+                                    {% endfor %}
+    							</ul>
+							</li>
                             {% endfor %}
+                            <!-- <li><a href="/auto/test_list"><i class="fa fa-bullhorn xwcms"></i> 测试报告</a> -->
+							</li>
 						</ul>
 					</div>
 				</div>
@@ -98,7 +110,7 @@
 
         <!-- page content -->
 		<script src="{% static 'js/echarts.min.js' %}" charset="UTF-8"></script>
-        <div class="right_col" role="main">
+        <div class="right_col" role="main" style="padding-top: 60px;">
 		{% block content %}
 		{% endblock content %}
 		</div>
@@ -112,24 +124,6 @@
         </footer>
         <!-- /footer content -->
       </div>
-    </div>
-
-    <!-- Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="delModalLabel">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title"> 删除用例 ⊙o⊙!</h4>
-                </div>
-                <div id='mess' class="modal-body">考虑清楚了吗?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-warning"  name="delSure"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Yes !</button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span> 返回</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <div class="modal fade" id="copyModal" tabindex="-1" role="dialog">
@@ -155,10 +149,6 @@
             </div>
         </div>
     </div>
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
-    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
 	<script src="{% static 'dist/js/bootstrap.min.js' %}"></script>
 	<script src="{% static 'js/bootstrap-table.min.js' %}"></script>
 	<script src="{% static 'js/bootstrap-table-zh-CN.min.js' %}"></script>
@@ -174,9 +164,9 @@
 
     <script>
         // add什么元素改
-        $('#editable-select').editableSelect({ filter: false });
+        $('#editable-select').editableSelect({ filter: true });
         // add目标元素改
-        $('#editable-select1').editableSelect({ filter: false });
+        $('#editable-select1').editableSelect({ filter: true });
         // edit默认要改类
     </script>
 	<script>
@@ -205,29 +195,6 @@
 			return index;
 		};
 	</script>
-    <script>
-        $(document).ready(function(){
-            $('#deleteModal').on('show.bs.modal', function (e) {
-                var btn = $(e.relatedTarget),
-                    id = btn.data("index");
-                // console.log(id)
-                $(this).find('[name="delSure"]').click(function(){
-                    $.get("/auto/auto_del",{'id':id}, function(data,status){
-                        if (status == 'success' && data == 'success') {
-                            $('.modal-body').text('删除成功');
-                        //提交失败的操作
-                        } else {
-                            $('.modal-body').text('已删除或删除失败，请联系管理员');
-                        };
-                    });
-                });
-            });
-
-            $('#deleteModal').on('hide.bs.modal', function (){
-                window.location.reload();
-            });
-        });
-    </script>
     <script>
         $(document).ready(function(){
             $('#copyModal').on('show.bs.modal', function (e) {
@@ -259,7 +226,7 @@
     <script>
         $('input').bind('input propertychange', function() {
             // console.log($(this).val());
-            var regu = /([a-zA-Z0-9]|[,_+-=&%$#@?(){}\[\]\s]|[\u4e00-\u9fa5])/
+            var regu = /([a-zA-Z0-9]|[，,_+-=&%$#@?(){}\[\]\s]|[\u4e00-\u9fa5])/
                 myText = $(this).val();
             for(x in myText){
                 if(!regu.exec(myText[x])){
@@ -267,6 +234,15 @@
                     break;
                 }
             }
+        });
+    </script>
+    <script>
+        var $table = $('#tableList');
+
+        $(function () {
+          	$table.on('click-row.bs.table', function (e, row, $element) {
+            		$($element).toggleClass('success');
+          	});
         });
     </script>
   </body>

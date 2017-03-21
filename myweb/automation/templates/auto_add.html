@@ -418,7 +418,7 @@
         // 给新加的元素设置行号，重新算行数
         trlen = document.getElementById('L1TB').rows.length;
         document.getElementById('L1TB').rows[trlen-1].cells[0].innerHTML = linenum
-        $('.editable').editableSelect({ filter: false });
+        $('.editable').editableSelect({ filter: true });
     }
     // 动作行+
     function ActionAdd(node){
@@ -435,7 +435,7 @@
             new_son.id = 'L2TR' + lastnum;
             new_son.getElementsByTagName('select')[1].className = 'form-control editable input-sm'// 避免改模板的属性，模板不带类名，每次复制时赋予类名
         father.appendChild(new_son);
-        $('.editable').editableSelect({ filter: false });
+        $('.editable').editableSelect({ filter: true });
     }
     // 预期行++
     function expendAdd(node){
@@ -452,7 +452,7 @@
             new_son.id = 'L3TR' + lastnum;
             new_son.getElementsByTagName('select')[1].className = 'form-control editable input-sm'// 避免改模板的属性，模板不带类名，每次复制时赋予类名
         father.appendChild(new_son);
-        $('.editable').editableSelect({ filter: false });
+        $('.editable').editableSelect({ filter: true });
     }
 
     function myDel(node){

@@ -54,6 +54,7 @@ INSTALLED_APPS = [
 	'wiki.plugins.images',
 	'wiki.plugins.macros',
 	'simplemde',
+	'sysmon',
 ]
 
 MIDDLEWARE_CLASSES = [

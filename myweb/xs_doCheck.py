@@ -53,19 +53,20 @@ def cancel_order():
 	# 遍历lvsession
 	for lv in lvses:
 		orderNo = []
-		getOrderAdd = "http://api3g2.lvmama.com/api/router/rest.do?method=api.com.order.getOrderList&version=1.0.0&osVersion=6.0.1&lvversionCode=68&lvversion=7.8.2&page=1&pageSize=10&queryType=WAIT_PAY&lvsessionid=" + lv
-		cancelOrderAdd = 'http://api3g2.lvmama.com/api/router/rest.do?method=api.com.order.cancellOrder&version=1.0.0&osVersion=6.0.1&lvversionCode=65&lvversion=7.7.3&lvsessionid=' + lv
+		getOrderAdd = "http://api3g2.lvmama.com/api/router/rest.do?method=api.com.order.getOrderList&version=1.0.0&firstChannel=ANDROID&osVersion=6.0.1&lvversionCode=68&lvversion=7.8.2&page=1&pageSize=10&queryType=WAIT_PAY&lvsessionid=" + lv
+		cancelOrderAdd = 'http://api3g2.lvmama.com/api/router/rest.do?method=api.com.order.cancellOrder&version=1.0.0&firstChannel=ANDROID&osVersion=6.0.1&lvversionCode=65&lvversion=7.7.3&lvsessionid=' + lv
 		# 取orderId
 		try:
 			html_json = do_curl(getOrderAdd)
+		#	print(html_json)
 			for x in html_json['data']['list']:
 				orderNo.append(x['orderId'])
 			for i in orderNo:
 				order_str = ('&orderId=%s' % i)
 				c.setopt(pycurl.URL, (cancelOrderAdd + order_str))
 				c.perform()
-		except:
-			print("cancel_Order failed")
+		except TypeError as e:
+			print("cancel_Order failed \n\t %s" % e)
 		print("%s : %s" % (lv,orderNo))
 	c.close()
 

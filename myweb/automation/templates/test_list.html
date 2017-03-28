@@ -4,50 +4,50 @@
 <!-- 当前测试队列：{{ queue_num }} -->
 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
     {% for x in testResults %}
-    <div class="panel panel-primary">
-        <a role="button" data-toggle="collapse"  href="#collapse{{ x.deviceName }}"  aria-controls="collapse{{ x.deviceName }}">
-            <div class="panel-heading" role="tab" id="heading{{ x.deviceName }}"> 设备号：{{ x.deviceName }}</div>
-        </a>
+        <div class="panel panel-primary">
+            <a role="button" data-toggle="collapse"  href="#collapse{{ x.deviceName }}"  aria-controls="collapse{{ x.deviceName }}">
+                <div class="panel-heading" role="tab" id="heading{{ x.deviceName }}"> 设备号：{{ x.deviceName }} 默认仅显示最近20次构建</div>
+            </a>
 
-    <div id="collapse{{x.deviceName}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{ x.deviceName }}">
-        <div class="panel-body">
-            任务名称：{{ x.job_name }} <br / >
-            历史测试列表：
-        </div>
-        <table class="table table-condensed" data-toggle="table"  data-click-to-select="true">
-            <thead>
-                <tr>
-                    <th data-field="构建ID"  data-sortable="true" class="col-xs-2"> 构建ID，有时会有±1的出入，用于检查执行日志</th>
-                    <th data-field="用例集" data-sortable="true" class="col-xs-2">
-                        用例名称
-                    </th>
-                    <th data-field="测试报告" class="col-xs-2">
-                        测试报告
-                    </th>
-                    <th data-field="测试状态" class="col-xs-2">
-                        测试状态
-                    </th>
-                    <th data-field="测试时间" class="col-xs-2">
-                        测试创建时间
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for y in x.buildLog %}
-                <tr>
-                    <td>{{ y.buildNUM }}</td>
-                    <td>{% for z in y.build_case %}<p>{{ z }}</p>{% endfor %}</td>
-                    <td><a href="{{ y.reportURL }}" target="_blank">查看报告</a></td>
-                    <td>{% if y.status == 'True' %}测试中{% else %}测试完成{% endif %}</td>
-                    <td>{{ y.create_time }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div id="collapse{{x.deviceName}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{ x.deviceName }}">
+            <div class="panel-body">
+                任务名称：{{ x.job_name }} <br / >
+                历史测试列表：
+            </div>
+            <table data-toggle="table"  data-click-to-select="true" data-query-params="queryParams" data-pagination="true" data-search="true">
+                <thead>
+                    <tr>
+                        <th data-field="构建ID"  data-sortable="true" class="col-xs-2"> 构建ID</th>
+                        <th data-field="用例集" data-sortable="true" class="col-xs-2">
+                            用例ID_用例名称
+                        </th>
+                        <th data-field="测试报告" class="col-xs-2">
+                            测试报告
+                        </th>
+                        <th data-field="测试状态" class="col-xs-2">
+                            测试状态
+                        </th>
+                        <th data-field="测试时间" class="col-xs-2" data-sortable="true">
+                            测试创建时间
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for y in x.buildLog %}
+                    <tr>
+                        <td>{{ y.buildNUM }}</td>
+                        <td>{% for z in y.build_case %}<p>{{ z }}</p>{% endfor %}</td>
+                        <td><a href="{{ y.reportURL }}" target="_blank">查看报告</a></td>
+                        <td>{% if y.status == 'True' %}测试中{% elif y.status == 'queue' %}队列中{% else %}测试完成{% endif %}</td>
+                        <td>{{ y.create_time }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
 
+            </div>
         </div>
-    </div>
-    {% endfor %}
+        {% endfor %}
 </div>
 
 <script>

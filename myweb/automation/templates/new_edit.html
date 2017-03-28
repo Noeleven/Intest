@@ -127,7 +127,7 @@
                                               <div class="form-group">
                                                   <label for="where" class="col-sm-2 control-label"><span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="第一个步骤, 一般从首页或频道页开始；其他步骤, 一般是上一个步骤的终点页"></span> 起点 <strong class="text-danger">*</strong> </label>
                                                   <div class="col-sm-10">
-                                                      <select class="form-control input-sm" name="where" required="required">
+                                                      <select class="form-control editable-select-e input-sm" name="where" required="required">
                                                           {% for x in where_list %}
                                                           <option {% if x.controlName == BG.where %}selected{% endif %}>{{ x.controlName }}</option>
                                                           {% endfor %}
@@ -204,7 +204,7 @@
                                                   <label for="check" class="col-sm-2 control-label">终点</label>
                                                   <div class="col-sm-10">
                                                       <div class="form-group">
-                                                          <select class="form-control input-sm" name="enterActivity">
+                                                          <select class="form-control editable-select-e input-sm" name="enterActivity">
                                                               <option></option>
                                                               {% for x in where_list %}
                                                               <option {% if x.controlName == BG.enterActivity %} selected {% endif %}>{{ x.controlName }}</option>
@@ -246,7 +246,6 @@
                                                                   </td>
                                                                   <td>
                                                                       <select id="editable-select1" class="editable-select-e form-control input-sm" name="elementname" placeholder="选择或输入元素">
-
                                                                           {% for x in target_list %}
                                                                           <option>{{ x.controlName }}</option>
                                                                           {% endfor %}
@@ -433,7 +432,7 @@
                                                         </select>
                                                     </td>
                                                     <td>
-                                                        <select id="editable-select1" class="form-control input-sm" name="elementname" placeholder="选择或输入元素">
+                                                        <select  class="form-control input-sm" name="elementname" placeholder="选择或输入元素">
                                                             {% for x in target_list %}
                                                             <option>{{ x.controlName }}</option>
                                                             {% endfor %}
@@ -496,7 +495,9 @@
             // 避免改模板的属性，模板不带类名，每次复制时赋予类名 还有L2的ID
             new_son.getElementsByTagName('tr')[1].id = 'L2TR1'
             new_son.getElementsByTagName('tr')[3].id = 'L3TR1'
+            new_son.getElementsByTagName('select')[0].className = 'form-control editable input-sm'
             new_son.getElementsByTagName('select')[2].className = 'form-control editable input-sm'
+            new_son.getElementsByTagName('select')[4].className = 'form-control editable input-sm'
             new_son.getElementsByTagName('select')[6].className = 'form-control editable input-sm'
         document.getElementById('L1TB').appendChild(new_son); // 克隆元素
         // 给新加的元素设置行号，重新算行数

@@ -30,8 +30,13 @@ class deviceList(models.Model):
     appVersion = models.CharField(blank=True, default='7.8.5', max_length=10)
     appPackage = models.CharField(blank=True, default='com.gift.android', max_length=20)
     platformVersion = models.CharField(blank=True, default='4.4.2', max_length=10)
+    platformName = models.CharField(blank=True, default='Android', max_length=10)
     appLaunchActivity = models.CharField(blank=True, default='com.gift.android.activity.splash.WelcomeActivity', max_length=100)
     timeWait = models.IntegerField(blank=True, default=30)
+    USE_CHOICE = (('1', '启用'), ('0', '禁用'))
+    in_use = models.CharField(max_length=2,
+        choices=USE_CHOICE,
+        default='1')
     def __str__(self):
         return self.deviceName
 

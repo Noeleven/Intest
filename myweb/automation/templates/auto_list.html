@@ -7,11 +7,11 @@
             {% for x in device_list %}
             <a type='submit' class="btn btn-sm btn-default getCases">执行构建#{{ x.deviceName }}</a>
             {% endfor %}<hr / >
-            <a href='/auto/new_add' type='button' class='btn btn-default btn-sm'><span class="glyphicon glyphicon-plus"></span> 添加用例</a>
-            <button type="submit" class="btn btn-danger btn-sm" id="delCases"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> 批量删除</button>
+            <a href='/auto/new_add' type='button' class='btn btn-default btn-sm'><span class="glyphicon glyphicon-plus xwcms"></span> 添加用例</a>
+            <button type="submit" class="btn btn-danger btn-sm" id="delCases"><span class="glyphicon glyphicon-remove xwcms" aria-hidden="true"></span> 批量删除</button>
 
             <a href="/auto/test_list" type='button' class='btn btn-success btn-sm' target="_blank"><i class="fa fa-bullhorn xwcms"></i> 测试报告</a>
-            <a type="submit" class="btn btn-default btn-sm" href="http://10.113.2.70:8080/jenkins/" target="_blank"><span class="glyphicon glyphicon-plane" aria-hidden="true"></span> Jenkins</a>
+            <a type="submit" class="btn btn-default btn-sm" href="http://10.113.2.70:8080/jenkins/" target="_blank"><span class="glyphicon glyphicon-plane xwcms" aria-hidden="true"></span> Jenkins</a>
 
             <div id='delconfirm' class="alert alert-default alert-dismissible fade in" role="alert" style="display:none">
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
@@ -28,7 +28,7 @@
             </div>
 		</div>
 
-		<table id="tableList" data-toggle="table" data-striped="true" data-show-columns="true" data-row-style="rowStyle" style="word-break:break-all;"  data-click-to-select="true" {% if my_type != '全部' %}data-query-params="queryParams" data-pagination="true"{% endif %} data-search="true">
+		<table id="tableList" data-toggle="table" data-striped="true" data-show-columns="true" data-row-style="rowStyle" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-pagination="true" data-search="true">
 			<thead>
 				<tr>
                     <th data-field="state" data-checkbox="true"></th>
@@ -71,8 +71,8 @@
     				<td>{{ x.owner }}</td>
     				<td>{{ x.des }}</td>
     				<td>{{ x.modify_time|date:"Y-m-d H:i:s" }}</td>
-    				<td><a type='button' class="btn btn-sm btn-default" href="/auto/new_edit/{{ x.id }}/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> 编辑</a>
-                        <button type="submit" class="btn btn-default btn-sm" data-index="{{ x.id }}" data-toggle="modal" data-target="#copyModal"><span class="glyphicon glyphicon-camera" aria-hidden="true"></span> 复制</button>
+    				<td><a type='button' class="btn btn-sm btn-default" href="/auto/new_edit/{{ x.id }}/"><span class="glyphicon glyphicon-pencil xwcms" aria-hidden="true"></span> 编辑</a>
+                        <button type="submit" class="btn btn-default btn-sm" data-index="{{ x.id }}" data-toggle="modal" data-target="#copyModal"><span class="glyphicon glyphicon-camera xwcms" aria-hidden="true"></span> 复制</button>
                     </td>
                 </tr>
 			{% endfor %}
@@ -146,6 +146,16 @@
     $(document).ready(function(){
         $("#cancle").click(function(){
             $('#delconfirm').fadeOut(500)
+        });
+    });
+</script>
+
+<script>
+    var $table = $('#tableList');
+
+    $(function () {
+        $table.on('click-row.bs.table', function (e, row, $element) {
+                $($element).toggleClass('success');
         });
     });
 </script>

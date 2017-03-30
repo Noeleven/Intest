@@ -86,7 +86,7 @@ class caseUser(models.Model):
     des = models.TextField(blank=True,)
 
 class reportsList(models.Model):
-    timeStamp = models.CharField(max_length=200)
+    timeStamp = models.TextField()
     buildNUM = models.CharField(max_length=20,blank=True)
     reportURL = models.CharField(max_length=200,blank=True)
     status = models.CharField(max_length=50,blank=True)

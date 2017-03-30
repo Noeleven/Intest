@@ -1,7 +1,7 @@
 from django.shortcuts import render,render_to_response
 from automation.models import *
-from django.http import HttpResponse, HttpResponseRedirect
-from django.forms.models import model_to_dict
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.template import loader
 from decimal import Decimal
 import time
 import json
@@ -11,10 +11,15 @@ import jenkins
 
 
 # Create your views here.
+def datetime_handler(x):
+    if isinstance(x, datetime.datetime):
+        return x.isoformat()
+    raise TypeError("Unknown type")
+
 def nav_list():
     nav_list = []
     # 大分类
-    someList = [{'type':'全部','sq':caseList.objects.filter(in_use='1')}]
+    someList = []
     for x in caseType.objects.values('id','type_name'):
         bDict = {}
         bDict['type'] = x['type_name']
@@ -32,10 +37,7 @@ def nav_list():
             tDict = {}
             Stype = tt.second_Type
             tDict['type'] = Stype
-            if y['type'] == "全部":
-                Ftype = ''
-                tDict['num'] = len(caseList.objects.filter(in_use='1').filter(second_Type=tt.id))
-            elif y['type'] == "废弃":
+            if y['type'] == "废弃":
                 Ftype = ''
                 tDict['num'] = len(caseList.objects.filter(in_use='0').filter(second_Type=tt.id))
             else:
@@ -94,12 +96,10 @@ def doDB(method, myList):
     cursor.close()
     conn.close()
 # 导航list
-def auto_list(request, my_type='全部_下单类'):
+def auto_list(request, my_type='全部'):
     f_type = my_type.split('_')[0]  #出境
     if f_type == '废弃':
         show_list = caseList.objects.filter(in_use='0')
-    elif f_type == '全部':
-        show_list = caseList.objects.filter(in_use='1')
     else:
         s_type = my_type.split('_')[1]
         type_id = caseType.objects.filter(type_name=f_type)[0].id
@@ -291,7 +291,6 @@ def auto_config(request):
     pp.save()
     return HttpResponse('OK')
 
-
 # 返回接口配置
 def auto_response(request):
     try:
@@ -300,7 +299,6 @@ def auto_response(request):
         return HttpResponse(jsonStr, content_type="application/json")
     except:
         return HttpResponse('No Such Device')
-
 
 # 定义删除
 def auto_del(request):
@@ -311,7 +309,9 @@ def auto_del(request):
             caseName = myCase.caseName
             myList = [caseName]
             doDB('delete', myList)
-            myCase.delete()
+            # myCase.delete()
+            myCase.in_use = '0'
+            myCase.save()
         data = 'success'
         return HttpResponse(data)
     except IOError as e:
@@ -585,3 +585,80 @@ def test_list(request):
         'testResults':testResults,
         # 'queue_num':queue_num
         })
+
+def auto_search(request):
+    # 需要品类、二品类、版本、所属人、平台
+    type_all = caseType.objects.all().order_by('type_name')
+    s_type_all = secondType.objects.all().order_by('second_Type')
+    type_list = [x for x in type_all]
+    second_type_list = [x for x in s_type_all]
+    user_list = [x['userName'] for x in caseUser.objects.filter(userStatus=1).values('userName').order_by('userName')]
+    versionList = [x['versionStr'] for x in caseVersion.objects.values('versionStr').order_by('-versionStr')]
+    plant = ['Android','IOS','M']
+    device_list = deviceList.objects.filter(in_use='1').values('deviceName')
+    return render(request, 'auto_search.html',{
+        'type_list':type_list,
+        'nav_list':nav_list(),
+        'user_list':user_list,
+        'versionList':versionList,
+        'plant':plant,
+        'second_type_list':second_type_list,
+        'device_list':device_list
+    })
+
+def search_result(request):
+    myrequest = dict(request.GET)
+    # 处理下key带[]的问题
+    for k,v in myrequest.items():
+        if '[]' in k:
+            k1 = k.replace('[]','')
+            myrequest.pop(k)
+            myrequest[k1] = v
+    # print(myrequest)
+    # 每个key值循环取并集，最后取交集
+    origin = caseList.objects.all()
+    if_list = {'ids':[],'names':[],'types':[],'secs':[],'vers':[],'plans':[],'owns':[],'dess':[]}
+    num = 0
+    for m,n in myrequest.items():
+        if n[0] == '':  # 参数没值就pass
+            num += 1
+            pass
+        else:   # 有值就循环遍历
+            for x in n:
+                if m == 'caseId':
+                    if_list['ids'] += origin.filter(id__contains=x)
+                elif m == 'caseName':
+                    if_list['names'] += origin.filter(caseName__contains=x)
+                elif m == 'caseType':
+                    if_list['types'] += origin.filter(type_field__type_name__contains=x)
+                elif m == 'secondType':
+                    if_list['secs'] += origin.filter(second_Type__second_Type__contains=x)
+                elif m == 'plantform':
+                    if_list['plans'] += origin.filter(plantform__contains=x)
+                elif m == 'version':
+                    if_list['vers'] += origin.filter(version__contains=x)
+                elif m == 'note':
+                    if_list['dess'] += origin.filter(des__contains=x)
+                elif m == 'owner':
+                    if_list['owns'] += origin.filter(owner__contains=x)
+                else:
+                    continue
+    print(num)
+    if num == 8:
+        show_list = origin
+        return render_to_response('auto_ajax.html', locals())
+    else:
+        # 现在不一定每个list都有值，需要判断过滤掉没有的值，首先清空没有值的形成一个list
+        result = [y for x,y in if_list.items() if y]
+        # 遍历这个list 并求交集
+        try:
+            show_list = set(result[0])
+            for x in result[1:]:
+                show_list &= set(x)
+            # show_list = [x for x in show_list]
+            response = HttpResponse()
+            response['Content-Type'] = "text/json"
+            return render_to_response('auto_ajax.html', locals())
+        except Exception as e:
+            print(e)
+            return render_to_response('auto_ajax.html', locals())

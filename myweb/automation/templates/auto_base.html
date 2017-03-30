@@ -75,19 +75,16 @@
 						<hr>
 						<h3></h3>
 						<ul class="nav side-menu">
+                            <li><a href="/auto/auto_search"><i class="fa fa-search xwcms"></i> 用例查询</a>
+                            </li>
                             {% for x in nav_list %}
-                                {% if x.type == '全部' %}
-                                <li><a href="/auto/auto_list/{{x.type}}"><i class="fa fa-paw xwcms"></i> {{ x.type }} <span class="label label-primary">{{ x.num }}</span></a>
-    							</li>
-                                {% else %}
                                 <li><a><i class="fa fa-{% if x.type == '废弃' %}trash{% else %}paperclip{% endif %}  xwcms"></i> {{ x.type }} <span class="label label-primary">{{ x.num }}</span><span class="fa fa-chevron-down"></span></a>
         							<ul class="nav child_menu">
                                         {% for y in x.sType %}
-        								<li><a href="/auto/auto_list/{{x.type}}_{{y.type}}"><i class="fa fa-paperclip xwcms"></i> {{ y.type }} <span class="label label-primary">{{ y.num }}</span></a></li>
+        								<li><a href="/auto/auto_list/{{x.type}}_{{y.type}}"><i class="fa fa-smile-o xwcms"></i> {{ y.type }} <span class="label label-primary">{{ y.num }}</span></a></li>
                                         {% endfor %}
         							</ul>
     							</li>
-                                {% endif %}
                             {% endfor %}
 							</li>
 						</ul>
@@ -109,7 +106,7 @@
 
         <!-- page content -->
 		<script src="{% static 'js/echarts.min.js' %}" charset="UTF-8"></script>
-        <div class="right_col" role="main" style="padding-top: 60px;">
+        <div id ='right_col' class="right_col" role="main" style="padding-top: 60px;">
 		{% block content %}
 		{% endblock content %}
 		</div>
@@ -158,13 +155,6 @@
     <script src="{% static 'vendors/nprogress.js' %}"></script>
     <!-- Custom Theme Scripts -->
     <script src="{% static 'vendors/custom.min.js' %}"></script>
-	<!-- <script src="{% static 'js/bootstrap-datetimepicker.min.js' %}" charset="UTF-8"></script>
-    <script src="{% static 'js/locales/bootstrap-datetimepicker.zh-CN.js' %}"  charset="UTF-8"></script> -->
-
-    <!-- <script>
-        校验元素
-        $('#editable-select1').editableSelect({ filter: true });
-    </script> -->
 	<script>
     	$('#myAffix').affix({
     	  offset: {
@@ -175,17 +165,6 @@
     	  }
     	})
 	</script>
-	<!-- <script type="text/javascript">
-		$(".form_date").datetimepicker({
-			language:  'zh-CN',
-			minView: 'month',
-			format: "yyyy-mm-dd ",
-			autoclose: true,
-			todayBtn: true,
-			startDate: "2016-08-14",
-			minuteStep: 10
-		});
-	</script> -->
 	<script>
 		function runningFormatter(value, row, index){
 			return index;
@@ -230,15 +209,6 @@
                     break;
                 }
             }
-        });
-    </script>
-    <script>
-        var $table = $('#tableList');
-
-        $(function () {
-          	$table.on('click-row.bs.table', function (e, row, $element) {
-            		$($element).toggleClass('success');
-          	});
         });
     </script>
   </body>

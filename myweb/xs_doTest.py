@@ -130,7 +130,7 @@ def do_db():
 	method_list = Ints.objects.filter(inuse=1).values('method_version').order_by('method_version').distinct()
 	n = 1
 	old = "f4591872-54c4-427a-a6bb-751cb5330f4b"
-	new = "3237e799-1b48-47e1-b041-887ddc322640"
+	new = "ef3d2602-7bac-4335-9251-0f1493c64154" 
 	for x in method_list:
 		# 这里也顺便维护下DB，我们保留最新和最老的数据，其他的都删除
 		todel = Ints.objects.all().filter(method_version=x['method_version']).order_by('timestamp')

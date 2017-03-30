@@ -10,7 +10,7 @@ from intest.models import *
 '''
 消灭线上下的单，添加的游玩人等
 '''
-lvses = ['96d84d8c-eafd-4a2b-a0ee-77532a78f044','3237e799-1b48-47e1-b041-887ddc322640','ef3d2602-7bac-4335-9251-0f1493c64154']
+lvses = ['96d84d8c-eafd-4a2b-a0ee-77532a78f044','ef3d2602-7bac-4335-9251-0f1493c64154']
 # lvse='87f12558-041f-4028-a27e-f6d9b0460cf1'
 addressNo = []
 
@@ -39,18 +39,10 @@ def do_curl(uurl):
 
 # 取消订单
 def cancel_order():
-	c = pycurl.Curl()
-	c.setopt(pycurl.FOLLOWLOCATION, 1)
-	c.setopt(pycurl.MAXREDIRS, 5)
-	c.setopt(pycurl.CONNECTTIMEOUT, 20)
-	c.setopt(pycurl.CUSTOMREQUEST, 'GET')
-	c.setopt(pycurl.HTTPHEADER,['signal:ab4494b2-f532-4f99-b57e-7ca121a137ca'])
-	c.setopt(pycurl.USERAGENT, "Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.23 Mobile Safari/537.36")
-	c.setopt(pycurl.VERBOSE,0)
 	# 遍历lvsession
 	for lv in lvses:
 		orderNo = []
-		getOrderAdd = "http://api3g2.lvmama.com/api/router/rest.do?method=api.com.order.getOrderList&page=1&pageSize=10&queryType=UNPAY&version=2.0.0&lvversionCode=74&lvversion=7.9.2&firstChannel=ANDROID&formate=json&secondChannel=LVMM&lvsessionid=" + lv
+		getOrderAdd = "http://api3g2.lvmama.com/api/router/rest.do?method=api.com.order.getOrderList&page=1&pageSize=20&queryType=UNPAY&version=2.0.0&lvversionCode=74&lvversion=7.9.2&firstChannel=ANDROID&formate=json&secondChannel=LVMM&lvsessionid=" + lv
 		cancelOrderAdd = 'http://api3g2.lvmama.com/api/router/rest.do?method=api.com.order.cancellOrder&version=1.0.0&firstChannel=ANDROID&osVersion=6.0.1&lvversionCode=65&lvversion=7.7.3&lvsessionid=' + lv
 		# 取orderId
 		try:
@@ -59,11 +51,10 @@ def cancel_order():
 				orderNo.append(x['orderId'])
 			for i in orderNo:
 				order_str = ('&orderId=%s' % i)
-				c.setopt(pycurl.URL, (cancelOrderAdd + order_str))
-				c.perform()
+				do_curl(cancelOrderAdd + order_str)
 		except TypeError as e:
 			print("\n\t ** cancel_Order failed ** \n\t %s" % e)
-	c.close()
+		print("%s : %s" % (lv, orderNo))
 
 
 def do_address():

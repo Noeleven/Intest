@@ -129,9 +129,9 @@ class deviceListAdmin(admin.ModelAdmin):
     search_fields = ['deviceName','deviceIP','job_name','appVersion','platformVersion']
 
 class reportsListAdmin(admin.ModelAdmin):
-    list_display = ('timeStamp','buildNUM','status','create_time')
+    list_display = ('buildNUM','status','deviceName', 'create_time','timeStamp')
     list_per_page = 30
-    search_fields = ['timeStamp','buildNUM','status','create_time']
+    search_fields = ['timeStamp','buildNUM','status','deviceName__deviceName','create_time']
 
 
 admin.site.register(caseType, caseTypeAdmin)

@@ -5,13 +5,13 @@
         <div class="panel-heading"> 用例列表 品类：{{ my_type }} </div>
 		<div class="panel-body">
             {% for x in device_list %}
-            <a type='submit' class="btn btn-sm btn-default getCases">执行构建#{{ x.deviceName }}</a>
-            {% endfor %}<hr / >
-            <a href='/auto/new_add' type='button' class='btn btn-default btn-sm'><span class="glyphicon glyphicon-plus xwcms"></span> 添加用例</a>
+            <a type='submit' class="btn btn-sm btn-info getCases">执行构建#{{ x.deviceName }}</a>
+            {% endfor %}<br / >
+            <a type="submit" class="btn btn-default btn-sm" href="http://10.113.2.70:8080/jenkins/" target="_blank"><i class="fa fa-android xwcms"></i> AD Jenkins</a>
+            <a type="submit" class="btn btn-default btn-sm" href="http://10.113.1.193:8080" target="_blank"><i class="fa fa-apple xwcms"></i> IOS Jenkins</a>
+            <a href="/auto/test_list" type='button' class='btn btn-success btn-sm' target="_blank"><i class="fa fa-bullhorn xwcms"></i> 测试报告</a><br / >
+            <a href='/auto/new_add' type='button' class='btn btn-primary btn-sm'><span class="glyphicon glyphicon-plus xwcms"></span> 添加用例</a>
             <button type="submit" class="btn btn-danger btn-sm" id="delCases"><span class="glyphicon glyphicon-remove xwcms" aria-hidden="true"></span> 批量删除</button>
-
-            <a href="/auto/test_list" type='button' class='btn btn-success btn-sm' target="_blank"><i class="fa fa-bullhorn xwcms"></i> 测试报告</a>
-            <a type="submit" class="btn btn-default btn-sm" href="http://10.113.2.70:8080/jenkins/" target="_blank"><span class="glyphicon glyphicon-plane xwcms" aria-hidden="true"></span> Jenkins</a>
 
             <div id='delconfirm' class="alert alert-default alert-dismissible fade in" role="alert" style="display:none">
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>

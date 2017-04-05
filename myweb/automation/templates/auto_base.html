@@ -81,7 +81,7 @@
                                 <li><a><i class="fa fa-{% if x.type == '废弃' %}trash{% else %}paperclip{% endif %}  xwcms"></i> {{ x.type }} <span class="label label-primary">{{ x.num }}</span><span class="fa fa-chevron-down"></span></a>
         							<ul class="nav child_menu">
                                         {% for y in x.sType %}
-        								<li><a href="/auto/auto_list/{{x.type}}_{{y.type}}"><i class="fa fa-smile-o xwcms"></i> {{ y.type }} <span class="label label-primary">{{ y.num }}</span></a></li>
+        								<li><a href="/auto/auto_list?my_type={{x.type}}_{{y.type}}"><i class="fa fa-smile-o xwcms"></i> {{ y.type }} <span class="label label-primary">{{ y.num }}</span></a></li>
                                         {% endfor %}
         							</ul>
     							</li>

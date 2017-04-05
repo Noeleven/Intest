@@ -38,7 +38,7 @@
                         <td>{{ y.buildNUM }}</td>
                         <td>{% for z in y.build_case %}<p>{{ z }}</p>{% endfor %}</td>
                         <td><a href="{{ y.reportURL }}" target="_blank">查看报告</a></td>
-                        <td>{% if y.status == 'True' %}测试中{% elif y.status == 'queue' %}队列中{% else %}测试完成{% endif %}</td>
+                        <td>{% if y.status == 'ABORTED' %}测试被中断{% elif y.status == 'SUCCESS' %}测试完成{% else %}测试未完成{% endif %}</td>
                         <td>{{ y.create_time }}</td>
                     </tr>
                     {% endfor %}

@@ -1,6 +1,7 @@
 from django.shortcuts import render,render_to_response
 from automation.models import *
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.views.decorators.cache import cache_page
 from django.template import loader
 from decimal import Decimal
 import time
@@ -8,6 +9,7 @@ import json
 import mysql.connector
 import datetime
 import jenkins
+import hashlib
 
 
 # Create your views here.
@@ -56,6 +58,24 @@ def new_select_list(controlListType, plantform, version='all'):
         target_all = controlList.objects.filter(TYPE=controlListType).filter(controlType=plist[plantform]).filter(versionStr__versionStr=version).order_by('controlName')
     target_list = [x for x in target_all]
     return target_list
+# 接口签名
+def user_sign(request):
+    # 判断时间差，5分钟
+    client_time = request.POST['TimeStr']
+    signId = request.POST['signId']
+    server_time = str(time.time()).split('.')[0]
+    time_sub = int(server_time) - int(client_time)
+    if time_sub > 300:
+        return 'timeout'
+    else:
+        md5 = hashlib.md5()
+        sign_str = (client_time + '@djangoSign').encode(encoding='utf-8')
+        md5.update(sign_str)
+        result = md5.hexdigest()
+        if result == signId:
+            return 'success'
+        else:
+            return 'error'
 
 # controllist翻译
 def trans_me(aname, type, ptype):
@@ -96,9 +116,16 @@ def doDB(method, myList):
     cursor.close()
     conn.close()
 # 导航list
-def auto_list(request, my_type='全部'):
+def auto_list(request):
+    try:
+        my_type = request.GET['my_type']
+    except KeyError as e:
+        print(e)
+        my_type='全部'
     f_type = my_type.split('_')[0]  #出境
-    if f_type == '废弃':
+    if f_type == "全部":
+        show_list = caseList.objects.filter(in_use='1')
+    elif f_type == '废弃':
         show_list = caseList.objects.filter(in_use='0')
     else:
         s_type = my_type.split('_')[1]
@@ -225,7 +252,7 @@ def auto_edit_save(request, id):
     p.modify_time = datetime.datetime.now()
     p.save()
     # 判断动作
-    return HttpResponseRedirect("/auto/auto_list/%s_%s" % (my_form.get('type')[0], secondType.objects.get(second_Type=s_Type).second_Type))
+    return HttpResponseRedirect("/auto/auto_list?my_type=%s_%s" % (my_form.get('type')[0], secondType.objects.get(second_Type=s_Type).second_Type))
 # 点击生成配置
 def auto_config(request):
     ids = request.GET['vals'].split(',')    # 待测id列表
@@ -234,14 +261,14 @@ def auto_config(request):
     myTime = int(time.time())   # 取时间串
     if device == 'IOS':
         #IOS jenkins
-        server = jenkins.Jenkins('http://10.113.2.70:8080/jenkins', username='admin', password='111111')
+        server = jenkins.Jenkins('http://10.113.1.193:8080', username='autotest', password='111111')
         jsonStr = {
             "deviceName": mydevice.deviceIP,    # 设备:ip
             "appVersion": mydevice.appVersion,  #   app版本
-            "appiumServicePath": mydevice.appiumServicePath, # ip：端口
+            # "appiumServicePath": mydevice.appiumServicePath, # ip：端口
             "platformVersion": mydevice.platformVersion,    # 操作系统版本
             "platformName": mydevice.platformName,  # AD还是IOS
-            "lvsessionid": mydevice.lvsessionid,
+            # "lvsessionid": mydevice.lvsessionid,
             "timeStamp": str(myTime),
         }
     else:
@@ -283,7 +310,8 @@ def auto_config(request):
     pp = reportsList(timeStamp=time_case)
     pp.buildNUM = '#' + str(build_number + 1)
     if device == 'IOS':
-        pp.reportURL = '待介入'
+        pp.reportURL = ('http://10.113.1.193:8001/%s/report.html' % (build_number + 1))
+        print(pp.reportURL)
     else:
         pp.reportURL = ("http://10.113.2.70:8080/htmlReport/AndroidAutoTest/autoTest" + "%s.html" % str(myTime))
     pp.status = str(server.get_build_info(job_name,build_number)['building'])
@@ -314,9 +342,8 @@ def auto_del(request):
             myCase.save()
         data = 'success'
         return HttpResponse(data)
-    except IOError as e:
-        data = 'err'
-        print('删除失败，请联系管理员查看.err:%s' % e)
+    except KeyError as e:
+        data = ('ERR:删除失败，请联系管理员查看\n:%s' % e)
         return HttpResponse(data)
 
 def auto_copy(request):
@@ -345,9 +372,9 @@ def auto_copy(request):
         else:
             data = '3' # 没输入
         return HttpResponse(data)
-    except IOError as e:
+    except KeyError as e:
         data = '2'
-        print('复制失败，请联系管理员查看.err:%s' % e)
+        print('ERR:复制失败，请联系管理员查看.\n%s' % e)
         return HttpResponse(data)
 
 def new_add(request):
@@ -383,32 +410,35 @@ def new_save(request):
         caseDes = my_form.get('caseDes')[0]
         owner = my_form.get('owner')[0]
         s_Type = my_form.get('second_Type')[0]
+        caseStatus = '1' if caseStatus=='use' else '0'
+        if casePlantform == 'Android':
+            defaultCase = '[{"enterActivity":"","index":1,"storyDescription":"","action":[{"target":{"targetName":""},"actionCode":"click","behaviorPara":{"inputValue":""},"needWait":true}],"where":"","checkString":[{"checkType":"","elementName":"","expeted":""}]}]'
+        elif casePlantform == 'IOS':
+            defaultCase = '[{"type":"buttons","label":"","typeText":"","action":"click","des":""}]'
+        else:
+            defaultCase == ''
+        # 存储DB
+        p = caseList(caseName=caseName)
+        p.type_field = caseType.objects.get(id=caseType.objects.filter(type_field=csType)[0].id)
+        p.plantform = casePlantform
+        p.version = caseVersion
+        p.case = defaultCase
+        p.des = caseDes
+        p.in_use = caseStatus
+        p.owner = owner
+        p.second_Type_id = str(secondType.objects.get(second_Type=s_Type).id)  # todo 增加二类型选择
+        p.save()
+        if casePlantform == 'Android':
+            mydbList = [caseName, 1, defaultCase, caseStatus, csType, caseVersion]
+            doDB('insert', mydbList)
+        # 获取当前用例ID
+        myID = caseList.objects.filter(plantform=casePlantform).filter(caseName=caseName).values('id')[0]['id']
+        return HttpResponseRedirect("/auto/new_edit/%s" % myID)
     except TypeError as e:
-        print('oh my god!! %s' % e)
-    caseStatus = '1' if caseStatus=='use' else '0'
-    if casePlantform == 'Android':
-        defaultCase = '[{"enterActivity":"","index":1,"storyDescription":"","action":[{"target":{"targetName":""},"actionCode":"click","behaviorPara":{"inputValue":""},"needWait":true}],"where":"","checkString":[{"checkType":"","elementName":"","expeted":""}]}]'
-    elif casePlantform == 'IOS':
-        defaultCase = '[{"type":"buttons","label":"","typeText":"","action":"click","des":""}]'
-    else:
-        defaultCase == ''
-    # 存储DB
-    p = caseList(caseName=caseName)
-    p.type_field = caseType.objects.get(id=caseType.objects.filter(type_field=csType)[0].id)
-    p.plantform = casePlantform
-    p.version = caseVersion
-    p.case = defaultCase
-    p.des = caseDes
-    p.in_use = caseStatus
-    p.owner = owner
-    p.second_Type_id = str(secondType.objects.get(second_Type=s_Type).id)  # todo 增加二类型选择
-    p.save()
-    if casePlantform == 'Android':
-        mydbList = [caseName, 1, defaultCase, caseStatus, csType, caseVersion]
-        doDB('insert', mydbList)
-    # 获取当前用例ID
-    myID = caseList.objects.filter(plantform=casePlantform).filter(caseName=caseName).values('id')[0]['id']
-    return HttpResponseRedirect("/auto/new_edit/%s" % myID)
+        data = ('Oh my god!!出错啦 %s' % e)
+        print(data)
+        return HttpResponse(data)
+
 
 def new_edit(request, id):
     # 反向解析json存入表单
@@ -546,13 +576,18 @@ def auto_caseJson(request):
     finally:
         jsonStr = json.dumps(jsonStr, ensure_ascii=False)
         return HttpResponse(jsonStr, content_type="application/json")
-
+@cache_page(15)
 def test_list(request):
     # 右侧对应品类的用例列表
     dList = deviceList.objects.filter(in_use='1').values('deviceName','job_name')   #设备列表
     testResults = []
-    server = jenkins.Jenkins('http://10.113.2.70:8080/jenkins', username='admin', password='111111')
+
+
     for x in dList:
+        if x['deviceName'] == 'IOS':
+            server = jenkins.Jenkins('http://10.113.1.193:8080/', username='autotest', password='111111')
+        else:
+            server = jenkins.Jenkins('http://10.113.2.70:8080/jenkins', username='admin', password='111111')
         xDict = x
         rList = reportsList.objects.filter(deviceName__deviceName=x['deviceName']).order_by('-create_time')[:20]    #结果列表
         xDict['buildLog'] = []
@@ -573,7 +608,7 @@ def test_list(request):
             myDict['reportURL'] = y.reportURL
             # myDict['status'] = 'False'
             try:
-                myDict['status'] = str(server.get_build_info(xDict['job_name'], int(y.buildNUM[1:]))['building'])
+                myDict['status'] = str(server.get_build_info(xDict['job_name'], int(y.buildNUM[1:]))['result'])
             except:
                 myDict['status'] = 'queue'
             # print(myDict['status'])

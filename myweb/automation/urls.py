@@ -5,8 +5,8 @@ from automation.views import *
 
 urlpatterns = [
 	url(r'^$', auto_search, name='auto_search'),	# 默认全部列表
-	# url(r'^auto_list$', auto_list, name='auto_list'),	# 按品类分的列表
-	url(r'^auto_list/(.+)/$', auto_list, name='auto_list'),	# 按品类分的列表
+	url(r'^auto_list$', auto_list, name='auto_list'),	# 按品类分的列表
+	# url(r'^auto_list/(.+)/$', auto_list, name='auto_list'),	# 按品类分的列表
 	url(r'^auto_edit_save/(.+)/$', auto_edit_save, name='auto_edit_save'),	# 编辑保存
 	url(r'^auto_config$', auto_config, name='auto_config'),	# 点击构建
 	url(r'^auto_response$', auto_response, name='auto_response'),	# jenkins调用

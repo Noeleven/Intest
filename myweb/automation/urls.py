@@ -19,4 +19,7 @@ urlpatterns = [
 	url(r'^test_list$', test_list, name='test_list'),	# 测试报告
 	url(r'^auto_search$', auto_search, name='auto_search'),	# 搜索页面
 	url(r'^search_result$', search_result, name='search_result'),	# 搜索接口
+	url(r'^api_report$', api_report, name='api_report'),	# 发邮件接口
+	url(r'^api_report_page$', api_report_page, name='api_report_page'),	# 测试报告接口
+	url(r'^search_report$', search_report, name='search_report'),	# 报告页面查询
 ]

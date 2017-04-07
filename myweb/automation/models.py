@@ -93,6 +93,21 @@ class reportsList(models.Model):
     deviceName = models.ForeignKey(deviceList)
     create_time = models.DateTimeField(default=datetime.datetime.now)
 
+class testRecording(models.Model):
+    testStartDate = models.DateTimeField()
+    testCondition = models.CharField(max_length=100)
+    testDuration = models.DateTimeField()
+    testAppVersion = models.CharField(max_length=100)
+    timeStamp = models.CharField(max_length=100)
+
+class allBookRecording(models.Model):
+    caseName = models.CharField(max_length=300)
+    status = models.CharField(max_length=50,blank=True)
+    testResultDoc = models.TextField()
+    timeStamp = models.CharField(max_length=100)
+    usedTime = models.CharField(max_length=100, default='0')
+
+
 class caseTypeAdmin(admin.ModelAdmin):
     list_display = ('type_name', 'type_field', 'modify_time')
     list_per_page = 30

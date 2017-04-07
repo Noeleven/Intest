@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>驴妈妈自动化测试系统</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Custom styles for this template -->
+    <link href="http://v3.bootcss.com/examples/dashboard/dashboard.css" rel="stylesheet" />
+    <!-- css for Table -->
+    <link rel="stylesheet" href="http://10.113.1.112:8080/css/bootstrap-table-expandable.css">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <!-- navStart -->
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation" id="top">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">
+            <img src="http://m.lvmama.com/my/static/img/aboutLv.png" class=" img-rounded" alt="Responsive image" style="height:30px" /></a>
+            <a class="navbar-brand" href="#">Android自动化2.0</a>
+        </div>
+    </nav>
+    <!-- navEnd -->
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-3 col-md-2 sidebar">
+                <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                  <div class="panel panel-success">
+                    <div class="panel-heading" role="tab" id="headingOne">
+                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                          <h4 class="panel-title">
+                              成功 {{passNum}}
+                          </h4></a>
+                    </div>
+                    <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+                      <div class="panel-body">
+                          <ul class="nav nav-sidebar">
+                          {% for x in pass_list %}
+                          <li><a href="#{{ x.caseName }}">{{ x.caseName }}</a></li>
+                          {% endfor %}
+                      </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="panel panel-danger">
+                    <div class="panel-heading" role="tab" id="headingTwo">
+                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                      <h4 class="panel-title">
+                          失败 {{failNum}}
+                      </h4>
+                    </a>
+                    </div>
+                    <div id="collapseTwo" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingTwo">
+                      <div class="panel-body">
+                          <ul class="nav nav-sidebar">
+                              {% for x in err_list %}
+                              <li><a href="#{{ x.caseName }}">{{ x.caseName }}</a></li>
+                              {% endfor %}
+                          </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            <!-- miantStart -->
+            <div id="des" class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+                <h1 class="page-header">Android自动化测试报告</h1>
+                <div class="htmleaf-container">
+                    {{ message }}
+                    <header class="htmleaf-header"><h3>汇总结果</h3></header>
+                    <!-- statisticsStart -->
+                    <table class="table table-bordered">
+                        <thead></thead>
+                        <tbody>
+                        <tr>
+                            <td>测试用例总数</td>
+                            <td>{{ allNum }}</td>
+                            <td>测试开始时间</td>
+                            <td>{{ sTime|date:"Y-m-d H:i:s" }}</td>
+                            <td>测试环境</td>
+                            <td>线上</td>
+                        <tr>
+                            <td><span class="label label-success">通过</span></td>
+                            <td>{{ passNum }}</td>
+                            <td>测试时长</td>
+                            <td>{{ testTime }}秒</td>
+                            <td>测试用户名</td>
+                            <td>loadtest000007</td>
+                        </tr>
+                        <tr>
+                            <td><span class="label label-danger">失败</span></td>
+                            <td>{{ failNum }}</td>
+                            <td>通过率</td>
+                            <td>{{ passRate }}%</td>
+                            <td>测试账号密码</td>
+                            <td>987654321</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+                    <div class="col-xs-4">
+                        <div class="input-group">
+                          <input id='yourName' type="text" class="form-control" placeholder="请输入所属人查询">
+                          <span class="input-group-btn">
+                            <button id='search' class="btn btn-primary" type="button"><span class="glyphicon glyphicon-search"></span></button>
+                          </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="htmleaf-container" id='myTable'>
+                    <div class="col-md-6">
+                        <header class="htmleaf-header">
+                        <h3>成功列表</h3></header>
+                        <table class="table table-hover table-expandable">
+                            <thead>
+                                <tr>
+                                <th>用例名称</th>
+                                <th>操作步骤</th>
+                                <th>操作时长</th>
+                                <th>用例更新时间</th></tr>
+                            </thead>
+                            <tbody>
+                                    {% for x in pass_list %}
+                                        {{ x.testResultDoc|safe }}
+                                    {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <header class="htmleaf-header">
+                        <h3>失败列表</h3></header>
+                        <table class="table table-hover table-expandable">
+                            <thead>
+                                <tr>
+                                <th>用例名称</th>
+                                <th>操作步骤</th>
+                                <th>操作时长</th>
+                                <th>用例更新时间</th></tr>
+                            </thead>
+                            <tbody>
+                                    {% for x in err_list %}
+                                        {{ x.testResultDoc|safe }}
+                                    {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js" type="text/javascript"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script src="http://10.113.1.112:8080/js/bootstrap-table-expandable.js"></script>
+    <script>
+        $('#search').click(function(){
+            var user = $('#yourName').val()
+                timeT = '{{ timeTarget}}'
+            console.log(timeT)
+            $.get("{% url 'search_report' %}",{'user':user,'timeT':timeT}, function(ret){
+                $("#myTable").html(ret)
+            })
+        })
+    </script>
+  </body>
+</html>

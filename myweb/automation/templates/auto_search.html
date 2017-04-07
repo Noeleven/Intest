@@ -70,7 +70,7 @@
             </form>
             <hr / >
             {% for x in device_list %}
-            <a type='submit' class="btn btn-sm btn-info getCases">执行构建#{{ x.deviceName }}</a>
+            <a type='submit' class="btn btn-sm btn-info getCases">执行构建#{{ x.deviceName }}#{{ x.appVersion }}</a>
             {% endfor %}<br / >
             <a type="submit" class="btn btn-default btn-sm" href="http://10.113.2.70:8080/jenkins/" target="_blank"><i class="fa fa-android xwcms"></i> AD Jenkins</a>
             <a type="submit" class="btn btn-default btn-sm" href="http://10.113.1.193:8080" target="_blank"><i class="fa fa-apple xwcms"></i> IOS Jenkins</a>

@@ -10,14 +10,21 @@ import mysql.connector
 import datetime
 import jenkins
 import hashlib
-
+import smtplib
+import configparser
+from email import encoders
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email.header import Header
+from email.utils import	parseaddr, formataddr
 
 # Create your views here.
-def datetime_handler(x):
-    if isinstance(x, datetime.datetime):
-        return x.isoformat()
-    raise TypeError("Unknown type")
+def _format_addr(s):
+	name, addr = parseaddr(s)
+	return formataddr((Header(name, 'utf-8').encode(), addr))
 
+# 定义导航
 def nav_list():
     nav_list = []
     # 大分类
@@ -48,6 +55,7 @@ def nav_list():
             aDict['sType'].append(tDict)
         nav_list.append(aDict)
     return nav_list
+
 # 定义下拉内容
 def new_select_list(controlListType, plantform, version='all'):
     # 设置目标元素列表
@@ -58,7 +66,8 @@ def new_select_list(controlListType, plantform, version='all'):
         target_all = controlList.objects.filter(TYPE=controlListType).filter(controlType=plist[plantform]).filter(versionStr__versionStr=version).order_by('controlName')
     target_list = [x for x in target_all]
     return target_list
-# 接口签名
+
+# 接口签名（未用）
 def user_sign(request):
     # 判断时间差，5分钟
     client_time = request.POST['TimeStr']
@@ -94,6 +103,7 @@ def trans_me(aname, type, ptype):
     else:
         bname = aname
     return bname
+
 # NORMAL DB
 def doDB(method, myList):
     # myList = [caseName, bigstep, my_case, caseStatus, csType, caseVersion]
@@ -115,6 +125,7 @@ def doDB(method, myList):
     conn.commit()
     cursor.close()
     conn.close()
+
 # 导航list
 def auto_list(request):
     try:
@@ -132,7 +143,7 @@ def auto_list(request):
         type_id = caseType.objects.filter(type_name=f_type)[0].id
         s_type_id = secondType.objects.filter(second_Type=s_type)[0].id
         show_list = caseList.objects.filter(in_use='1').filter(type_field=type_id).filter(second_Type=s_type_id)
-    device_list = deviceList.objects.filter(in_use='1').values('deviceName')
+    device_list = deviceList.objects.filter(in_use='1')
     navList = nav_list()
     return render(request, 'auto_list.html',{
         'show_list':show_list,
@@ -140,6 +151,7 @@ def auto_list(request):
         'my_type':my_type,
         'device_list':device_list
         })
+
 # 编辑保存
 def auto_edit_save(request, id):
     my_form = dict(request.GET)
@@ -253,6 +265,7 @@ def auto_edit_save(request, id):
     p.save()
     # 判断动作
     return HttpResponseRedirect("/auto/auto_list?my_type=%s_%s" % (my_form.get('type')[0], secondType.objects.get(second_Type=s_Type).second_Type))
+
 # 点击生成配置
 def auto_config(request):
     ids = request.GET['vals'].split(',')    # 待测id列表
@@ -346,6 +359,7 @@ def auto_del(request):
         data = ('ERR:删除失败，请联系管理员查看\n:%s' % e)
         return HttpResponse(data)
 
+
 def auto_copy(request):
     try:
         id = request.GET['id']
@@ -377,6 +391,7 @@ def auto_copy(request):
         print('ERR:复制失败，请联系管理员查看.\n%s' % e)
         return HttpResponse(data)
 
+
 def new_add(request):
     type_all = caseType.objects.all().order_by('type_name')
     s_type_all = secondType.objects.all().order_by('second_Type')
@@ -397,6 +412,7 @@ def new_add(request):
         'plant':plant,
         'second_type_list':second_type_list
     })
+
 # todo
 def new_save(request):
     my_form = dict(request.POST)
@@ -530,6 +546,7 @@ def new_edit(request, id):
     except KeyError as e:
         print("===%s" % e)
         return HttpResponseRedirect('/auto/new_add')
+
 # IOS定义用例返回json
 def auto_caseJson(request):
     """调取参数:平台+timeStamp"""
@@ -576,6 +593,8 @@ def auto_caseJson(request):
     finally:
         jsonStr = json.dumps(jsonStr, ensure_ascii=False)
         return HttpResponse(jsonStr, content_type="application/json")
+
+
 @cache_page(15)
 def test_list(request):
     # 右侧对应品类的用例列表
@@ -621,6 +640,7 @@ def test_list(request):
         # 'queue_num':queue_num
         })
 
+
 def auto_search(request):
     # 需要品类、二品类、版本、所属人、平台
     type_all = caseType.objects.all().order_by('type_name')
@@ -630,7 +650,7 @@ def auto_search(request):
     user_list = [x['userName'] for x in caseUser.objects.filter(userStatus=1).values('userName').order_by('userName')]
     versionList = [x['versionStr'] for x in caseVersion.objects.values('versionStr').order_by('-versionStr')]
     plant = ['Android','IOS','M']
-    device_list = deviceList.objects.filter(in_use='1').values('deviceName')
+    device_list = deviceList.objects.filter(in_use='1')
     return render(request, 'auto_search.html',{
         'type_list':type_list,
         'nav_list':nav_list(),
@@ -640,6 +660,7 @@ def auto_search(request):
         'second_type_list':second_type_list,
         'device_list':device_list
     })
+
 
 def search_result(request):
     myrequest = dict(request.GET)
@@ -697,3 +718,128 @@ def search_result(request):
         except Exception as e:
             print(e)
             return render_to_response('auto_ajax.html', locals())
+
+# 发邮件
+def do_mail(htmlStr):
+    html_string = htmlStr
+    cf = configparser.ConfigParser()
+    cf.read("/rd/pystudy/conf")
+    sender = cf.get('mail', 'username')
+    receiverlist = [x for x in cf.get('mail', 'test_receiver').split(',')]
+    subject = "[UI自动化测试报告]"
+    smtpserver = cf.get('mail','smtpserver')
+    username = cf.get('mail','username')
+    password = cf.get('mail','password')
+    msg=MIMEText(html_string,'html','utf-8')
+    msg['From'] = _format_addr("Admin <%s>" % sender)
+    msg['to'] = '%s' % ','.join([_format_addr('<%s>' % x) for x in receiverlist])
+    msg['Subject'] = Header("%s" % subject , 'utf-8').encode()
+    smtp = smtplib.SMTP()
+    smtp.connect(smtpserver)
+    smtp.ehlo()
+    # smtp.set_debuglevel(1)
+    smtp.login(username, password)
+    smtp.sendmail(msg['From'],receiverlist,msg.as_string())
+    smtp.quit()
+
+# 生成报表访问url的接口 构建邮件内容
+def api_report(request):
+    try:
+        timeTarget = request.GET['timeStamp']
+    except:
+        jsonStr = {
+            "code": "-1",
+            "message":"参数错误,需要timeStamp"
+        }
+    else:
+        cases = allBookRecording.objects.filter(timeStamp=timeTarget)
+        allin = testRecording.objects.filter(timeStamp=timeTarget)
+        if cases and allin:
+            # 返回一个报告页面 URL，通过此url可以访问对应的数据构造页面
+            jsonStr = {
+                "code": "1",
+                "data":[x.caseName for x in cases]
+            }
+            # 发邮件
+            myUrl = ("http://10.113.1.35:8000/auto/api_report_page?timeStamp=%s" % timeTarget)
+            err_list = cases.filter(status='danger')
+            pass_list = cases.filter(status='success')
+            allNum = cases.count()
+            passNum = pass_list.count()
+            failNum = err_list.count()
+            passRate = round((passNum / allNum * 100),2)
+            sTime = allin.values('testStartDate').order_by('testStartDate')[0]['testStartDate']
+            eTime = allin.values('testDuration').order_by('-testDuration')[0]['testDuration']
+            testTime = (eTime - sTime).seconds
+            # email发送
+            html_string0 = "<h3>UI自动化报告</h3><h4><p>用例总数:%s | 通过:%s | 失败:%s</p><p>通过率:%s %%</p><p>总耗时:%s 秒</p><p><a href=%s target=_blank>点击查看错误详情和截图</a></p></h4>" % (allNum, passNum, failNum, passRate, testTime, myUrl)
+            html_string1 = ""
+            html_string3 = "</table>"
+            if err_list:
+                html_string1 = "<h3 style='color:IndianRed'>错误列表</h3><table border=1 width=100%><tr style='background-color:DarkSalmon'><th>用例名称</th><th>状态</th><th>耗时</th><th>创建人</th></tr>\n\r"
+                html_string2 = ""
+                for x in err_list:
+                    status = '通过'
+                    if x.status == 'danger':
+                        status = '失败'
+                    user = caseList.objects.filter(caseName=x.caseName)[0].owner
+                    html_string2 += ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n\r" % ( x.caseName, status, x.usedTime, user))
+            else:
+                html_string2 = "<p>恭喜, 全部通过</p>"
+            html_string = html_string0 + html_string1 + html_string2 + html_string3
+            do_mail(html_string)
+        else:
+            jsonStr = {
+                "code": "-2",
+                "message":"查无此人"
+            }
+    finally:
+        result = json.dumps(jsonStr, ensure_ascii=False)
+        return HttpResponse(result, content_type="application/json")
+
+# 根据url参数返回报表页面
+def api_report_page(request):
+    try:
+        timeTarget = request.GET['timeStamp']
+    except:
+        message = "参数错误,需要timeStamp"
+    else:
+        cases = allBookRecording.objects.filter(timeStamp=timeTarget)
+        allin = testRecording.objects.filter(timeStamp=timeTarget)
+        if cases and allin:
+            # 返回一个报告页面 URL，通过此url可以访问对应的数据构造页面
+            message = ''
+            err_list = cases.filter(status='danger')
+            pass_list = cases.filter(status='success')
+            allNum = cases.count()
+            passNum = pass_list.count()
+            failNum = err_list.count()
+            passRate = (passNum / allNum) * 100
+            sTime = allin.values('testStartDate').order_by('testStartDate')[0]['testStartDate']
+            eTime = allin.values('testDuration').order_by('-testDuration')[0]['testDuration']
+            testTime = (eTime - sTime).seconds
+            print(allNum,passNum,failNum,passRate,testTime)
+        else:
+            message = '没有匹配内容'
+    finally:
+        return render_to_response('report.html', locals())
+
+
+def search_report(request):
+    myrequest = dict(request.GET)
+    timeTarget = myrequest['timeT'][0]
+    user = myrequest['user'][0]
+    source_list = allBookRecording.objects.filter(timeStamp=timeTarget)
+    err_list = []
+    pass_list = []
+    if user:
+        for x in source_list:
+            if caseList.objects.filter(in_use='1').get(caseName=x.caseName).owner == user:
+                if x.status == 'danger':
+                    err_list.append(x)
+                else:
+                    pass_list.append(x)
+    else:
+        err_list = source_list.filter(status='danger')
+        pass_list = source_list.filter(status='success')
+    return render_to_response('report_ajax.html', locals())

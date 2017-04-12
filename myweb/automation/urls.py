@@ -22,4 +22,5 @@ urlpatterns = [
 	url(r'^api_report$', api_report, name='api_report'),	# 发邮件接口
 	url(r'^api_report_page$', api_report_page, name='api_report_page'),	# 测试报告接口
 	url(r'^search_report$', search_report, name='search_report'),	# 报告页面查询
+	url(r'^change_case$', change_case, name='change_case'),	# 修改用例对应关系
 ]

@@ -74,7 +74,8 @@ class controlList(models.Model):
         choices=TYPE_CHOICE,
         default='0')
     TYPE = models.CharField(max_length=100, default='action')
-    versionStr = models.ForeignKey(caseVersion)
+    versionStr = models.ManyToManyField(caseVersion)
+    # verStr = models.ManyToManyField(caseVersion)
 
 class caseUser(models.Model):
     userName = models.CharField(max_length=100)
@@ -119,9 +120,10 @@ class caseListAdmin(admin.ModelAdmin):
     search_fields = ['caseName', 'type_field__type_field', 'plantform', 'owner', 'version', 'des']
 
 class controlListAdmin(admin.ModelAdmin):
-    list_display = ('controlName', 'controlFiled', 'controlType','TYPE', 'versionStr')
+    list_display = ('controlName', 'controlFiled', 'controlType','TYPE',)
     list_per_page = 30
-    search_fields = ['controlName', 'controlFiled', 'controlType','TYPE', 'versionStr__versionStr']
+    search_fields = ['controlName', 'controlFiled', 'controlType','TYPE',]
+    # 'versionStr'
 
 class caseUserAdmin(admin.ModelAdmin):
     list_display = ('userName', 'loginName', 'userStatus','des')

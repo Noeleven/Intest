@@ -12,6 +12,7 @@ import jenkins
 import hashlib
 import smtplib
 import configparser
+import logging
 from email import encoders
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -20,40 +21,44 @@ from email.header import Header
 from email.utils import	parseaddr, formataddr
 
 # Create your views here.
+logger = logging.getLogger('auto')
+logger.setLevel(logging.INFO)
+fh = logging.FileHandler('auto.log')
+sh = logging.StreamHandler()
+fh.setLevel(logging.INFO)
+sh.setLevel(logging.INFO)
+formatter = logging.Formatter('[%(asctime)s] %(levelname)s File:%(filename)s Line:%(lineno)s %(message)s')
+fh.setFormatter(formatter)
+logger.addHandler(fh)
+logger.addHandler(sh)
+
 def _format_addr(s):
 	name, addr = parseaddr(s)
 	return formataddr((Header(name, 'utf-8').encode(), addr))
 
 # 定义导航
-def nav_list():
+def navList():
 	nav_list = []
-	# 大分类
-	someList = []
 	for x in caseType.objects.values('id','type_name'):
-		bDict = {}
-		bDict['type'] = x['type_name']
-		bDict['sq'] = caseList.objects.filter(type_field=x['id']).filter(in_use='1')
-		someList.append(bDict)
-	someList.append({'type':'废弃','sq':caseList.objects.filter(in_use='0')})
-	# 小分类
-	for y in someList:
-		aDict = {
-			'type':y['type'],
-			'num':len(y['sq']),
+		tmpDict = {
+			'type':x['type_name'],
+			'num':caseList.objects.filter(type_field=x['id']).filter(in_use='1').count(),
 			'sType':[]
 		}
-		for tt in secondType.objects.all():
-			tDict = {}
-			Stype = tt.second_Type
-			tDict['type'] = Stype
-			if y['type'] == "废弃":
-				Ftype = ''
-				tDict['num'] = len(caseList.objects.filter(in_use='0').filter(second_Type=tt.id))
-			else:
-				Ftype = caseType.objects.get(type_name=y['type']).id
-				tDict['num'] = len(caseList.objects.filter(type_field=Ftype).filter(in_use='1').filter(second_Type=tt.id))
-			aDict['sType'].append(tDict)
-		nav_list.append(aDict)
+		for y in secondType.objects.all():
+			Ftype = x['id']
+			tmpDict2 = {
+				'type':y.second_Type,
+				'num':caseList.objects.filter(type_field=Ftype).filter(in_use='1').filter(second_Type=y.id).count()
+			}
+			tmpDict['sType'].append(tmpDict2)
+		nav_list.append(tmpDict)
+	# 废弃的
+	trashDict = {
+		'type':'废弃',
+		'num':caseList.objects.filter(in_use='0').count(),
+	}
+	nav_list.append(trashDict)
 	return nav_list
 
 # 定义下拉内容
@@ -88,13 +93,8 @@ def user_sign(request):
 
 # controllist翻译
 def trans_me(aname, type, ptype):
-	# 转换controlList函数，要注意controlType是0,1
-	if ptype.lower() == 'android':
-		cc = '0'
-	elif ptype.lower() == 'ios':
-		cc = '1'
-	else:
-		cc = '2'
+	plist = {'android':'0','ios':'1','m':'2'}
+	cc = plist[ptype.lower()]
 	targetRange = controlList.objects.filter(controlType=cc).filter(TYPE=type)
 	if targetRange.filter(controlName=aname):
 		bname = targetRange.get(controlName=aname).controlFiled
@@ -130,27 +130,27 @@ def doDB(method, myList):
 def auto_list(request):
 	try:
 		my_type = request.GET['my_type']
-	except KeyError as e:
-		print(e)
+	except:
 		my_type='全部'
-	f_type = my_type.split('_')[0]  #出境
-	if f_type == "全部":
-		show_list = caseList.objects.filter(in_use='1')
-	elif f_type == '废弃':
-		show_list = caseList.objects.filter(in_use='0')
 	else:
-		s_type = my_type.split('_')[1]
-		type_id = caseType.objects.filter(type_name=f_type)[0].id
-		s_type_id = secondType.objects.filter(second_Type=s_type)[0].id
-		show_list = caseList.objects.filter(in_use='1').filter(type_field=type_id).filter(second_Type=s_type_id)
-	device_list = deviceList.objects.filter(in_use='1')
-	navList = nav_list()
-	return render(request, 'auto_list.html',{
-		'show_list':show_list,
-		'nav_list':navList,
-		'my_type':my_type,
-		'device_list':device_list
-		})
+		f_type = my_type.split('_')[0]
+		if f_type == "全部":
+			show_list = caseList.objects.filter(in_use='1')
+		elif f_type == '废弃':
+			show_list = caseList.objects.filter(in_use='0')
+		else:
+			s_type = my_type.split('_')[1]
+			try:
+				type_id = caseType.objects.filter(type_name=f_type)[0].id
+				s_type_id = secondType.objects.filter(second_Type=s_type)[0].id
+			except:
+				show_list = ''
+			else:
+				show_list = caseList.objects.filter(in_use='1').filter(type_field=type_id).filter(second_Type=s_type_id)
+	finally:
+		device_list = deviceList.objects.filter(in_use='1')
+		nav_list = navList()
+		return render(request, 'auto_list.html', locals())
 
 # 编辑保存
 def auto_edit_save(request, id):
@@ -347,16 +347,13 @@ def auto_del(request):
 		id = request.GET['id'].split(',')
 		for x in id:
 			myCase = caseList.objects.get(id=x)
-			caseName = myCase.caseName
-			myList = [caseName]
-			doDB('delete', myList)
-			# myCase.delete()
+			doDB('delete', [x for x in myCase.caseName])
 			myCase.in_use = '0'
 			myCase.save()
 		data = 'success'
-		return HttpResponse(data)
 	except KeyError as e:
 		data = ('ERR:删除失败，请联系管理员查看\n:%s' % e)
+	finally:
 		return HttpResponse(data)
 
 
@@ -403,15 +400,8 @@ def new_add(request):
 	user_list = [x['userName'] for x in caseUser.objects.filter(userStatus=1).values('userName').order_by('userName')]
 	versionList = [x['versionStr'] for x in caseVersion.objects.values('versionStr').order_by('-versionStr')]
 	plant = ['Android','IOS','M']
-	return render(request, 'new_add.html',{
-		'type_list':type_list,
-		'nav_list':nav_list(),
-		'casenames':casenames,
-		'user_list':user_list,
-		'versionList':versionList,
-		'plant':plant,
-		'second_type_list':second_type_list
-	})
+	nav_list = navList()
+	return render(request, 'new_add.html', locals())
 
 # todo
 def new_save(request):
@@ -427,12 +417,10 @@ def new_save(request):
 		owner = my_form.get('owner')[0]
 		s_Type = my_form.get('second_Type')[0]
 		caseStatus = '1' if caseStatus=='use' else '0'
-		if casePlantform == 'Android':
-			defaultCase = '[{"enterActivity":"","index":1,"storyDescription":"","action":[{"target":{"targetName":""},"actionCode":"click","behaviorPara":{"inputValue":""},"needWait":true}],"where":"","checkString":[{"checkType":"","elementName":"","expeted":""}]}]'
-		elif casePlantform == 'IOS':
+		if casePlantform == 'IOS':
 			defaultCase = '[{"type":"buttons","label":"","typeText":"","action":"click","des":""}]'
 		else:
-			defaultCase == ''
+			defaultCase = '[{"enterActivity":"","index":1,"storyDescription":"","action":[{"target":{"targetName":""},"actionCode":"click","behaviorPara":{"inputValue":""},"needWait":true}],"where":"","checkString":[{"checkType":"","elementName":"","expeted":""}]}]'
 		# 存储DB
 		p = caseList(caseName=caseName)
 		p.type_field = caseType.objects.get(id=caseType.objects.filter(type_field=csType)[0].id)
@@ -457,94 +445,73 @@ def new_save(request):
 
 
 def new_edit(request, id):
-	# 反向解析json存入表单
-	try:
-		# 首先从DB获取json字符串，并解析成数据类型
+	# 反向解析json存入表单 首先从DB获取json字符串，并解析成数据类型
+	if caseList.objects.filter(id=id).exists():
 		json_dict = caseList.objects.filter(id=id).values()[0]
-		# print(json_dict)
+		# logger.info(json_dict)
 		# 转义品类名称
-		json_dict['type_field_id'] = caseType.objects.get(id=json_dict['type_field_id']).type_name
-		json_dict['second_Type_id'] = secondType.objects.get(id=json_dict['second_Type_id']).second_Type
-		# 取case部分转为数据格式
-		BgStep = json.loads(json_dict['case'])
-		json_dict.pop('case')
-		targetname = []
-		elementname = []
-		# 判断plantform
-		myPlantform = json_dict['plantform']
-		# 转义json字符串中的字符串为中文
-		type_all = caseType.objects.all().order_by('type_name')
-		s_type_all = secondType.objects.all().order_by('second_Type')
-		type_list = [x for x in type_all]
-		second_type_list = [x for x in s_type_all]
-		user_list = [x['userName'] for x in caseUser.objects.filter(userStatus=1).values('userName').order_by('userName')]
-		versionList = [x['versionStr'] for x in caseVersion.objects.values('versionStr').order_by('-versionStr')]
-		plant = ['Android','IOS','M']
-		if myPlantform == 'Android' or myPlantform == 'M':
-			wait_list = ['等待','不等待']
-			for x in BgStep:
-				x['enterActivity'] = trans_me(x['enterActivity'],'where',json_dict['plantform'])
-				x['where'] = trans_me(x['where'],'where',json_dict['plantform'])
-				ai = ci = 1
-				for y in x['action']:
-					y['target']['targetName'] = trans_me(y['target']['targetName'],'targetName',json_dict['plantform'])
-					targetname.append(y['target']['targetName'])
-					y['actionCode'] = trans_me(y['actionCode'],'action',json_dict['plantform'])
-					if y['needWait'] == True:
-						y['needWait'] = '等待'
-					else:
-						y['needWait'] ='不等待'
-					y['index'] = str(x['index']) + '-' + str(ai)
+		try:
+			json_dict['type_field_id'] = caseType.objects.get(id=json_dict['type_field_id']).type_name
+			json_dict['second_Type_id'] = secondType.objects.get(id=json_dict['second_Type_id']).second_Type
+			# 取case部分转为数据格式
+			BgStep = json.loads(json_dict['case'])
+			json_dict.pop('case')
+			targetname = []
+			elementname = []
+			# 判断plantform
+			myPlantform = json_dict['plantform']
+			# 转义json字符串中的字符串为中文
+			type_all = caseType.objects.all().order_by('type_name')
+			s_type_all = secondType.objects.all().order_by('second_Type')
+			type_list = [x for x in type_all]
+			second_type_list = [x for x in s_type_all]
+			user_list = [x['userName'] for x in caseUser.objects.filter(userStatus=1).values('userName').order_by('userName')]
+			versionList = [x['versionStr'] for x in caseVersion.objects.values('versionStr').order_by('-versionStr')]
+			plant = ['Android','IOS','M']
+			nav_list = navList()
+			if myPlantform == 'Android' or myPlantform == 'M':
+				wait_list = ['等待','不等待']
+				for x in BgStep:
+					x['enterActivity'] = trans_me(x['enterActivity'],'where',json_dict['plantform'])
+					x['where'] = trans_me(x['where'],'where',json_dict['plantform'])
+					ai = ci = 1
+					for y in x['action']:
+						y['target']['targetName'] = trans_me(y['target']['targetName'],'targetName',json_dict['plantform'])
+						targetname.append(y['target']['targetName'])
+						y['actionCode'] = trans_me(y['actionCode'],'action',json_dict['plantform'])
+						if y['needWait'] == True:
+							y['needWait'] = '等待'
+						else:
+							y['needWait'] ='不等待'
+						y['index'] = str(x['index']) + '-' + str(ai)
+						ai += 1
+					for y in x['checkString']:
+						y['elementName'] = trans_me(y['elementName'],'targetName',json_dict['plantform'])
+						elementname.append(y['elementName'])
+						y['index'] = str(x['index']) + '-' + str(ci)
+						ci += 1
+						y['checkType'] = trans_me(y['checkType'],'checkString',json_dict['plantform'])
+					control_list = new_select_list('action', json_dict['plantform'], json_dict['version'])
+					where_list = new_select_list('where', json_dict['plantform'], json_dict['version'])
+					target_list = new_select_list('targetName', json_dict['plantform'], json_dict['version'])
+					checkType_list = new_select_list('checkString', json_dict['plantform'])
+				return render(request, 'new_edit.html',locals())
+			else:
+				ai = 1
+				for x in BgStep:
+					x['index'] = str(ai)
 					ai += 1
-				for y in x['checkString']:
-					y['elementName'] = trans_me(y['elementName'],'targetName',json_dict['plantform'])
-					elementname.append(y['elementName'])
-					y['index'] = str(x['index']) + '-' + str(ci)
-					ci += 1
-					y['checkType'] = trans_me(y['checkType'],'checkString',json_dict['plantform'])
-			return render(request, 'new_edit.html',{
-				'type_list':type_list,
-				'second_type_list':second_type_list,
-				'control_list':new_select_list('action', json_dict['plantform'], json_dict['version']),
-				'where_list':new_select_list('where', json_dict['plantform'], json_dict['version']),
-				'target_list':new_select_list('targetName', json_dict['plantform'], json_dict['version']),
-				'checkType_list':new_select_list('checkString', json_dict['plantform']),
-				'nav_list':nav_list(),
-				'json_dict':json_dict,
-				'BgStep':BgStep,
-				'id':id,
-				"targetname":targetname,
-				'elementname':elementname,
-				'wait_list':wait_list,
-				'user_list':user_list,
-				'versionList':versionList,
-				'plant':plant
-			})
-		else:
-			ai = 1
-			for x in BgStep:
-				x['index'] = str(ai)
-				ai += 1
-				x['action'] = trans_me(x['action'],'action',json_dict['plantform'])
-				x['type'] = trans_me(x['type'],'type',json_dict['plantform'])
-				targetname.append(x['label'])
-			return render(request, 'ios_edit.html', {
-				'type_list':type_list,
-				'second_type_list':second_type_list,
-				'target_type_list':new_select_list('type', json_dict['plantform'], json_dict['version']),
-				'control_list':new_select_list('action', json_dict['plantform'], json_dict['version']),
-				'target_list':new_select_list('targetName', json_dict['plantform'], json_dict['version']),
-				'nav_list':nav_list(),
-				'json_dict':json_dict,
-				'BgStep':BgStep,
-				'id':id,
-				"targetname":targetname,
-				'user_list':user_list,
-				'versionList':versionList,
-				'plant':plant
-			})
-	except KeyError as e:
-		print("===%s" % e)
+					x['action'] = trans_me(x['action'],'action',json_dict['plantform'])
+					x['type'] = trans_me(x['type'],'type',json_dict['plantform'])
+					targetname.append(x['label'])
+					target_type_list = new_select_list('type', json_dict['plantform'], json_dict['version'])
+					control_list = new_select_list('action', json_dict['plantform'], json_dict['version'])
+					target_list = new_select_list('targetName', json_dict['plantform'], json_dict['version'])
+				return render(request, 'ios_edit.html', locals())
+		except AttributeError as e:
+			logger.info("new_edit:%s" % e)
+	else:
+		logger.info("用例id %s 不存在" % id)
 		return HttpResponseRedirect('/auto/new_add')
 
 # IOS定义用例返回json
@@ -589,7 +556,6 @@ def auto_caseJson(request):
 			"code": "-1",
 			"message":"参数错误,需要plantform和timeStamp"
 		}
-
 	finally:
 		jsonStr = json.dumps(jsonStr, ensure_ascii=False)
 		return HttpResponse(jsonStr, content_type="application/json")
@@ -600,16 +566,13 @@ def test_list(request):
 	# 右侧对应品类的用例列表
 	dList = deviceList.objects.filter(in_use='1').values('deviceName','job_name')   #设备列表
 	testResults = []
-
-
 	for x in dList:
 		if x['deviceName'] == 'IOS':
 			server = jenkins.Jenkins('http://10.113.1.193:8080/', username='autotest', password='111111')
 		else:
 			server = jenkins.Jenkins('http://10.113.2.70:8080/jenkins', username='admin', password='111111')
-		xDict = x
 		rList = reportsList.objects.filter(deviceName__deviceName=x['deviceName']).order_by('-create_time')[:20]    #结果列表
-		xDict['buildLog'] = []
+		x['buildLog'] = []
 		for y in rList:
 			# 若果用例被删除，那就查不到了
 			mycase = []
@@ -625,22 +588,18 @@ def test_list(request):
 			myDict['create_time'] = y.create_time.strftime('%Y-%m-%d %H:%M:%S')
 			myDict['buildNUM'] = y.buildNUM
 			myDict['reportURL'] = y.reportURL
-			# myDict['status'] = 'False'
 			try:
-				myDict['status'] = str(server.get_build_info(xDict['job_name'], int(y.buildNUM[1:]))['result'])
+				myDict['status'] = str(server.get_build_info(x['job_name'], int(y.buildNUM[1:]))['result'])
 			except:
 				myDict['status'] = 'queue'
-			# print(myDict['status'])
-			xDict['buildLog'].append(myDict)
-		testResults.append(xDict)
-	# queue_num = len(server.get_queue_info())
+			x['buildLog'].append(myDict)
+		testResults.append(x)
 	return render(request, 'test_list.html',{
-		'nav_list':nav_list(),
+		'nav_list':navList(),
 		'testResults':testResults,
-		# 'queue_num':queue_num
 		})
 
-
+# 查询页面
 def auto_search(request):
 	# 需要品类、二品类、版本、所属人、平台
 	type_all = caseType.objects.all().order_by('type_name')
@@ -651,73 +610,66 @@ def auto_search(request):
 	versionList = [x['versionStr'] for x in caseVersion.objects.values('versionStr').order_by('-versionStr')]
 	plant = ['Android','IOS','M']
 	device_list = deviceList.objects.filter(in_use='1')
-	return render(request, 'auto_search.html',{
-		'type_list':type_list,
-		'nav_list':nav_list(),
-		'user_list':user_list,
-		'versionList':versionList,
-		'plant':plant,
-		'second_type_list':second_type_list,
-		'device_list':device_list
-	})
+	nav_list = navList()
+	return render(request, 'auto_search.html', locals())
 
 
+#动态查询结果返回
 def search_result(request):
-	myrequest = dict(request.GET)
+	myRequest = dict(request.GET)
+	logger.debug('search:myRequest %s' % myRequest)
 	# 处理下key带[]的问题
-	for k,v in myrequest.items():
+	myrequest = {}
+	for k,v in myRequest.items():
 		if '[]' in k:
 			k1 = k.replace('[]','')
-			myrequest.pop(k)
 			myrequest[k1] = v
-	# print(myrequest)
 	# 每个key值循环取并集，最后取交集
+	logger.debug('search:myrequest %s' % myrequest)
 	origin = caseList.objects.all()
-	if_list = {'ids':[],'names':[],'types':[],'secs':[],'vers':[],'plans':[],'owns':[],'dess':[]}
-	num = 0
-	for m,n in myrequest.items():
-		if n[0] == '':  # 参数没值就pass
-			num += 1
-			pass
-		else:   # 有值就循环遍历
+	if myrequest:
+		if_list = {}
+		# 根据条件遍历查询
+		for m,n in myrequest.items():
+			if_list[m] = []
 			for x in n:
 				if m == 'caseId':
-					if_list['ids'] += origin.filter(id__contains=x)
+					if_list[m] += origin.filter(id__contains=x)
 				elif m == 'caseName':
-					if_list['names'] += origin.filter(caseName__contains=x)
+					if_list[m] += origin.filter(caseName__contains=x)
 				elif m == 'caseType':
-					if_list['types'] += origin.filter(type_field__type_name__contains=x)
+					if_list[m] += origin.filter(type_field__type_name__contains=x)
 				elif m == 'secondType':
-					if_list['secs'] += origin.filter(second_Type__second_Type__contains=x)
+					if_list[m] += origin.filter(second_Type__second_Type__contains=x)
 				elif m == 'plantform':
-					if_list['plans'] += origin.filter(plantform__contains=x)
+					if_list[m] += origin.filter(plantform__contains=x)
 				elif m == 'version':
-					if_list['vers'] += origin.filter(version__contains=x)
+					if_list[m] += origin.filter(version__contains=x)
 				elif m == 'note':
-					if_list['dess'] += origin.filter(des__contains=x)
+					if_list[m] += origin.filter(des__contains=x)
 				elif m == 'owner':
-					if_list['owns'] += origin.filter(owner__contains=x)
+					if_list[m] += origin.filter(owner__contains=x)
 				else:
-					continue
-	print(num)
-	if num == 8:
-		show_list = origin
-		return render_to_response('auto_ajax.html', locals())
-	else:
+					logger.info('search:未知参数 %s' % m)
+					break
+
 		# 现在不一定每个list都有值，需要判断过滤掉没有的值，首先清空没有值的形成一个list
-		result = [y for x,y in if_list.items() if y]
+		result = [y for x,y in if_list.items()]
 		# 遍历这个list 并求交集
-		try:
-			show_list = set(result[0])
-			for x in result[1:]:
-				show_list &= set(x)
-			# show_list = [x for x in show_list]
-			response = HttpResponse()
-			response['Content-Type'] = "text/json"
-			return render_to_response('auto_ajax.html', locals())
-		except Exception as e:
-			print(e)
-			return render_to_response('auto_ajax.html', locals())
+		if result:
+			try:
+				show_list = set(result[0])
+				if result[1:]:
+					for x in result[1:]:
+						show_list &= set(x)
+			except Exception as e:
+				logger.info("search:%s %s" % (x,e))
+	else:
+		show_list = origin
+
+	response = HttpResponse()
+	response['Content-Type'] = "text/json"
+	return render_to_response('auto_ajax.html', locals())
 
 # 发邮件
 def do_mail(htmlStr):
@@ -804,7 +756,7 @@ def api_report_page(request):
 	except:
 		message = "参数错误,需要timeStamp"
 	else:
-		cases = allBookRecording.objects.filter(timeStamp=timeTarget)
+		cases = allBookRecording.objects.filter(timeStamp=timeTarget).filter(testResultDoc__contains='trStart')
 		allin = testRecording.objects.filter(timeStamp=timeTarget)
 		if cases and allin:
 			# 返回一个报告页面 URL，通过此url可以访问对应的数据构造页面

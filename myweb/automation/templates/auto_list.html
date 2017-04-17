@@ -2,7 +2,7 @@
 {% block content %}
 <div class="row">
     <div class="panel panel-primary">
-        <div class="panel-heading"> 用例列表 品类：{{ my_type }} </div>
+        <div class="panel-heading"> {{ my_type }} </div>
 		<div class="panel-body">
             {% for x in device_list %}
             <a type='submit' class="btn btn-sm btn-info getCases">执行构建#{{ x.deviceName }}#{{ x.appVersion }}</a>

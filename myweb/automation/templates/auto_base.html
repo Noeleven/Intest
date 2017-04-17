@@ -56,6 +56,9 @@
         	-ms-transform: rotateZ(360deg) scale(1.5);
         	transform: rotateZ(360deg) scale(1.5);
         }
+        .badge-red{
+            background-color: #c14848;
+        }
     </style>
   </head>
 
@@ -78,13 +81,17 @@
                             <li><a href="/auto/auto_search"><i class="fa fa-search xwcms"></i> 用例查询</a>
                             </li>
                             {% for x in nav_list %}
-                                <li><a><i class="fa fa-{% if x.type == '废弃' %}trash{% else %}paperclip{% endif %}  xwcms"></i> {{ x.type }} <span class="label label-primary">{{ x.num }}</span><span class="fa fa-chevron-down"></span></a>
-        							<ul class="nav child_menu">
+                                {% if x.type == '废弃'%}
+                                <li><a href="/auto/auto_list?my_type={{x.type}}_all"><i class="fa fa-trash xwcms"></i> {{ x.type }} <span class="badge badge-red">{{ x.num }}</span></a></li>
+                                {% else %}
+                                <li><a><i class="fa fa-paperclip xwcms"></i> {{ x.type }} <span class="badge badge-red">{{ x.num }}</span><span class="fa fa-chevron-down"></span></a>
+                                    <ul class="nav child_menu">
                                         {% for y in x.sType %}
-        								<li><a href="/auto/auto_list?my_type={{x.type}}_{{y.type}}"><i class="fa fa-smile-o xwcms"></i> {{ y.type }} <span class="label label-primary">{{ y.num }}</span></a></li>
+                                        <li><a href="/auto/auto_list?my_type={{x.type}}_{{y.type}}"><i class="fa fa-smile-o xwcms"></i> {{ y.type }} <span class="badge badge-red">{{ y.num }}</span></a></li>
                                         {% endfor %}
-        							</ul>
-    							</li>
+                                    </ul>
+                                </li>
+                                {% endif %}
                             {% endfor %}
 							</li>
 						</ul>
@@ -112,12 +119,12 @@
 		</div>
         <p id="mm">{{message}}</p>
         <!-- footer content -->
-        <footer>
+        <!-- <footer>
           <div class="pull-right">
             &copy; TestTeam 2016 <a href="http://m.lvmama.com">@Lvmama</a>
           </div>
           <div class="clearfix"></div>
-        </footer>
+        </footer> -->
         <!-- /footer content -->
       </div>
     </div>

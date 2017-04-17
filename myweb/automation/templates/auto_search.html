@@ -167,14 +167,14 @@
 <script>
     $(document).ready(function(){
       $("#Search").click(function(){
-        var caseId = $("#caseId").val().split("+");
-            caseName = $("#caseName").val().split("+");;
-            caseType = $("#caseType").val();
-            plantform = $("#plantform").val();
-            version = $("#version").val();
-            secondType = $("#secondType").val();
-            owner = $("#owner").val();
-            note = $("#note").val().split("+");;
+        if ($("#caseId").val()){caseId = $("#caseId").val().split("+");}else{caseId = null};
+        if ($("#caseName").val()){caseName = $("#caseName").val().split("+");}else{caseName = null};
+        if ($("#caseType").val()){caseType = $("#caseType").val();}else{caseType = null};
+        if ($("#plantform").val()){plantform = $("#plantform").val();}else{plantform = null};
+        if ($("#version").val()){version = $("#version").val();}else{version = null};
+        if ($("#secondType").val()){secondType = $("#secondType").val();}else{secondType = null};
+        if ($("#owner").val()){owner = $("#owner").val();}else{owner = null};
+        if ($("#note").val()){note = $("#note").val().split("+");}else{note = null};
         // console.log(caseId,caseName,caseType,plantform,version,secondType,owner,note)
 
         $.get("{% url 'search_result' %}",{'caseId':caseId,'caseName':caseName,'caseType':caseType,'plantform':plantform,'version':version,'secondType':secondType,'owner':owner,'note':note}, function(ret){

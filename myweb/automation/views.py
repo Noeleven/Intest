@@ -756,23 +756,27 @@ def api_report_page(request):
 	except:
 		message = "参数错误,需要timeStamp"
 	else:
-		cases = allBookRecording.objects.filter(timeStamp=timeTarget).filter(testResultDoc__contains='trStart')
+		cases = allBookRecording.objects.filter(timeStamp=timeTarget).exclude(testResultDoc__contains='trStart')
+		# 算时长的，不作为必要条件
 		allin = testRecording.objects.filter(timeStamp=timeTarget)
-		if cases and allin:
+		if cases:
 			# 返回一个报告页面 URL，通过此url可以访问对应的数据构造页面
 			message = ''
-			err_list = cases.filter(status='danger')
-			pass_list = cases.filter(status='success')
+			err_list = [json.loads(x['testResultDoc']) for x in cases.filter(status='danger').values('testResultDoc')]
+			pass_list = [json.loads(x['testResultDoc']) for x in cases.filter(status='success').values('testResultDoc')]
 			allNum = cases.count()
-			passNum = pass_list.count()
-			failNum = err_list.count()
-			passRate = (passNum / allNum) * 100
+			passNum = len(pass_list)
+			failNum = len(err_list)
+			passRate = round((passNum / allNum) * 100, 2)
+			# logger.info(allNum,passNum,failNum,passRate,testTime)
+		else:
+			message = '没有匹配内容'
+		if allin:
 			sTime = allin.values('testStartDate').order_by('testStartDate')[0]['testStartDate']
 			eTime = allin.values('testDuration').order_by('-testDuration')[0]['testDuration']
 			testTime = (eTime - sTime).seconds
-			print(allNum,passNum,failNum,passRate,testTime)
 		else:
-			message = '没有匹配内容'
+			testTime = '...'
 	finally:
 		return render_to_response('report.html', locals())
 

@@ -10,8 +10,7 @@ from intest.models import *
 '''
 消灭线上下的单，添加的游玩人等
 '''
-lvses = ['96d84d8c-eafd-4a2b-a0ee-77532a78f044','ef3d2602-7bac-4335-9251-0f1493c64154']
-# lvse='87f12558-041f-4028-a27e-f6d9b0460cf1'
+lvses = ['96d84d8c-eafd-4a2b-a0ee-77532a78f044','7bef8d03-99d4-4b88-871a-5025340ed3f5']
 addressNo = []
 
 # 返回页面内容

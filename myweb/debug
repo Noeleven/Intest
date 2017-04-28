@@ -1,4 +1,7 @@
+#/bin/bash
+-x
 runpid=`ps aux|grep runserver |awk '{print$2}'`
+
 kill $runpid
 python manage.py runserver 0.0.0.0:8000
 

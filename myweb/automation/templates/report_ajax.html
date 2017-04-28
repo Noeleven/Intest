@@ -1,17 +1,35 @@
 <div class="col-md-6">
 	<header class="htmleaf-header">
 	<h3>成功列表</h3></header>
-	<table class="table table-hover table-expandable">
+	<table class="table table-expandable table-sticky-header">
 		<thead>
 			<tr>
-			<th>用例名称</th>
-			<th>操作步骤</th>
-			<th>操作时长</th>
-			<th>用例更新时间</th></tr>
+				<th class='col-xs-1'>ID</th>
+				<th class='col-xs-7'>名称</th>
+				<th class='col-xs-1'>步骤</th>
+				<th class='col-xs-1'>操作时长</th>
+				<th class='col-xs-2'>所属</th>
+			</tr>
 		</thead>
 		<tbody>
 				{% for x in pass_list %}
-					{{ x.testResultDoc|safe }}
+				<tr id='{{ x.caseName }}' class='success'>
+					<td>{{ x.id }}</td>
+					<td>{{ x.caseName }}</td>
+					<td>{{ x.runAt }}/{{ x.storySize }}</td>
+					<td>{{ x.caseTestTime }}</td>
+					<td>{{ x.owner }}</td>
+				</tr>
+				<tr>
+					<td colspan="5">
+						{% for y in x.stepList %}
+							<h3>第{{ y.stepIndex }}步</h3>
+							<p class="bg-{% if y.stepPassStatus == 'pass' %}success{% else %}danger{% endif %}"> {{ y.stepDescription }}</p>
+							<p class='text-danger'>{{ y.errorMessage |safe}}</p>
+							<img src='{{ y.screenShotsPath }}'>
+						{% endfor %}
+					</td>
+				</tr>
 				{% endfor %}
 		</tbody>
 	</table>
@@ -19,18 +37,36 @@
 <div class="col-md-6">
 	<header class="htmleaf-header">
 	<h3>失败列表</h3></header>
-	<table class="table table-hover table-expandable">
+	<table class="table table-expandable table-sticky-header">
 		<thead>
 			<tr>
-			<th>用例名称</th>
-			<th>操作步骤</th>
-			<th>操作时长</th>
-			<th>用例更新时间</th></tr>
+				<th class='col-xs-1'>ID</th>
+				<th class='col-xs-7'>名称</th>
+				<th class='col-xs-1'>步骤</th>
+				<th class='col-xs-1'>操作时长</th>
+				<th class='col-xs-2'>所属</th>
+			</tr>
 		</thead>
 		<tbody>
-				{% for x in err_list %}
-					{{ x.testResultDoc|safe }}
-				{% endfor %}
+			{% for x in err_list %}
+			<tr id='{{ x.caseName }}' class='danger'>
+				<td>{{ x.id }}</td>
+				<td>{{ x.caseName }}</td>
+				<td>{{ x.runAt }}/{{ x.storySize }}</td>
+				<td>{{ x.caseTestTime }}</td>
+				<td>{{ x.owner }}</td>
+			</tr>
+			<tr>
+				<td colspan="5">
+					{% for y in x.stepList %}
+						<h3>第{{ y.stepIndex }}步</h3>
+						<p class="bg-{% if y.stepPassStatus == 'pass' %}success{% else %}danger{% endif %}"> {{ y.stepDescription }}</p>
+						<p class='text-danger'>{{ y.errorMessage |safe}}</p>
+						<img src='{{ y.screenShotsPath }}'>
+					{% endfor %}
+				</td>
+			</tr>
+			{% endfor %}
 		</tbody>
 	</table>
 </div>

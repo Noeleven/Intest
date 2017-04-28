@@ -25,18 +25,17 @@ from email.mime.base import MIMEBase
 from email.header import Header
 from email.utils import	parseaddr, formataddr
 
-# 日志模块
+# 实例化logger
 logger = logging.getLogger('myLogger')
 logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler('ty.log')
-fh.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-logger.addHandler(fh)
-# ch = logging.StreamHandler()
-# ch.setLevel(logger.DEBUG)
-# ch.setFormatter(formatter)
-# logger.addHandler(ch)
+# 文件handle
+formatter = logging.Formatter('[%(asctime)s] %(levelname)s File:%(filename)s Line:%(lineno)s %(message)s')
+mh = logging.FileHandler('ty.log')
+# 控制台handle
+# mh = logging.StreamHandler()
+mh.setLevel(logging.DEBUG)
+mh.setFormatter(formatter)
+logger.addHandler(mh)
 # 设置debug参数 -v
 parser = argparse.ArgumentParser(description='I print messages')
 parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
@@ -419,12 +418,12 @@ def do_db():
 		with open(('/rd/pystudy/Intest/myweb/tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'], ) for x in b]
-			host_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com',
-							'iguide.lvmama.com', 'api3g.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com',
-							'loc.map.baidu.com', 'resolver.gslb.mi-idc.com', 'sapi.map.baidu.com', 'scs.openspeech.cn', 'data.openspeech.cn',
-							'mauth.chinanetcenter.com', 'alog.umeng.com', 'data.de.coremetrics.com', 'collect.dsp.chinanetcenter.com',
-							'api.share.mob.com', 'pingma.qq.com', 'hm.baidu.com',
-							'api.weibo.com', 'api.weixin.qq.com']
+			host_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'pics.lvjs.com.cn',
+				'iguide.lvmama.com', 'api3g.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com',
+				'loc.map.baidu.com', 'sapi.map.baidu.com', 'scs.openspeech.cn', 'data.openspeech.cn',
+				'alog.umeng.com', 'data.de.coremetrics.com',
+				'api.share.mob.com', 'pingma.qq.com', 'hm.baidu.com',
+				'api.weibo.com',]
 			for x in newb:
 				for y in host_list:
 					if y == x['name']:
@@ -439,16 +438,16 @@ def do_db():
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'], ) for x in b]
 			host_list = ['V5IndextFragment2', 'GuessLikeFragment', 'ImageGalleryActivity', 'V7BaseSearchFragment',
-							'TicketDetailFootBranchesFragment', 'HolidayAbroadListFragment', 'HolidayNearByListFragment2',
-							'TicketDetailActivity', 'CommentListFragment', 'SplashActivity700', 'WelcomeActivity',
-							'MainActivity', 'V5IndextFragment', 'LvmmWebIndexFragment', 'WebViewIndexActivity',
-							'LVNavigationController#loading','StartUpViewController#loading','LVMMTabBarController#loading',
-							'IndexSearchViewController#loading','GrouponDetailViewController#loading','FocusWebViewController#loading',
-							'RouteDetailViewController#loading','RouteSearchListViewController#loading','LVRouteCalendarCollectionController#loading',
-							'RouteGnyDetailController#loading','RouteCjyDetailController#loading','RouteZbyDetailController#loading',
-							'MyLvmamaController#loading', 'HomeSearchViewController#loading','Filter2ViewController#loading',
-							'RouteSearchTableViewController#loading',
-							]
+				'TicketDetailFootBranchesFragment', 'HolidayAbroadListFragment', 'HolidayNearByListFragment2',
+				'TicketDetailActivity', 'CommentListFragment', 'SplashActivity700', 'WelcomeActivity',
+				'MainActivity', 'V5IndextFragment', 'LvmmWebIndexFragment', 'WebViewIndexActivity',
+				'LVNavigationController#loading','StartUpViewController#loading','LVMMTabBarController#loading',
+				'IndexSearchViewController#loading','GrouponDetailViewController#loading','FocusWebViewController#loading',
+				'RouteDetailViewController#loading','RouteSearchListViewController#loading','LVRouteCalendarCollectionController#loading',
+				'RouteGnyDetailController#loading','RouteCjyDetailController#loading','RouteZbyDetailController#loading',
+				'MyLvmamaController#loading', 'HomeSearchViewController#loading','Filter2ViewController#loading',
+				'RouteSearchTableViewController#loading',
+				]
 			for x in newb:
 				for y in host_list:
 					if y == x['name']:
@@ -462,12 +461,12 @@ def do_db():
 		with open(('/rd/pystudy/Intest/myweb/tyblog/src/%s' % i), 'r', encoding='utf-8') as f:
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'], ) for x in b]
-			host_list = ['pic.lvmama.com', 'iguide.lvmama.com', 'api3g.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com',
-						 'login.lvmama.com', 'zt1.lvmama.com', 'super.lvmama.com', 'alog.umeng.com',
-						 'loc.map.baidu.com', 'resolver.gslb.mi-idc.com', 'sapi.map.baidu.com', 'api.weixin.qq.com',
-						 'collect.dsp.chinanetcenter.com', 'mauth.chinanetcenter.com', 'm.api.baifengdian.com',
-						 'data.de.coremetrics.com', 'api.weibo.com', 'pingma.qq.com', 'api.share.mob.com',
-						 'api.share.mob.com:80', 'libs.cn.coremetrics.com', 'tmscdn.cn.coremetrics.com', 'scs.openspeech.cn', 'data.openspeech.cn', 'hm.baidu.com']
+			host_list = ['pic.lvmama.com', 'iguide.lvmama.com', 'api3g.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'pics.lvjs.com.cn',
+				'login.lvmama.com', 'zt1.lvmama.com', 'super.lvmama.com', 'alog.umeng.com',
+				'loc.map.baidu.com', 'resolver.gslb.mi-idc.com', 'api.weixin.qq.com',
+				'collect.dsp.chinanetcenter.com', 'mauth.chinanetcenter.com', 'm.api.baifengdian.com',
+				'data.de.coremetrics.com', 'api.weibo.com', 'pingma.qq.com', 'api.share.mob.com',
+				'api.share.mob.com:80', 'libs.cn.coremetrics.com', 'tmscdn.cn.coremetrics.com', 'scs.openspeech.cn', 'data.openspeech.cn', 'hm.baidu.com']
 			for x in newb:
 				for y in host_list:
 					if y == x['name']:

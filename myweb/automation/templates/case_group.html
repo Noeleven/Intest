@@ -1,0 +1,102 @@
+{% extends "auto_base.html" %}
+{% block content %}
+<div class="row">
+    <div class="panel panel-primary">
+        <div class="panel-heading"> 用例集 </div>
+		<div class="panel-body">
+            <a type='submit' class="btn btn-sm btn-info getCases">构建#AD</a>
+            <!-- <a type='submit' class="btn btn-sm btn-info getCases">构建#IOS</a>
+            <a type='submit' class="btn btn-sm btn-info getCases">构建#M</a> -->
+            <!-- <button type="submit" class="btn btn-danger btn-sm" id="delCases"><span class="glyphicon glyphicon-remove xwcms" aria-hidden="true"></span> 批量删除</button> -->
+
+            <div id='delconfirm' class="alert alert-default alert-dismissible fade in" role="alert" style="display:none">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
+                <h4 id='titleee'>删除确认</h4>
+                <p id='del_mess'>
+                    {% for x in delcase %}
+                    {{ x }}
+                    {% endfor %}
+                </p>
+                <p id='del_butt'>
+                    <button type="button" class="btn btn-danger" id="delSure">Just Do it!</button>
+                    <button type="button" class="btn btn-default" id="cancle">Cancle</button>
+                </p>
+            </div>
+		</div>
+
+		<table id="tableList" data-toggle="table" data-striped="true" data-show-columns="true" data-row-style="rowStyle" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-pagination="true" data-search="true">
+			<thead>
+				<tr>
+                    <th data-field="state" data-checkbox="true"></th>
+                    <th data-field="ID"> ID</th>
+					<th data-field="用例集名称" data-sortable="true">
+						用例集名称
+					</th>
+					<th data-field="备注" data-sortable="true">
+						备注
+					</th>
+					<th data-field="修改时间" data-sortable="true">
+						修改时间
+					</th>
+                    <th data-field="操作" data-sortable="true">
+						操作
+					</th>
+				</tr>
+			</thead>
+			<tbody id="list">
+			{% for x in casegroup %}
+				<tr>
+                    <td></td>
+                    <td>{{ x.id }}</td>
+    				<td><div name="groupName">{{ x.groupName }}</div></td>
+    				<td>{{ x.des }}</td>
+    				<td>{{ x.modify_time|date:"Y-m-d H:i:s" }}</td>
+    				<td><a type='button' class="btn btn-sm btn-default" href="/auto/group_edit?groupID={{ x.id }}"><span class="glyphicon glyphicon-pencil xwcms" aria-hidden="true"></span> 编辑</a>
+                    </td>
+                </tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+<script>
+    $(document).ready(function(){
+        $(".getCases").click(function(){
+            var valArr = new Array;
+                device = $(this).html().split('#')[1];
+            $('input[name="btSelectItem"]:checked').each(function(i){
+                valArr[i] = $(this).parent().next().text();
+            });
+            var vals = valArr.join(',');//转换为逗号隔开的字符串
+            // console.log(device, vals)
+            $('#delconfirm').fadeIn(1000);
+            if(vals){
+                $.get("/auto/auto_config",{'vals':vals,'device':device,'type':'group'})
+                $('#titleee').text('构建确认');
+                $("#del_mess").text('构建中');
+            }else{
+                // 提示并隐藏button
+                $('#titleee').text('构建确认');
+                $("#del_mess").text('请先选择用例');
+                $('#del_butt').fadeOut(0);
+            }
+            $('#delconfirm').fadeOut(1000);
+        });
+    });
+    $(document).ready(function(){
+        $("#cancle").click(function(){
+            $('#delconfirm').fadeOut(500)
+        });
+    });
+</script>
+
+<script>
+    var $table = $('#tableList');
+
+    $(function () {
+        $table.on('click-row.bs.table', function (e, row, $element) {
+                $($element).toggleClass('success');
+        });
+    });
+</script>
+{% endblock content %}

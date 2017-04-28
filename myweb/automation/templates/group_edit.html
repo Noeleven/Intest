@@ -1,0 +1,58 @@
+{% extends "auto_base.html" %}
+{% load staticfiles %}
+{% block content %}
+<link href="{% static 'dist/css/bootstrap-duallistbox.min.css' %}" rel="stylesheet">
+<div class="row">
+    <div class="panel panel-primary">
+        <div class="panel-heading"> 用例集管理 </div>
+		<div class="panel-body">
+            <form class="form-horizontal" action='/auto/group_save' method='post'>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">用例集ID</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control input-sm" value="{{ groupInfo.id }}" name='ID' readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">用例集名称</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control input-sm" value="{{ groupInfo.groupName }}" name='groupName'>
+                    </div>
+                </div>
+                <div id="demoform" action="#" method="post" class="form-group">
+                    <label class="col-sm-2 control-label">用例管理</label>
+                    <div class="col-sm-10">
+                        <select multiple="multiple" size="20" name="groupListBox">
+                        {% for x in allCase %}
+                        <option value="case-{{ x.id }}" {% if x.sta == 'checked' %}selected='selected'{% endif %}>{{ x.id }} [{{ x.caseName }}] [{{ x.des }}] {{ x.owner }}</option>
+                        {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">备注</label>
+                    <div class="col-sm-10">
+                        <textarea name='des' type="text" class="form-control input-sm">{{ groupInfo.des }}</textarea>
+                    </div>
+                </div>
+                <br>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-success btn-block">提交</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'dist/js/jquery.bootstrap-duallistbox.min.js' %}"></script>
+<script>
+  var demo1 = $('select[name="groupListBox"]').bootstrapDualListbox();
+  $("#demoform").submit(function() {
+    alert($('[name="groupListBox"]').val());
+    return false;
+  });
+</script>
+{% endblock content %}

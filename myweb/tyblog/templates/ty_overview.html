@@ -1,4 +1,4 @@
-{% extends "ty_base.html" %}
+	{% extends "ty_base.html" %}
 {% block content %}
 <h3>概览图表</h3>
 <div class="panel panel-success">
@@ -104,20 +104,20 @@
 	</div>
 </div>
 <script>
-	
+
 	var myChart0 = echarts.init(document.getElementById('area0'));
-	var myChart1 = echarts.init(document.getElementById('area1')); 
-	var myChart2 = echarts.init(document.getElementById('area2'));  
-	var myChart3 = echarts.init(document.getElementById('area3'));  
-	var myChart4 = echarts.init(document.getElementById('area4'));  
-	var myChart5 = echarts.init(document.getElementById('area5'));  
-	var myChart6 = echarts.init(document.getElementById('area6'));  
-	var myChart7 = echarts.init(document.getElementById('area7'));  
-	var myChart8 = echarts.init(document.getElementById('area8'));  
-	var myChart9 = echarts.init(document.getElementById('area9'));  
-	var myChart10 = echarts.init(document.getElementById('area10'));  
-	var myChart11 = echarts.init(document.getElementById('area11'));  
-	var myChart12 = echarts.init(document.getElementById('area12'));  
+	var myChart1 = echarts.init(document.getElementById('area1'));
+	var myChart2 = echarts.init(document.getElementById('area2'));
+	var myChart3 = echarts.init(document.getElementById('area3'));
+	var myChart4 = echarts.init(document.getElementById('area4'));
+	var myChart5 = echarts.init(document.getElementById('area5'));
+	var myChart6 = echarts.init(document.getElementById('area6'));
+	var myChart7 = echarts.init(document.getElementById('area7'));
+	var myChart8 = echarts.init(document.getElementById('area8'));
+	var myChart9 = echarts.init(document.getElementById('area9'));
+	var myChart10 = echarts.init(document.getElementById('area10'));
+	var myChart11 = echarts.init(document.getElementById('area11'));
+	var myChart12 = echarts.init(document.getElementById('area12'));
     var option0 = {
 		title : {
 			text: '接口响应占比趋势',
@@ -127,7 +127,7 @@
 			trigger: 'axis'
 		},
 		legend: {
-			y: 'bottom', // 'center' | 'bottom' | {number}
+			y: 'top', // 'center' | 'bottom' | {number}
 			data:['毫秒', '1-2秒', '2-3秒', '3-4秒', '4-5秒', '>5秒', ]
 		},
 		toolbox: {
@@ -169,6 +169,18 @@
 				axisLabel : {
 					formatter: '{value} %'
 				}
+			}
+		],
+		dataZoom: [
+			{   // 这个dataZoom组件，默认控制x轴。
+				type: 'slider', // 这个 dataZoom 组件是 slider 型 dataZoom 组件
+				start: 60,      // 左边在 10% 的位置。
+				end: 100         // 右边在 60% 的位置。
+			},
+			{   // 这个dataZoom组件，也控制x轴。
+				type: 'inside', // 这个 dataZoom 组件是 inside 型 dataZoom 组件
+				start: 60,      // 左边在 10% 的位置。
+				end: 100         // 右边在 60% 的位置。
 			}
 		],
 		series : [
@@ -249,14 +261,33 @@
 
     var option1 = {
 				title : {
-				text: 'Android崩溃趋势 测试开发期间会有较高的崩溃率，属正常情况',
+				text: 'Android崩溃',
 				subtext: '| 标准<4‰ | 优秀<2‰ | 15年平均1.3‰ | 旅游行业指标2.1‰'
 			},
 			tooltip : {
 				trigger: 'axis'
 			},
+	        grid: {
+	            bottom: '20%',
+	            containLabel: true
+	        },
+			dataZoom: [
+	            {
+	                type: 'inside',
+	                start: 60,
+	                end: 100,
+	            },
+	            {
+	                show: true,
+	                type: 'slider',
+	                start: 60,
+	                end: 100,
+					bottom:'10%',
+	            }
+	        ],
 			legend: {
-				y: 'bottom', // 'center' | 'bottom' | {number}
+				// orient: 'vertical',
+        		// x: 'right',
 				data:[
 				{% for k,v in crash_show_a.items %}
 				"{{ k }}",
@@ -320,19 +351,38 @@
 				{% endfor %}
 			]
 		};
-		
+
     var option2 = {
 		title : {
-			text: 'Ios崩溃趋势  测试开发期间会有较高的崩溃率，属正常情况',
+			text: 'Ios崩溃趋势',
 			subtext: '| 标准<8‰ | 优秀<3‰ | 15年平均9.3‰ | 旅游行业指标8.5‰'
 		},
 		tooltip : {
 			trigger: 'axis'
 		},
+		grid: {
+			bottom: '20%',
+			containLabel: true
+		},
+		dataZoom: [
+			{
+				type: 'inside',
+				start: 60,
+				end: 100,
+			},
+			{
+				show: true,
+				type: 'slider',
+				start: 60,
+				end: 100,
+				bottom:'10%',
+			}
+		],
 		legend: {
-			y: 'bottom', // 'center' | 'bottom' | {number}
+			// orient: 'vertical',
+			// x: 'right',
 			data:[
-			{% for k,v in crash_show_ios.items %}
+			{% for k,v in crash_show_a.items %}
 			"{{ k }}",
 			{% endfor %}
 			]
@@ -394,7 +444,7 @@
 			{% endfor %}
 		],
 	};
-		
+
     var option3 = {
 		title : {
 			text: 'Android 自身服务错误率',
@@ -403,11 +453,27 @@
 		tooltip : {
 			trigger: 'axis'
 		},
-		grid:{
-			y2: '10%',
+		grid: {
+			bottom: '20%',
+			containLabel: true
 		},
+		dataZoom: [
+			{
+				type: 'inside',
+				start: 60,
+				end: 100,
+			},
+			{
+				show: true,
+				type: 'slider',
+				start: 60,
+				end: 100,
+				bottom:'10%',
+			}
+		],
 		legend: {
-			y: 'bottom', // 'center' | 'bottom' | {number}
+			// orient: 'vertical',
+			y: 'bottom',
 			data:[
 			{% for k,v in err_show_a_self.items %}
 			"{{ k }}",
@@ -471,15 +537,30 @@
 			{% endfor %}
 		]
 	};
-		
+
     var option4 = {
 		title : {
 			text: 'Android 第三方错误率',
 			subtext: '| 标准<12‰ | 优秀<8‰ | 旅游行业指标13.7‰'
 		},
-		grid:{
-			y2: '25%',
+		grid: {
+			bottom: '20%',
+			containLabel: true
 		},
+		dataZoom: [
+			{
+				type: 'inside',
+				start: 60,
+				end: 100,
+			},
+			{
+				show: true,
+				type: 'slider',
+				start: 60,
+				end: 100,
+				bottom:'10%',
+			}
+		],
 		tooltip : {
 			trigger: 'axis'
 		},
@@ -548,15 +629,30 @@
 			{% endfor %}
 		]
 	};
-		
+
 	var option5 = {
 		title : {
-			text: 'IOS 自身服务错误率',
+			text: 'IOS 核心服务错误率',
 			subtext: '| 标准<12‰ | 优秀<8‰ | 旅游行业指标11.8‰'
 		},
-		grid:{
-			y2: '10%',
+		grid: {
+			bottom: '20%',
+			containLabel: true
 		},
+		dataZoom: [
+			{
+				type: 'inside',
+				start: 60,
+				end: 100,
+			},
+			{
+				show: true,
+				type: 'slider',
+				start: 60,
+				end: 100,
+				bottom:'10%',
+			}
+		],
 		tooltip : {
 			trigger: 'axis'
 		},
@@ -625,15 +721,30 @@
 			{% endfor %}
 		]
 	};
-		
+
 	var option6 = {
 		title : {
 			text: 'IOS 第三方错误率',
 			subtext: '| 标准<12‰ | 优秀<8‰ | 旅游行业指标11.8‰'
 		},
-		grid:{
-			y2: '25%',
+		grid: {
+			bottom: '20%',
+			containLabel: true
 		},
+		dataZoom: [
+			{
+				type: 'inside',
+				start: 60,
+				end: 100,
+			},
+			{
+				show: true,
+				type: 'slider',
+				start: 60,
+				end: 100,
+				bottom:'10%',
+			}
+		],
 		tooltip : {
 			trigger: 'axis'
 		},
@@ -702,15 +813,30 @@
 			{% endfor %}
 		]
 	};
-		
+
     var option7 = {
 		title : {
 			text: 'Android自身服务响应趋势',
 			subtext: '| 标准< 2s | 优秀 < 0.4s '
 		},
-		grid:{
-			y2: '10%',
+		grid: {
+			bottom: '20%',
+			containLabel: true
 		},
+		dataZoom: [
+			{
+				type: 'inside',
+				start: 60,
+				end: 100,
+			},
+			{
+				show: true,
+				type: 'slider',
+				start: 60,
+				end: 100,
+				bottom:'10%',
+			}
+		],
 		tooltip : {
 			trigger: 'axis'
 		},
@@ -783,11 +909,26 @@
     var option8 = {
 		title : {
 			text: 'Android第三方响应趋势',
-			subtext: '| 标准< 2s | 优秀 < 0.4s '
+			subtext: '| 标准< 2s | 优秀 < 0.4s ',
 		},
-		grid:{
-			y2: '25%',
+		grid: {
+			bottom: '20%',
+			containLabel: true
 		},
+		dataZoom: [
+			{
+				type: 'inside',
+				start: 60,
+				end: 100,
+			},
+			{
+				show: true,
+				type: 'slider',
+				start: 60,
+				end: 100,
+				bottom:'10%',
+			}
+		],
 		tooltip : {
 			trigger: 'axis'
 		},
@@ -856,15 +997,30 @@
 			{% endfor %}
 		]
 	};
-		
+
     var option9 = {
 		title : {
 			text: 'Ios 自身服务响应趋势',
 			subtext: '| 标准< 2s | 优秀 < 0.4s '
 		},
-		grid:{
-			y2: '10%',
+		grid: {
+			bottom: '20%',
+			containLabel: true
 		},
+		dataZoom: [
+			{
+				type: 'inside',
+				start: 60,
+				end: 100,
+			},
+			{
+				show: true,
+				type: 'slider',
+				start: 60,
+				end: 100,
+				bottom:'10%',
+			}
+		],
 		tooltip : {
 			trigger: 'axis'
 		},
@@ -933,15 +1089,30 @@
 			{% endfor %}
 		]
 	};
-		
+
     var option10 = {
 		title : {
 			text: 'Ios 第三方服务响应趋势',
 			subtext: '| 标准< 2s | 优秀 < 0.4s '
 		},
-		grid:{
-			y2: '25%',
+		grid: {
+			bottom: '20%',
+			containLabel: true
 		},
+		dataZoom: [
+			{
+				type: 'inside',
+				start: 60,
+				end: 100,
+			},
+			{
+				show: true,
+				type: 'slider',
+				start: 60,
+				end: 100,
+				bottom:'10%',
+			}
+		],
 		tooltip : {
 			trigger: 'axis'
 		},
@@ -1010,15 +1181,12 @@
 			{% endfor %}
 		]
 	};
-		
+
 	var option11 = {
 		title : {
 			text: 'Android交互响应趋势',
 			subtext: '| 标准 < 0.4s | 优秀 < 0.3s'
 		},
-		grid:{
-			y2: '30%',
-		},
 		tooltip : {
 			trigger: 'axis'
 		},
@@ -1071,6 +1239,24 @@
 				}
 			}
 		],
+		grid: {
+			bottom: '20%',
+			containLabel: true
+		},
+		dataZoom: [
+			{
+				type: 'inside',
+				start: 60,
+				end: 100,
+			},
+			{
+				show: true,
+				type: 'slider',
+				start: 60,
+				end: 100,
+				bottom:'10%',
+			}
+		],
 		series : [
 			{% for k,v in view_show_a.items %}
 			{
@@ -1087,14 +1273,11 @@
 			{% endfor %}
 		]
 	};
-		
+
 	var option12 = {
 		title : {
 			text: 'IOS应用交互响应',
 			subtext: '| 标准 < 0.4s | 优秀 < 0.3s'
-		},
-		grid:{
-			y2: '30%',
 		},
 		tooltip : {
 			trigger: 'axis'
@@ -1146,6 +1329,24 @@
 				axisLabel : {
 					formatter: '{value} 秒'
 				}
+			}
+		],
+		grid: {
+			bottom: '20%',
+			containLabel: true
+		},
+		dataZoom: [
+			{
+				type: 'inside',
+				start: 60,
+				end: 100,
+			},
+			{
+				show: true,
+				type: 'slider',
+				start: 60,
+				end: 100,
+				bottom:'10%',
 			}
 		],
 		series : [
@@ -1166,17 +1367,17 @@
 	};
 
 	myChart0.setOption(option0);
-	myChart1.setOption(option1);    
-	myChart2.setOption(option2);    
-	myChart3.setOption(option3);    
-	myChart4.setOption(option4);    
-	myChart5.setOption(option5);    
-	myChart6.setOption(option6);    
-	myChart7.setOption(option7);    
-	myChart8.setOption(option8);    
-	myChart9.setOption(option9);    
-	myChart10.setOption(option10);    
-	myChart11.setOption(option11);    
+	myChart1.setOption(option1);
+	myChart2.setOption(option2);
+	myChart3.setOption(option3);
+	myChart4.setOption(option4);
+	myChart5.setOption(option5);
+	myChart6.setOption(option6);
+	myChart7.setOption(option7);
+	myChart8.setOption(option8);
+	myChart9.setOption(option9);
+	myChart10.setOption(option10);
+	myChart11.setOption(option11);
 	myChart12.setOption(option12);
 </script>
 {% endblock content %}

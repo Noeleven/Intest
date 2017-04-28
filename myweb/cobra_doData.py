@@ -43,9 +43,9 @@ def get_dates():
 	begin = datetime.datetime(2016, 1, 1)
 
 	# 正式使用时，下面2行，因为数据库不是实时同步，因此今天回收昨天的数据
-	yestoday_num =  (today - begin).days - 1
+	# yestoday_num =  (today - begin).days - 1
 	# 调试 this_day是为了删除已经存入的数据
-	# yestoday_num = 390
+	yestoday_num = 461
 	print("day_index: %s" % yestoday_num)
 
 	# daynum转日期型，为了清理已有的数据

@@ -25,6 +25,7 @@ class deviceList(models.Model):
     APPIUMSERVERSTART = models.CharField(blank=True, max_length=200)
     appiumServicePort = models.IntegerField(blank=True)
     lvsessionid = models.CharField(blank=True, max_length=100)
+    adbPort = models.CharField(blank=True, max_length=100, default='9000')
     job_name = models.CharField(blank=True, max_length=100, default='AndroidAppiumAutoTest')
     appiumServicePath = models.CharField(blank=True, default='10.113.2.70', max_length=20)
     appVersion = models.CharField(blank=True, default='7.8.5', max_length=10)
@@ -75,7 +76,6 @@ class controlList(models.Model):
         default='0')
     TYPE = models.CharField(max_length=100, default='action')
     versionStr = models.ManyToManyField(caseVersion)
-    # verStr = models.ManyToManyField(caseVersion)
 
 class caseUser(models.Model):
     userName = models.CharField(max_length=100)
@@ -108,6 +108,15 @@ class allBookRecording(models.Model):
     timeStamp = models.CharField(max_length=100)
     usedTime = models.CharField(max_length=100, default='0')
 
+class caseGroup(models.Model):
+    groupName = models.CharField(max_length=300)
+    caseID = models.TextField()
+    des = models.TextField()
+    TYPE_CHOICE = (('0', '禁用'), ('1', '启用'))
+    status = models.CharField(max_length=2,
+        choices=TYPE_CHOICE,
+        default='1')
+    modify_time = models.DateTimeField(default=datetime.datetime.now)
 
 class caseTypeAdmin(admin.ModelAdmin):
     list_display = ('type_name', 'type_field', 'modify_time')

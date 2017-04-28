@@ -129,8 +129,8 @@ def do_db():
 	url_path = "api3g2.lvmama.com/api/router/rest.do?method="
 	method_list = Ints.objects.filter(inuse=1).values('method_version').order_by('method_version').distinct()
 	n = 1
-	old = "f4591872-54c4-427a-a6bb-751cb5330f4b"
-	new = "ef3d2602-7bac-4335-9251-0f1493c64154" 
+	old = "ef3d2602-7bac-4335-9251-0f1493c64154"
+	new = "7bef8d03-99d4-4b88-871a-5025340ed3f5"
 	for x in method_list:
 		# 这里也顺便维护下DB，我们保留最新和最老的数据，其他的都删除
 		todel = Ints.objects.all().filter(method_version=x['method_version']).order_by('timestamp')

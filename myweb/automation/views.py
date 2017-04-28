@@ -121,7 +121,7 @@ def doDB(method, myList):
 		cursor.execute('delete from bookShelf where caseName=%s', [myList[0]])
 		cursor.execute('delete from testStory where caseName=%s', [myList[0]])
 	else:
-		print('doDB unknow!')
+		logger.info('doDB unknow!')
 	conn.commit()
 	cursor.close()
 	conn.close()
@@ -155,7 +155,7 @@ def auto_list(request):
 # 编辑保存
 def auto_edit_save(request, id):
 	my_form = dict(request.GET)
-	# print(my_form)
+	# logger.info(my_form)
 	case_obj = caseList.objects.filter(id=id)[0]
 	try:
 		caseName = case_obj.caseName
@@ -167,14 +167,14 @@ def auto_edit_save(request, id):
 		owner = my_form.get('owner')[0]
 		s_Type = my_form.get('second_Type')[0]
 	except TypeError as e:
-		print('oh my god!! %s' % e)
+		logger.info('oh my god!! %s' % e)
 	caseStatus = '1' if caseStatus=='use' else '0'
 	# 处理生成json,等json格式，根据plantform类型生成不同的json
 	json_home = []
 	# 统计有多少大步
 	bigstep = len(set([x.split('-')[0] for x in my_form.get('index_step')]))
 	#起始下标
-	if casePlantform == 'Android':
+	if casePlantform == 'Android' or casePlantform == 'M':
 		startIndex = expendIndex = 0
 		for bgSub in range(bigstep):
 			# 大步字典
@@ -241,16 +241,12 @@ def auto_edit_save(request, id):
 				'type':trans_me(my_form.get('typeCode')[bgSub], 'type', casePlantform),
 				'typeText':my_form.get('inputValue')[bgSub],
 				'label':my_form.get('targetName')[bgSub],
-				# 'sub':{
-				#     'type':'',
-				#     'label':'',
-				#     },
 				}
 			json_home.append(bgElement)
 		my_case = json.dumps(json_home, ensure_ascii=False)
 	else:
-		pass
-	# print(('*' * 20 + '\n' + '%s') % my_case)
+		logger.info('casePlantform:%s' % casePlantform)
+	# logger.info(('*' * 20 + '\n' + '%s') % my_case)
 	# 存储DB
 	p = case_obj
 	p.case = my_case
@@ -324,7 +320,7 @@ def auto_config(request):
 	pp.buildNUM = '#' + str(build_number + 1)
 	if device == 'IOS':
 		pp.reportURL = ('http://10.113.1.193:8001/%s/report.html' % (build_number + 1))
-		print(pp.reportURL)
+		logger.info(pp.reportURL)
 	else:
 		pp.reportURL = ("http://10.113.2.70:8080/htmlReport/AndroidAutoTest/autoTest" + "%s.html" % str(myTime))
 	pp.status = str(server.get_build_info(job_name,build_number)['building'])
@@ -382,10 +378,10 @@ def auto_copy(request):
 				data = '1' # 用例名OK
 		else:
 			data = '3' # 没输入
-		return HttpResponse(data)
 	except KeyError as e:
 		data = '2'
-		print('ERR:复制失败，请联系管理员查看.\n%s' % e)
+		logger.info('ERR:复制失败，请联系管理员查看.\n%s' % e)
+	finally:
 		return HttpResponse(data)
 
 
@@ -406,7 +402,6 @@ def new_add(request):
 # todo
 def new_save(request):
 	my_form = dict(request.POST)
-	# print(my_form)
 	try:
 		caseName = my_form.get('caseName')[0]
 		csType = caseType.objects.get(type_name=my_form.get('type')[0]).type_field
@@ -440,7 +435,7 @@ def new_save(request):
 		return HttpResponseRedirect("/auto/new_edit/%s" % myID)
 	except TypeError as e:
 		data = ('Oh my god!!出错啦 %s' % e)
-		print(data)
+		logger.info(data)
 		return HttpResponse(data)
 
 
@@ -458,6 +453,8 @@ def new_edit(request, id):
 			json_dict.pop('case')
 			targetname = []
 			elementname = []
+			where = []
+			enterActivity = []
 			# 判断plantform
 			myPlantform = json_dict['plantform']
 			# 转义json字符串中的字符串为中文
@@ -474,6 +471,8 @@ def new_edit(request, id):
 				for x in BgStep:
 					x['enterActivity'] = trans_me(x['enterActivity'],'where',json_dict['plantform'])
 					x['where'] = trans_me(x['where'],'where',json_dict['plantform'])
+					where.append(x['where'])
+					enterActivity.append(x['enterActivity'])
 					ai = ci = 1
 					for y in x['action']:
 						y['target']['targetName'] = trans_me(y['target']['targetName'],'targetName',json_dict['plantform'])
@@ -539,7 +538,7 @@ def auto_caseJson(request):
 					"caseType": caseList.objects.get(id=x).type_field.type_field,
 					"jsonStory": json.loads(caseList.objects.get(id=x).case),
 				}
-				print(x)
+				logger.info(x)
 				cases.append(caseD)
 			jsonStr = {
 				"code": "1",
@@ -706,7 +705,7 @@ def api_report(request):
 	else:
 		cases = allBookRecording.objects.filter(timeStamp=timeTarget)
 		allin = testRecording.objects.filter(timeStamp=timeTarget)
-		if cases and allin:
+		if cases:
 			# 返回一个报告页面 URL，通过此url可以访问对应的数据构造页面
 			jsonStr = {
 				"code": "1",
@@ -728,14 +727,25 @@ def api_report(request):
 			html_string1 = ""
 			html_string3 = "</table>"
 			if err_list:
-				html_string1 = "<h3 style='color:IndianRed'>错误列表</h3><table border=1 width=100%><tr style='background-color:DarkSalmon'><th>用例名称</th><th>状态</th><th>耗时</th><th>创建人</th></tr>\n\r"
+				html_string1 = "<h3 style='color:IndianRed'>错误列表</h3><table border=1 width=100%><tr style='background-color:DarkSalmon'><th>ID</th><th>品类</th><th>用例名称</th><th>状态</th><th>耗时</th><th>创建人</th></tr>\n\r"
 				html_string2 = ""
+				build_list = []
 				for x in err_list:
+					tmp = {
+						'id':caseList.objects.filter(caseName=x.caseName)[0].id,
+						'type':caseList.objects.filter(caseName=x.caseName)[0].type_field.type_name,
+						'caseName':x.caseName,
+						'status':x.status,
+						'usedTime':x.usedTime,
+						'user':caseList.objects.filter(caseName=x.caseName)[0].owner
+					}
+					build_list.append(tmp)
+				build_list = sorted(build_list, key = lambda x:x['type'])
+				for x in build_list:
 					status = '通过'
-					if x.status == 'danger':
+					if x['status'] == 'danger':
 						status = '失败'
-					user = caseList.objects.filter(caseName=x.caseName)[0].owner
-					html_string2 += ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n\r" % ( x.caseName, status, x.usedTime, user))
+					html_string2 += ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n\r" % (x['id'], x['type'], x['caseName'], status, x['usedTime'], x['user']))
 			else:
 				html_string2 = "<p>恭喜, 全部通过</p>"
 			html_string = html_string0 + html_string1 + html_string2 + html_string3
@@ -792,16 +802,17 @@ def search_report(request):
 		for x in source_list:
 			try:
 				case = caseList.objects.filter(in_use='1').get(caseName=x.caseName)
-				if case.owner == user:
+				if user in case.owner:
 					if x.status == 'danger':
-						err_list.append(x)
+						logger.info('%s' % x.caseName)
+						err_list.append(json.loads(x.testResultDoc))
 					else:
-						pass_list.append(x)
-			except:
-				pass
+						pass_list.append(json.loads(x.testResultDoc))
+			except TypeError as e:
+				logger.info(e)
 	else:
-		err_list = source_list.filter(status='danger')
-		pass_list = source_list.filter(status='success')
+		err_list = [json.loads(x['testResultDoc']) for x in source_list.filter(status='danger').values('testResultDoc')]
+		pass_list = [json.loads(x['testResultDoc']) for x in source_list.filter(status='success').values('testResultDoc')]
 	return render_to_response('report_ajax.html', locals())
 
 def change_case(request):
@@ -831,3 +842,70 @@ def change_case(request):
 	finally:
 		result = json.dumps(jsonStr, ensure_ascii=False)
 		return HttpResponse(result, content_type="application/json")
+
+# 添加用例集
+def auto_makeGroup(request):
+	try:
+		ids = [int(x) for x in request.GET['id'].split(',')]
+		# ids = request.GET['id']
+		groupName = request.GET['groupName']
+		# 判断用例集是否存在
+		if caseGroup.objects.filter(groupName=groupName).exists():
+			temp = caseGroup.objects.get(groupName=groupName)
+			origin = json.loads(temp.caseID)
+			new = list(set(origin + ids))
+			temp.caseID = json.dumps(new)
+			logger.info('%s\n %s'% (origin,new))
+			temp.save()
+		else:
+			temp = caseGroup(groupName=groupName)
+			temp.caseID = json.dumps(ids)
+			temp.save()
+		data = 'success'
+	except TypeError as e:
+		print(e)
+		data = 'failed'
+	finally:
+		print(data)
+		return HttpResponse(data)
+
+# group列表页
+def auto_group(request):
+	casegroup = caseGroup.objects.all()
+	nav_list = navList()
+	return render(request, 'case_group.html', locals())
+
+
+# group编辑
+def group_edit(request):
+	groupID = request.GET.get('groupID')
+	# 需要获取group信息、所有用例名信息、当前用例集用例名信息
+	groupInfo = caseGroup.objects.get(id=groupID)
+	gourpIDS = json.loads(groupInfo.caseID)
+	allCase = caseList.objects.filter(in_use='1').values('id', 'caseName', 'des', 'owner').order_by('caseName')
+	for x in allCase:
+		if x['id'] in gourpIDS:
+			x['sta'] = 'checked'
+		else:
+			x['sta'] = 'unchecked'
+	nav_list = navList()
+	logger.debug('%s' % allCase[:10])
+	return render(request, 'group_edit.html', locals())
+
+
+# 用例集编辑保存
+def group_save(request):
+	try:
+		groupId = request.POST.get('ID')
+		group = caseGroup.objects.get(id=groupId)
+		group.des = request.POST.get('des')
+		group.groupName = request.POST.get('groupName')
+		if request.POST.get('groupListBox'):
+			group.caseID = json.dumps([int(x.split('-')[1]) for x in request.POST.getlist('groupListBox')])
+		else:
+			group.caseID = json.dumps([])
+		group.save()
+	except TypeError as e:
+		logger.info('group_save:%s e:%s' % (request.POST, e))
+	finally:
+		return HttpResponseRedirect('/auto/auto_group')

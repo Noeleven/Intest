@@ -96,7 +96,7 @@ def logout(request):
 
 # 概览
 @login_required
-@cache_page(300)
+@cache_page(5)
 def ty_Overview(request):
 	# 响应占比
 	ints_rate_all = Rates.objects.all().order_by('-des')
@@ -113,11 +113,10 @@ def ty_Overview(request):
 	crash_t_list = [x['des'] for x in crash_time]
 	crash_t_list.reverse()
 	# 开始过滤
-	other_list = ['alog.umeng.com', 'loc.map.baidu.com', 'resolver.gslb.mi-idc.com', 'sapi.map.baidu.com',
-					'api.weixin.qq.com', 'collect.dsp.chinanetcenter.com', 'mauth.chinanetcenter.com', 'm.api.baifengdian.com', 'api.weibo.com', 'pingma.qq.com', 'api.share.mob.com',
-					'api.share.mob.com:80', 'libs.cn.coremetrics.com', 'tmscdn.cn.coremetrics.com', 'scs.openspeech.cn',
-					'data.openspeech.cn', 'hm.baidu.com'
-					]
+	other_list = ['alog.umeng.com', 'loc.map.baidu.com', 
+		'm.api.baifengdian.com', 'api.weibo.com', 'pingma.qq.com', 'api.share.mob.com',
+		'api.share.mob.com:80', 'libs.cn.coremetrics.com', 'tmscdn.cn.coremetrics.com', 'scs.openspeech.cn',
+		'data.openspeech.cn', 'hm.baidu.com']
 	crash_show_a = {}
 	crash_show_ios = {}
 	for x in crash_v_a:
@@ -154,7 +153,7 @@ def ty_Overview(request):
 				datas.append(value[0].value)
 			else:
 				datas.append('0')
-		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com',
+		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com', 'pics.lvjs.com.cn',
 						# 'iguide.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com'
 						]
 		if x['name'] in self_list:
@@ -169,7 +168,7 @@ def ty_Overview(request):
 				datas.append(value[0].value)
 			else:
 				datas.append('0')
-		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com',
+		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com', 'pics.lvjs.com.cn',
 						# 'iguide.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com'
 						]
 
@@ -192,7 +191,7 @@ def ty_Overview(request):
 				datas.append(value[0].value)
 			else:
 				datas.append('0')
-		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com',
+		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com', 'pics.lvjs.com.cn',
 						# 'iguide.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com'
 						]
 		if x['name'] in self_list:
@@ -207,7 +206,7 @@ def ty_Overview(request):
 				datas.append(value[0].value)
 			else:
 				datas.append('0')
-		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com',
+		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com', 'pics.lvjs.com.cn',
 						# 'iguide.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com'
 						]
 		if x['name'] in self_list:

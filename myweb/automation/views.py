@@ -104,6 +104,21 @@ def trans_me(aname, type, ptype):
 		bname = aname
 	return bname
 
+
+def trans_report_list(myList):
+	for x in myList:
+		plant = caseList.objects.get(id=x['id']).plantform
+		for y in x['jsonStory']:
+			y['where'] = trans_me(y['where'], 'where', plant)
+			y['enterActivity'] = trans_me(y['enterActivity'], 'where', plant)
+			for z in y['checkString']:
+				z['checkType'] = trans_me(z['checkType'], 'checkString', plant)
+				if z.get('enterActivity'):
+					z['enterActivity'] = trans_me(z['enterActivity'], 'where', plant)
+			for z in y['action']:
+				z['actionCode'] = trans_me(z['actionCode'], 'action', plant)
+	return myList
+
 # NORMAL DB
 def doDB(method, myList):
 	# myList = [caseName, bigstep, my_case, caseStatus, csType, caseVersion]
@@ -265,67 +280,144 @@ def auto_edit_save(request, id):
 # 点击生成配置
 def auto_config(request):
 	ids = request.GET['vals'].split(',')    # 待测id列表
-	device = request.GET['device']  #   待测设备
-	mydevice = deviceList.objects.filter(deviceName=device)[0]  #待测设备属性
-	myTime = int(time.time())   # 取时间串
+	device = request.GET['device']  # 待测设备
+	mytype = request.GET['type']	# 用例还是用例集
+	isDay = request.GET['isDay']	# 用例还是用例集
+	cases = []
+	logger.debug('%s##%s##%s' %(ids,device,mytype))
+	if mytype == 'group':
+		# 汇总用例集所有用例 在均分
+		casetmp = []
+		for x in ids:
+			casetmp += json.loads(caseGroup.objects.get(id=x).caseID)
+	else:	# id就是用例
+		casetmp = ids
+	logger.debug(set(casetmp))
+	filter_id = set(casetmp)
+	newid = []
+	# 过滤无效用例
+	for y in filter_id:
+		if caseList.objects.filter(in_use='1').filter(id=y):
+			cases.append(caseList.objects.filter(in_use='1').filter(id=y)[0].caseName)
+			newid.append(y)
+		else:
+			continue
+	logger.debug('cases:%s caseid:%s' % (cases, newid))
+	# device:IOS,AD,62001,62025,M,chrome之类，如果ios直接存
 	if device == 'IOS':
 		#IOS jenkins
+		mydevice = deviceList.objects.filter(deviceName=device)[0]  #待测设备属性
 		server = jenkins.Jenkins('http://10.113.1.193:8080', username='autotest', password='111111')
+		myTime = int(time.time())
 		jsonStr = {
-			"deviceName": mydevice.deviceIP,    # 设备:ip
+			"deviceName": mydevice.deviceName,    # 设备:ip
+			"deviceIP": mydevice.deviceIP,
 			"appVersion": mydevice.appVersion,  #   app版本
-			# "appiumServicePath": mydevice.appiumServicePath, # ip：端口
 			"platformVersion": mydevice.platformVersion,    # 操作系统版本
-			"platformName": mydevice.platformName,  # AD还是IOS
-			# "lvsessionid": mydevice.lvsessionid,
+			"platformName": mydevice.platformName,  # IOS
 			"timeStamp": str(myTime),
 		}
+		job_name = mydevice.job_name
+		# 判断有没有该设备，并存入config表供jenkins调用，但不需要timeStamp的ids
+		hasD = myConfig.objects.filter(device=mydevice.deviceName)
+		if hasD:
+			hasD[0].caseStr = json.dumps(jsonStr, ensure_ascii=False)
+			hasD[0].save()
+		else:
+			p = myConfig(device=mydevice.deviceName)
+			p.caseStr = json.dumps(jsonStr, ensure_ascii=False)
+			p.save()
+
+		server.build_job(job_name)  # 执行构建
+		build_number = server.get_job_info(job_name)['lastBuild']['number']
+		# 报告存入report，需要ids
+		time_case = jsonStr['timeStamp'] + '_' + ('_').join(casetmp)
+		pp = reportsList(timeStamp=time_case)
+		pp.buildNUM = '#' + str(build_number + 1)
+		pp.reportURL = ('http://10.113.1.193:8001/%s/report.html' % (build_number + 1))
+		logger.info(pp.reportURL)
+		pp.status = str(server.get_build_info(job_name,build_number)['building'])
+		pp.deviceName = deviceList.objects.get(deviceName=device)
+		pp.save()
 	else:
 		# jenkins
 		server = jenkins.Jenkins('http://10.113.2.70:8080/jenkins', username='admin', password='111111')
-		cases = []
-		for x in caseList.objects.values('id','caseName'):
-			if str(x['id']) in ids:
-				cases.append(x['caseName'])
-		jsonStr = {
-			"APPIUMSERVERSTART": mydevice.APPIUMSERVERSTART,
-			"appiumServicePath": mydevice.appiumServicePath,
-			"appiumServicePort": mydevice.appiumServicePort,
-			"appVersion": mydevice.appVersion,
-			"deviceName": mydevice.deviceIP,
-			"platformVersion": mydevice.platformVersion,
-			"platformName": mydevice.platformName,
-			"lvsessionid": mydevice.lvsessionid,
-			"timeout": mydevice.timeWait,
-			"appPackage": mydevice.appPackage,
-			"appLaunchActivity": mydevice.appLaunchActivity,
-			"testCaseSQL": cases,   # 待改
-			"timeStamp": str(myTime),
-		}
-	job_name = mydevice.job_name
-	# 判断有没有该设备，并存入config表供jenkins调用，但不需要timeStamp的ids
-	hasD = myConfig.objects.filter(device=mydevice.deviceIP)
-	if hasD:
-		hasD[0].caseStr = json.dumps(jsonStr, ensure_ascii=False)
-		hasD[0].save()
-	else:
-		p = myConfig(device=mydevice.deviceIP)
-		p.caseStr = json.dumps(jsonStr, ensure_ascii=False)
-		p.save()
-	server.build_job(job_name)  # 执行构建
-	build_number = server.get_job_info(job_name)['lastBuild']['number']
-	# 报告存入report，需要ids
-	time_case = jsonStr['timeStamp'] + '_' + ('_').join(ids)
-	pp = reportsList(timeStamp=time_case)
-	pp.buildNUM = '#' + str(build_number + 1)
-	if device == 'IOS':
-		pp.reportURL = ('http://10.113.1.193:8001/%s/report.html' % (build_number + 1))
-		logger.info(pp.reportURL)
-	else:
-		pp.reportURL = ("http://10.113.2.70:8080/htmlReport/AndroidAutoTest/autoTest" + "%s.html" % str(myTime))
-	pp.status = str(server.get_build_info(job_name,build_number)['building'])
-	pp.deviceName = deviceList.objects.get(deviceName=device)
-	pp.save()
+		if device == 'AD':
+			mydevice = deviceList.objects.filter(in_use='1').filter(platformName='Android')  # 多台
+		elif device == 'M':
+			mydevice = deviceList.objects.filter(in_use='1').filter(platformName='M')  # M站多台
+		else:
+			mydevice = deviceList.objects.filter(deviceName=device)  # 单台
+		# 步长计算
+		if len(cases) >= len(mydevice):
+			if (len(cases) % len(mydevice)) == 0:
+				mdl = len(cases) // len(mydevice)
+			else:
+				if (len(cases) % len(mydevice)) >= (len(mydevice) // 2):
+					mdl = len(cases) // len(mydevice) + 1
+				else:
+					mdl = len(cases) // len(mydevice)
+		else:
+			mdl = 1
+		start = end = 0
+		logger.info('dev:%s 步长:%s' % (mydevice, mdl))
+		for x in mydevice:
+			end += mdl
+			myTime = int(time.time())
+			if start < len(cases):
+				jsonStr = {
+					"APPIUMSERVERSTART": x.APPIUMSERVERSTART,
+					"appiumServicePath": x.appiumServicePath,
+					"appiumServicePort": x.appiumServicePort,
+					"appVersion": x.appVersion,
+					"deviceName": x.deviceName,
+					"deviceIP":x.deviceIP,
+					"platformVersion": x.platformVersion,
+					"platformName": x.platformName,
+					"lvsessionid": x.lvsessionid,
+					"timeout": x.timeWait,
+					"appPackage": x.appPackage,
+					"appLaunchActivity": x.appLaunchActivity,
+				}
+				logger.info(isDay)
+				if isDay == 'yes':
+					jsonStr['timeStamp'] = 'autoTestIn' + datetime.datetime.now().strftime('%Y%m%d')
+				else:
+					jsonStr['timeStamp'] = str(myTime)
+				if end > len(cases):	# end + 步长 超过就不要在分了，直接结束
+					jsonStr["testCaseSQL"] = cases[start:]
+					logger.debug(cases[start:])
+				else:
+					jsonStr["testCaseSQL"] = cases[start:end]
+					logger.debug(cases[start:end])
+				job_name = x.job_name
+				# 判断有没有该设备，并存入config表供jenkins调用，但不需要timeStamp的ids
+				hasD = myConfig.objects.filter(device=x.deviceName)
+				if hasD:
+					hasD[0].caseStr = json.dumps(jsonStr, ensure_ascii=False)
+					hasD[0].save()
+				else:
+					p = myConfig(device=x.deviceName)
+					p.caseStr = json.dumps(jsonStr, ensure_ascii=False)
+					p.save()
+
+				server.build_job(job_name)  # 执行构建
+				build_number = server.get_job_info(job_name)['lastBuild']['number']
+				# 报告存入report，需要ids
+				if end >= len(cases):	# end + 步长超过就不要在分了，直接结束
+					time_case = jsonStr['timeStamp'] + '_' + ('_').join([str(x) for x in list(newid)[start:]])
+				else:
+					time_case = jsonStr['timeStamp'] + '_' + ('_').join([str(x) for x in list(newid)[start:end]])
+
+				pp = reportsList(timeStamp=time_case)
+				pp.buildNUM = '#' + str(build_number + 1)
+				pp.reportURL = ("http://10.113.1.35:8000/auto/api_report_page?timeStamp=" + "%s" % jsonStr['timeStamp'])
+				pp.status = str(server.get_build_info(job_name,build_number)['building'])
+				pp.deviceName = deviceList.objects.get(deviceName=x.deviceName)
+				pp.save()
+				start += mdl
+			else:
+				break
 	return HttpResponse('OK')
 
 # 返回接口配置
@@ -610,8 +702,8 @@ def auto_search(request):
 	plant = ['Android','IOS','M']
 	device_list = deviceList.objects.filter(in_use='1')
 	nav_list = navList()
+	casegroup = caseGroup.objects.all()
 	return render(request, 'auto_search.html', locals())
-
 
 #动态查询结果返回
 def search_result(request):
@@ -693,7 +785,7 @@ def do_mail(htmlStr):
 	smtp.sendmail(msg['From'],receiverlist,msg.as_string())
 	smtp.quit()
 
-# 生成报表访问url的接口 构建邮件内容
+# 当日报表邮件接口
 def api_report(request):
 	try:
 		timeTarget = request.GET['timeStamp']
@@ -704,7 +796,7 @@ def api_report(request):
 		}
 	else:
 		cases = allBookRecording.objects.filter(timeStamp=timeTarget)
-		allin = testRecording.objects.filter(timeStamp=timeTarget)
+		# allin = testRecording.objects.filter(timeStamp=timeTarget)
 		if cases:
 			# 返回一个报告页面 URL，通过此url可以访问对应的数据构造页面
 			jsonStr = {
@@ -719,11 +811,11 @@ def api_report(request):
 			passNum = pass_list.count()
 			failNum = err_list.count()
 			passRate = round((passNum / allNum * 100),2)
-			sTime = allin.values('testStartDate').order_by('testStartDate')[0]['testStartDate']
-			eTime = allin.values('testDuration').order_by('-testDuration')[0]['testDuration']
-			testTime = (eTime - sTime).seconds
+			# sTime = allin.values('testStartDate').order_by('testStartDate')[0]['testStartDate']
+			# eTime = allin.values('testDuration').order_by('-testDuration')[0]['testDuration']
+			# testTime = (eTime - sTime).seconds
 			# email发送
-			html_string0 = "<h3>UI自动化报告</h3><h4><p>用例总数:%s | 通过:%s | 失败:%s</p><p>通过率:%s %%</p><p>总耗时:%s 秒</p><p><a href=%s target=_blank>点击查看错误详情和截图</a></p></h4>" % (allNum, passNum, failNum, passRate, testTime, myUrl)
+			html_string0 = "<h3>UI自动化报告</h3><h4><p>用例总数:%s | 通过:%s | 失败:%s</p><p>通过率:%s %%</p><p><a href=%s target=_blank>点击查看错误详情和截图</a></p></h4>" % (allNum, passNum, failNum, passRate, myUrl)
 			html_string1 = ""
 			html_string3 = "</table>"
 			if err_list:
@@ -749,7 +841,9 @@ def api_report(request):
 			else:
 				html_string2 = "<p>恭喜, 全部通过</p>"
 			html_string = html_string0 + html_string1 + html_string2 + html_string3
+			logger.info('do html ok')
 			do_mail(html_string)
+			logger.info('do mail ok')
 		else:
 			jsonStr = {
 				"code": "-2",
@@ -766,27 +860,43 @@ def api_report_page(request):
 	except:
 		message = "参数错误,需要timeStamp"
 	else:
-		cases = allBookRecording.objects.filter(timeStamp=timeTarget).exclude(testResultDoc__contains='trStart')
-		# 算时长的，不作为必要条件
-		allin = testRecording.objects.filter(timeStamp=timeTarget)
-		if cases:
-			# 返回一个报告页面 URL，通过此url可以访问对应的数据构造页面
-			message = ''
-			err_list = [json.loads(x['testResultDoc']) for x in cases.filter(status='danger').values('testResultDoc')]
-			pass_list = [json.loads(x['testResultDoc']) for x in cases.filter(status='success').values('testResultDoc')]
-			allNum = cases.count()
-			passNum = len(pass_list)
-			failNum = len(err_list)
-			passRate = round((passNum / allNum) * 100, 2)
-			# logger.info(allNum,passNum,failNum,passRate,testTime)
+		Acases = allBookRecording.objects.filter(timeStamp=timeTarget).filter(testResultDoc__contains='platformName":"Android"')
+		if Acases:
+			Apass_list = [json.loads(x['testResultDoc']) for x in Acases.filter(status='success').values('testResultDoc')]
+			Aerr_list = [json.loads(x['testResultDoc']) for x in Acases.filter(status='danger').values('testResultDoc')]
+			AallNum = int(Acases.count())
+			ApassNum = len(Apass_list)
+			AfailNum = len(Aerr_list)
+			Apass_list = trans_report_list(Apass_list)
+			Aerr_list = trans_report_list(Aerr_list)
+			if AallNum != 0:
+				ApassRate = round((ApassNum / AallNum) * 100, 2)
+			Atime = Acases.values('create_time')
+			if Atime:
+				AsTime = Atime.order_by('create_time')[0]['create_time']
+				AeTime = Atime.order_by('-create_time')[0]['create_time']
+				AtestTime = (AeTime - AsTime).seconds
 		else:
-			message = '没有匹配内容'
-		if allin:
-			sTime = allin.values('testStartDate').order_by('testStartDate')[0]['testStartDate']
-			eTime = allin.values('testDuration').order_by('-testDuration')[0]['testDuration']
-			testTime = (eTime - sTime).seconds
+			Amessage = '没有匹配内容'
+		Mcases = allBookRecording.objects.filter(timeStamp=timeTarget).filter(testResultDoc__contains='platformName":"M"')
+		if Mcases:
+			Mpass_list = [json.loads(x['testResultDoc']) for x in Mcases.filter(status='success').values('testResultDoc')]
+			Merr_list = [json.loads(x['testResultDoc']) for x in Mcases.filter(status='danger').values('testResultDoc')]
+			MallNum = int(Mcases.count())
+			MpassNum = len(Mpass_list)
+			MfailNum = len(Merr_list)
+			Mpass_list = trans_report_list(Mpass_list)
+			Merr_list = trans_report_list(Merr_list)
+			if MallNum != 0:
+				MpassRate = round((MpassNum / MallNum) * 100, 2)
+			Mtime = Mcases.values('create_time')
+			print(Mtime)
+			if Mtime:
+				MsTime = Mtime.order_by('create_time')[0]['create_time']
+				MeTime = Mtime.order_by('-create_time')[0]['create_time']
+				MtestTime = (MeTime - MsTime).seconds
 		else:
-			testTime = '...'
+			Mmessage = '没有匹配内容'
 	finally:
 		return render_to_response('report.html', locals())
 
@@ -795,26 +905,43 @@ def search_report(request):
 	myrequest = dict(request.GET)
 	timeTarget = myrequest['timeT'][0]
 	user = myrequest['user'][0]
-	source_list = allBookRecording.objects.filter(timeStamp=timeTarget)
-	err_list = []
-	pass_list = []
+	Acases = allBookRecording.objects.filter(timeStamp=timeTarget).filter(testResultDoc__contains='platformName":"Android"')
+	Mcases = allBookRecording.objects.filter(timeStamp=timeTarget).filter(testResultDoc__contains='platformName":"M"')
+	Aerr_list = []
+	Apass_list = []
+	Merr_list = []
+	Mpass_list = []
 	if user:
-		for x in source_list:
-			try:
-				case = caseList.objects.filter(in_use='1').get(caseName=x.caseName)
-				if user in case.owner:
-					if x.status == 'danger':
-						logger.info('%s' % x.caseName)
-						err_list.append(json.loads(x.testResultDoc))
-					else:
-						pass_list.append(json.loads(x.testResultDoc))
-			except TypeError as e:
-				logger.info(e)
+		for x in Acases:
+			print(x.caseName)
+			case = caseList.objects.filter(in_use='1').get(caseName=x.caseName)
+			if user in case.owner:
+				if x.status == 'danger':
+					logger.info('%s' % x.caseName)
+					Aerr_list.append(json.loads(x.testResultDoc))
+				else:
+					Apass_list.append(json.loads(x.testResultDoc))
+		for x in Mcases:
+			print(x.caseName)
+			case = caseList.objects.filter(in_use='1').get(caseName=x.caseName)
+			if user in case.owner:
+				if x.status == 'danger':
+					logger.info('%s' % x.caseName)
+					Merr_list.append(json.loads(x.testResultDoc))
+				else:
+					Mpass_list.append(json.loads(x.testResultDoc))
 	else:
-		err_list = [json.loads(x['testResultDoc']) for x in source_list.filter(status='danger').values('testResultDoc')]
-		pass_list = [json.loads(x['testResultDoc']) for x in source_list.filter(status='success').values('testResultDoc')]
+		Aerr_list = [json.loads(x['testResultDoc']) for x in Acases.filter(status='danger').values('testResultDoc')]
+		Apass_list = [json.loads(x['testResultDoc']) for x in Acases.filter(status='success').values('testResultDoc')]
+		Merr_list = [json.loads(x['testResultDoc']) for x in Mcases.filter(status='danger').values('testResultDoc')]
+		Mpass_list = [json.loads(x['testResultDoc']) for x in Mcases.filter(status='success').values('testResultDoc')]
+	Apass_list = trans_report_list(Apass_list)
+	Aerr_list = trans_report_list(Aerr_list)
+	Mpass_list = trans_report_list(Mpass_list)
+	Merr_list = trans_report_list(Merr_list)
 	return render_to_response('report_ajax.html', locals())
 
+# 修改controlList同步修改用例case接口
 def change_case(request):
 	try:
 		old = request.GET['old']
@@ -909,3 +1036,42 @@ def group_save(request):
 		logger.info('group_save:%s e:%s' % (request.POST, e))
 	finally:
 		return HttpResponseRedirect('/auto/auto_group')
+
+def many_many(request):
+	v = caseVersion.objects.all()
+	c = controlList.objects.all()
+	back = []
+	for x in c:
+		if not x.versionStr.all():
+			for y in v:
+				x.versionStr.add(y)
+			x.save()
+			back.append(x.controlName)
+		else:
+			continue
+	back = json.dumps(back, ensure_ascii=False)
+	return HttpResponse(back, content_type="application/json")
+
+
+def sync_allbook(request):
+	source_list = allBookRecording.objects.exclude(create_time__contains='-').filter(timeStamp__contains='autoTestIn')
+	other_list = allBookRecording.objects.exclude(create_time__contains='-').exclude(timeStamp__contains='est')
+	ok_list = []
+	for x in source_list:
+		try:
+			ctime = datetime.datetime.strptime(x.timeStamp.split('autoTestIn')[1],'%Y%m%d').strftime('%Y-%m-%d %H:%M:%S')
+			x.create_time = ctime
+			x.save()
+			ok_list.append(x.id)
+		except:
+			pass
+	for x in other_list:
+		try:
+			ctime = datetime.datetime.fromtimestamp(int(x.timeStamp)).strftime('%Y-%m-%d %H:%M:%S')
+			x.create_time = ctime
+			x.save()
+			ok_list.append(x.id)
+		except:
+			pass
+	back = json.dumps({'code':'1','oklist':ok_list})
+	return HttpResponse(back, content_type="application/json")

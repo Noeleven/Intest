@@ -1,0 +1,93 @@
+{% extends "ty_base.html" %}
+{% block content %}
+<div class="tab-content">
+	<div role="tabpanel" class="tab-pane fade in active" id="autoerror"><br />
+		<div class="panel panel-default">
+			<div class="panel-heading">项目情况</div>
+			<div class="panel-body">
+				<form role="form" method="get" class='form-inline'>
+					<input name="id" size="16" class="sr-only form-control" type="text" value="{{intID}}" readonly>
+					<div class="form-group">
+						<label for="dtp_input2" class='sr-only'>开始时间</label>
+						<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+							<input name="from_date" size="16"  class="form-control" type="text" value="" readonly>
+							<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+						</div>
+						<input type="hidden" id="dtp_input2" value="" />
+					</div>
+					<div class="form-group">
+						<label for="dtp_input2" class='sr-only'>结束时间</label>
+						<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+							<input name="to_date" size="16"  class="form-control" type="text" value="" readonly>
+							<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+						</div>
+						<input type="hidden" id="dtp_input2" value="" />
+					</div>
+					<button class="btn btn-default btn-sm" type="submit"><span class="glyphicon glyphicon-search"></span> 查询</button> （默认最近一个月）
+				</form>
+			</div>
+			<table class="table table-hover table-condensed table-bordered" >
+				<tbody>
+					<tr><td>
+						<div id="project" style="height:400px"></div>
+					</td></tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<script>
+	var myChart = echarts.init(document.getElementById('project'));
+	var project = {
+		title : {
+			text: '各项目调用量情况',
+			subtext: '调用量'
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:[
+				{% for x in pName_list %}
+					'{{ x }}',
+				{% endfor %}
+			]
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for x in time_label %}
+					'{{ x }}',
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value'
+			}
+		],
+		series : [
+			{% for x,y in show_list.items %}
+			{
+				name:'{{ x }}',
+				type:'line',
+				smooth:true,
+				itemStyle: {normal: {areaStyle: {type: 'default'}}},
+				data:[
+				{% for z in y %}
+					'{{ z.count }}',
+				{% endfor %}
+				]
+			},
+			{% endfor %}
+		]
+	};
+	myChart.setOption(project);
+</script>
+{% endblock %}

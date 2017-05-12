@@ -3,20 +3,20 @@
 <ul class="nav nav-pills nav-justified" role="tablist">
 	<li role="presentation" class="active"><a href="#autoerror" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-flag"></span> 对于波动接口做追踪 </a></li>
 </ul>
-<div class="tab-content">	
+<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="autoerror"><br />
 		<div class="panel panel-default">
 			<div class="panel-heading">展示近一个月都没有进入毫秒级的接口所处的level趋势</div>
 			<div class="panel-body">
-			
+
 				<nav>
 				  <ul class="pagination pagination-sm">
 					{% if show_list.has_previous %}
 					<li><a  href="?page={{ show_list.previous_page_number }}">Previous</a></li>
 					{% endif %}
-					
+
 					<li  class="active"><a  href="?page={{ show_list.number }}">Page {{ show_list.number }} of {{ show_list.paginator.num_pages }}</a></li>
-					
+
 					{% if show_list.has_next %}
 					<li><a href="?page={{ show_list.next_page_number }}">Next</a></li>
 					{% endif %}
@@ -27,13 +27,15 @@
 					{% for x in show_list %}
 						<tr class="info">
 							<th class="col-md-4">品类</th>
-							<th  class="col-md-8">接口名称</th>
+							<th  class="col-md-6">接口名称</th>
+							<th  class="col-md-3">版本</th>
 						</tr>
 						<tr>
-							<td>{{ x.type }}</td><td>{{ x.des }}</td>
+							<td>{{ x.type }}</td><td>{{ x.des }}</td><td>{{ x.version }}</td>
 						</tr>
-						<tr><td colspan=2>
-							<div id="{{ x.method|slugify }}" style="height:200px"></div>
+						<tr><td colspan=3>
+							<div id="{{ x.method|slugify }}_res" style="height:200px"></div>
+							<div id="{{ x.method|slugify }}_rpm" style="height:200px"></div>
 						</td></tr>
 					{% endfor %}
 					</tbody>
@@ -45,8 +47,9 @@
 
 <script>
 	{% for v in show_list %}
-	var myChart = echarts.init(document.getElementById('{{ v.method|slugify  }}')); 
-	var {{ v.method|slugify }} = {
+	var myChart = echarts.init(document.getElementById('{{ v.method|slugify }}_res'));
+	var myChart1 = echarts.init(document.getElementById('{{ v.method|slugify }}_rpm'));
+	var {{ v.method|slugify }}_res = {
 		title : {
 			text: '{{ v.method }}',
 			subtext: '服务器处理时间'
@@ -89,8 +92,52 @@
 			},
 		]
 	};
-	
-	myChart.setOption({{ v.method|slugify }});   
+	var {{ v.method|slugify }}_rpm = {
+		title : {
+			text: '{{ v.method }}',
+			subtext: '调用情况'
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom', // 'center' | 'bottom' | {number}
+			data:['调用量']
+		},
+		calculable : true,	// 手柄
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : [
+				{% for x in v.time %}
+				'{{ x.create_time }}',
+				{% endfor %}
+				]
+			}
+		],
+		yAxis : [
+			{
+				type : 'value'
+			}
+		],
+		series : [
+			{
+				name:'时间level',
+				type:'line',
+				smooth:true,
+				itemStyle: {normal: {areaStyle: {'color': '#2f4554','borderColor':'#2f4554'}}},
+				data:[
+				{% for x in v.time %}
+				{{ x.rpm }},
+				{% endfor %}
+				]
+			},
+		]
+	};
+
+	myChart.setOption({{ v.method|slugify }}_res);
+	myChart1.setOption({{ v.method|slugify }}_rpm);
 	{% endfor %}
 </script>
 

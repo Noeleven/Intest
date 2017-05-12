@@ -27,4 +27,6 @@ urlpatterns = [
 	url(r'^auto_group$', auto_group, name='auto_group'),	# 用例集列表页
 	url(r'^group_edit$', group_edit, name='group_edit'),	# 编辑用例集
 	url(r'^group_save$', group_save, name='group_save'),	# 用例集保存
+	url(r'^many_many$', many_many, name='many_many'),	# 控制列表对应关系一键处理
+	url(r'^sync_allbook$', sync_allbook, name='sync_allbook'),	# 用例集保存
 ]

@@ -107,6 +107,7 @@ class allBookRecording(models.Model):
     testResultDoc = models.TextField()
     timeStamp = models.CharField(max_length=100)
     usedTime = models.CharField(max_length=100, default='0')
+    create_time = models.DateTimeField(default=datetime.datetime.now)
 
 class caseGroup(models.Model):
     groupName = models.CharField(max_length=300)

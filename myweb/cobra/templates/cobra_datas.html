@@ -1,46 +1,47 @@
 {% extends "ty_base.html" %}
 {% block content %}
-<div class="row">
-	<div class="col-md-6 col-lg-4 col-xs-6 col-sm-6">
-		<form role="form" method="get">
-			<div class="form-group">
-				<label for="dtp_input2">开始时间</label>
-				<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
-					<input name="from_date" size="16"  class="form-control" type="text" value="" readonly>
-					<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
-				</div>
-				<input type="hidden" id="dtp_input2" value="" />
-			</div>
-			<div class="form-group">
-				<label for="dtp_input2">结束时间</label>
-				<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
-					<input name="to_date" size="16"  class="form-control" type="text" value="" readonly>
-					<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
-				</div>
-				<input type="hidden" id="dtp_input2" value="" />
-			</div>
-			<button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span> 查询</button> （默认最近一个月）
-		</form>
-	</div>
-</div>
+
 
 <ul class="nav nav-pills nav-justified" role="tablist">
 	<li role="presentation" class="active"><a href="#autoint" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-tasks"></span> 接口(以平均总耗时排序)<span class="badge"> {{ show_data|length }}</span></a></li>
 </ul>
+<form role="form" method="get" class='form-inline'>
+	<div class="form-group">
+		<label for="dtp_input2" class='sr-only'>开始时间</label>
+		<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+			<input name="from_date" size="16"  class="form-control" type="text" value="" readonly>
+			<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+		</div>
+		<input type="hidden" id="dtp_input2" value="" />
+	</div>
+	<div class="form-group">
+		<label for="dtp_input2" class='sr-only'>结束时间</label>
+		<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+			<input name="to_date" size="16"  class="form-control" type="text" value="" readonly>
+			<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+		</div>
+		<input type="hidden" id="dtp_input2" value="" />
+	</div>
+	<button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span> 查询</button> （默认最近一个月）
+</form>
 <div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="autoint"><br />
 		<table data-toggle="table" data-striped="true" data-show-refresh="true" data-show-columns="true" data-search="true" data-row-style="rowStyle" style="word-break:break-all;">
 			<thead><tr>
-				<th data-field="接口">接口</th>
+				<th data-field="ID" data-sortable="true">ID</th>
+				<th data-field="接口" data-sortable="true">接口</th>
+				<th data-field="版本" data-sortable="true">版本</th>
 				<th data-field="名称" data-sortable="true">名称</th>
 				<th data-field="品类" data-sortable="true">品类</th>
 				<th data-field="平均耗时" data-sortable="true">平均耗时/秒</th>
-				<th data-field="调用量" data-sortable="true">调用量/分</th>
+				<th data-field="调用量" data-sortable="true">总调用量</th>
 				</tr></thead>
 			<tbody>
 			{% for x in show_data %}
 			<tr>
-				<td>{{ x.method }}</td>
+				<td>{{ x.id }}</td>
+				<td><a href='/cobra/single?id={{x.id}}'>{{ x.method }}</a></td>
+				<td>{{ x.version }}</td>
 				<td>{{ x.des }}</td>
 				<td>{{ x.type }}</td>
 				<td>{{ x.res }}</td>

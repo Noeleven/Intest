@@ -79,6 +79,7 @@
 						<h3></h3>
 						<ul class="nav side-menu">
                             <li><a href="/auto/auto_search"><i class="fa fa-search xwcms"></i> 用例查询</a>
+                                <li><a href="/auto/auto_group"><i class="fa fa-group xwcms"></i> 用例集管理</a>
                             </li>
                             {% for x in nav_list %}
                                 {% if x.type == '废弃'%}
@@ -208,7 +209,7 @@
     <script>
         $('input').bind('input propertychange', function() {
             // console.log($(this).val());
-            var regu = /([a-zA-Z0-9]|[，,_+-=&%$#@?(){}\[\]\s]|[\u4e00-\u9fa5])/
+            var regu = /([a-zA-Z0-9]|[，,_+-*=&%$#@?(){}\[\]\s]|[\u4e00-\u9fa5])/
                 myText = $(this).val();
             for(x in myText){
                 if(!regu.exec(myText[x])){

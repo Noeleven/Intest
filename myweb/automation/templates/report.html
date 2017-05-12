@@ -6,7 +6,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
-	<title>驴妈妈自动化测试系统</title>
+	<title>自动化测试Report</title>
 
 	<!-- Bootstrap core CSS -->
 	<link href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -35,7 +35,7 @@
 			</button>
 			<a class="navbar-brand" href="#">
 				<img src="http://m.lvmama.com/my/static/img/aboutLv.png" class=" img-rounded" alt="Responsive image" style="height:30px" /></a>
-			<a class="navbar-brand" href="#">Android自动化2.0</a>
+			<a class="navbar-brand" href="#">自动化2.0</a>
 		</div>
 	</nav>
 	<!-- navEnd -->
@@ -43,81 +43,86 @@
 		<div class="row">
 			<div class="col-sm-3 col-md-2 sidebar">
 				<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+					{% if ApassNum > 0 %}
 					<div class="panel panel-success">
 						<div class="panel-heading" role="tab" id="headingOne">
 							<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
 								<h4 class="panel-title">
-							  成功 {{passNum}}
+							  AD 成功 {{ApassNum}}
 						  </h4></a>
 						</div>
 						<div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
 							<div class="panel-body">
 								<ul class="nav nav-sidebar">
-									{% for x in pass_list %}
+									{% for x in Apass_list %}
 									<li><a href="#{{ x.caseName }}">{{ x.caseName }}</a></li>
 									{% endfor %}
 								</ul>
 							</div>
 						</div>
 					</div>
+					{% endif %}{% if AfailNum > 0 %}
 					<div class="panel panel-danger">
 						<div class="panel-heading" role="tab" id="headingTwo">
 							<a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
 								<h4 class="panel-title">
-						  失败 {{failNum}}
+						  AD 失败 {{AfailNum}}
 					  </h4>
 							</a>
 						</div>
 						<div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
 							<div class="panel-body">
 								<ul class="nav nav-sidebar">
-									{% for x in err_list %}
+									{% for x in Aerr_list %}
 									<li><a href="#{{ x.caseName }}">{{ x.caseName }}</a></li>
 									{% endfor %}
 								</ul>
 							</div>
 						</div>
 					</div>
+					{% endif %}{% if MpassNum > 0 %}
+					<div class="panel panel-success">
+						<div class="panel-heading" role="tab" id="heading3">
+							<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse3" aria-expanded="true" aria-controls="collapse3">
+								<h4 class="panel-title">
+							  M 成功 {{MpassNum}}
+						  </h4></a>
+						</div>
+						<div id="collapse3" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading3">
+							<div class="panel-body">
+								<ul class="nav nav-sidebar">
+									{% for x in Mpass_list %}
+									<li><a href="#{{ x.caseName }}">{{ x.caseName }}</a></li>
+									{% endfor %}
+								</ul>
+							</div>
+						</div>
+					</div>
+					{% endif %}{% if MfailNum > 0 %}
+					<div class="panel panel-danger">
+						<div class="panel-heading" role="tab" id="heading4">
+							<a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse4" aria-expanded="false" aria-controls="collapse4">
+								<h4 class="panel-title">
+						  M 失败 {{MfailNum}}
+					  </h4>
+							</a>
+						</div>
+						<div id="collapse4" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading4">
+							<div class="panel-body">
+								<ul class="nav nav-sidebar">
+									{% for x in Merr_list %}
+									<li><a href="#{{ x.caseName }}">{{ x.caseName }}</a></li>
+									{% endfor %}
+								</ul>
+							</div>
+						</div>
+					</div>
+					{% endif %}
 				</div>
 			</div>
 			<!-- miantStart -->
 			<div id="des" class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-				<h1 class="page-header">Android自动化测试报告</h1>
-				<div class="htmleaf-container">
-					{{ message }}
-					<header class="htmleaf-header">
-						<h3>汇总结果</h3></header>
-					<!-- statisticsStart -->
-					<table class="table table-bordered">
-						<thead></thead>
-						<tbody>
-							<tr>
-								<td>测试用例总数</td>
-								<td>{{ allNum }}</td>
-								<td>测试开始时间</td>
-								<td>{{ sTime|date:"Y-m-d H:i:s" }}</td>
-								<td>测试环境</td>
-								<td>线上</td>
-							</tr>
-							<tr>
-								<td><span class="label label-success">通过</span></td>
-								<td>{{ passNum }}</td>
-								<td>测试时长</td>
-								<td>{{ testTime }}秒</td>
-								<td>测试用户名</td>
-								<td>loadtest000007</td>
-							</tr>
-							<tr>
-								<td><span class="label label-danger">失败</span></td>
-								<td>{{ failNum }}</td>
-								<td>通过率</td>
-								<td>{{ passRate }}%</td>
-								<td>测试账号密码</td>
-								<td>987654321</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
+
 				<div class="row">
 					<div class="col-xs-4">
 						<div class="input-group">
@@ -127,79 +132,319 @@
 							</span>
 						</div>
 					</div>
-				</div>
-				<div class="htmleaf-container" id='myTable'>
-					<div class="col-md-6">
-						<header class="htmleaf-header">
-							<h3>成功列表</h3></header>
-						<table class="table table-expandable table-sticky-header">
-							<thead>
-								<tr>
-									<th class='col-xs-1'>ID</th>
-									<th class='col-xs-7'>名称</th>
-									<th class='col-xs-1'>步骤</th>
-									<th class='col-xs-1'>操作时长</th>
-									<th class='col-xs-2'>所属</th>
-								</tr>
-							</thead>
-							<tbody>
-								{% for x in pass_list %}
-								<tr id='{{ x.caseName }}' class='success'>
-									<td>{{ x.id }}</td>
-									<td>{{ x.caseName }}</td>
-									<td>{{ x.runAt }}/{{ x.storySize }}</td>
-									<td>{{ x.caseTestTime }}</td>
-									<td>{{ x.owner }}</td>
-								</tr>
-								<tr>
-									<td colspan="5">
-										{% for y in x.stepList %}
-										<h3>第{{ y.stepIndex }}步</h3>
-										<p class="bg-{% if y.stepPassStatus == 'pass' %}success{% else %}danger{% endif %}"> {{ y.stepDescription }}</p>
-										<p class='text-danger'>{{ y.errorMessage |safe}}</p>
-										<img src='{{ y.screenShotsPath }}'> {% endfor %}
-									</td>
-								</tr>
-								{% endfor %}
-							</tbody>
-						</table>
+				</div><br/>
+
+				<!-- Nav tabs -->
+				<ul class="nav nav-tabs" role="tablist">
+					<li role="presentation" class="active"><a href="#Android" aria-controls="Android" role="tab" data-toggle="tab">Android</a></li>
+					<li role="presentation"><a href="#m" aria-controls="m" role="tab" data-toggle="tab">M站</a></li>
+				</ul>
+
+				<!-- Tab panes -->
+				<div class="tab-content" id='myTable'>
+					<div role="tabpanel" class="tab-pane active" id="Android">
+						{% if Amessage %}<div class="alert alert-info" role="alert">{{ Amessage }}</div>{% endif %}
+						{% if Acases %}
+						<div class="htmleaf-container">
+							<header class="htmleaf-header">
+								<h3>汇总结果</h3></header>
+							<table class="table table-bordered">
+								<thead></thead>
+								<tbody>
+									<tr>
+										<td>测试用例总数</td>
+										<td>{{ AallNum }}</td>
+										<td>测试开始时间</td>
+										<td>{{ AsTime|date:"Y-m-d H:i:s" }}</td>
+										<td>测试结束时间</td>
+										<td>{{ AeTime|date:"Y-m-d H:i:s" }}</td>
+									</tr>
+									<tr>
+										<td><span class="label label-success">通过</span></td>
+										<td>{{ ApassNum }}</td>
+										<td>测试时长</td>
+										<td>{{ AtestTime }}秒</td>
+										<td>测试用户名</td>
+										<td>loadtest000007</td>
+									</tr>
+									<tr>
+										<td><span class="label label-danger">失败</span></td>
+										<td>{{ AfailNum }}</td>
+										<td>通过率</td>
+										<td>{{ ApassRate }}%</td>
+										<td>测试账号密码</td>
+										<td>987654321</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div class="htmleaf-container">
+							<div class="col-md-6">
+								<header class="htmleaf-header">
+									<h3>成功列表</h3></header>
+								<table class="table table-expandable table-sticky-header">
+									<thead>
+										<tr>
+											<th class='col-xs-1'>ID</th>
+											<th class='col-xs-7'>名称</th>
+											<th class='col-xs-1'>步骤</th>
+											<th class='col-xs-1'>操作时长</th>
+											<th class='col-xs-2'>所属</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for x in Apass_list %}
+										<tr id='{{ x.caseName }}' class='success'>
+											<td>{{ x.id }}</td>
+											<td>{{ x.caseName }}</td>
+											<td>{{ x.runAt }}/{{ x.storySize }}</td>
+											<td>{{ x.caseTestTime }}</td>
+											<td>{{ x.owner }}</td>
+										</tr>
+										<tr>
+											<td colspan="5">
+												{% for y in x.jsonStory %}
+													<h3>第{{y.index}}步:{{y.storyDescription}} | {{y.stepPassStatus}} | 耗时 {{y.stepTime}}</h3>
+													<p><span class="label label-primary">起点</span> {{y.where}}</p>
+													<p><span class="label label-primary">步骤</span></p>
+													{% for z in y.action %}
+														<li>
+															{% if z.target.targetName %}<strong>找到</strong> {{z.target.targetName}}，{% endif %}
+															{% if z.target.foundTargetTime %}<strong>耗时</strong> {{z.target.foundTargetTime}}，{% endif %}
+															{% if z.actionCode %}<strong>{{z.actionCode}}</strong>，{% endif %}
+															{% if z.behaviorPara.inputValue %}{{z.behaviorPara.inputValue}}，{% endif %}
+															{% if z.actionDoneTime %}<strong>耗时</strong> {{z.actionDoneTime}}{% endif %}
+														</li>
+													{% endfor %}
+													<p><span class="label label-primary">校验</span></p>
+													{% for z in y.checkString %}
+														<li>
+															{% if z.expeted %}<strong>预期</strong> {{z.expeted}}，{% endif %}
+															{% if z.checkType %}<strong>结果</strong> {{z.checkType}} {{z.elementName}}{{z.enterActivity}} {{z.status}} ，{% endif %}
+															{% if z.expetedTime %}<strong>耗时</strong> {{z.expetedTime}}{% endif %}
+														</li>
+													{% endfor %}
+													{% if y.enterActivity %}<p><span class="label label-primary">终点</span> {{y.enterActivity}}</p>{% endif %}
+													{% if y.errorMessage %}<p><span class="label label-primary">错误信息</span> <pre style='white-space: pre-wrap;word-break:break-all;'>{{y.errorMessage}}</pre></p>{% endif %}
+													{% if y.screenShotsPath %}<p><span class="label label-primary">截图</span></p><img src='{{ y.screenShotsPath }}'>{% endif %}
+												{% endfor %}
+											</td>
+										</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+							<div class="col-md-6">
+								<header class="htmleaf-header">
+									<h3>失败列表</h3></header>
+								<table class="table table-expandable table-sticky-header">
+									<thead>
+										<tr>
+											<th class='col-xs-1'>ID</th>
+											<th class='col-xs-7'>名称</th>
+											<th class='col-xs-1'>步骤</th>
+											<th class='col-xs-1'>操作时长</th>
+											<th class='col-xs-2'>所属</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for x in Aerr_list %}
+										<tr id='{{ x.caseName }}' class='danger'>
+											<td>{{ x.id }}</td>
+											<td>{{ x.caseName }}</td>
+											<td>{{ x.runAt }}/{{ x.storySize }}</td>
+											<td>{{ x.caseTestTime }}</td>
+											<td>{{ x.owner }}</td>
+										</tr>
+										<tr>
+											<td colspan="5">
+												{% for y in x.jsonStory %}
+													<h3>第{{y.index}}步:{{y.storyDescription}} | {{y.stepPassStatus}} | 耗时 {{y.stepTime}}</h3>
+													<p><span class="label label-primary">起点</span> {{y.where}}</p>
+													<p><span class="label label-primary">步骤</span></p>
+													{% for z in y.action %}
+														<li>
+															{% if z.target.targetName %}<strong>找到</strong> {{z.target.targetName}}，{% endif %}
+															{% if z.target.foundTargetTime %}<strong>耗时</strong> {{z.target.foundTargetTime}}，{% endif %}
+															{% if z.actionCode %}<strong>{{z.actionCode}}</strong>，{% endif %}
+															{% if z.behaviorPara.inputValue %}{{z.behaviorPara.inputValue}}，{% endif %}
+															{% if z.actionDoneTime %}<strong>耗时</strong> {{z.actionDoneTime}}{% endif %}
+														</li>
+													{% endfor %}
+													<p><span class="label label-primary">校验</span></p>
+													{% for z in y.checkString %}
+														<li>
+															{% if z.expeted %}<strong>预期</strong> {{z.expeted}}，{% endif %}
+															{% if z.checkType %}<strong>结果</strong> {{z.checkType}} {{z.elementName}}{{z.enterActivity}} {{z.status}} ，{% endif %}
+															{% if z.expetedTime %}<strong>耗时</strong> {{z.expetedTime}}{% endif %}
+														</li>
+													{% endfor %}
+													{% if y.enterActivity %}<p><span class="label label-primary">终点</span> {{y.enterActivity}}</p>{% endif %}
+													{% if y.errorMessage %}<p><span class="label label-primary">错误信息</span> <pre style='white-space: pre-wrap;word-break:break-all;'>{{y.errorMessage}}</pre></p>{% endif %}
+													{% if y.screenShotsPath %}<p><span class="label label-primary">截图</span></p><img src='{{ y.screenShotsPath }}'>{% endif %}
+												{% endfor %}
+											</td>
+										</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						</div>
+						{% endif %}
 					</div>
-					<div class="col-md-6">
-						<header class="htmleaf-header">
-							<h3>失败列表</h3></header>
-						<table class="table table-expandable table-sticky-header">
-							<thead>
-								<tr>
-									<th class='col-xs-1'>ID</th>
-									<th class='col-xs-7'>名称</th>
-									<th class='col-xs-1'>步骤</th>
-									<th class='col-xs-1'>操作时长</th>
-									<th class='col-xs-2'>所属</th>
-								</tr>
-							</thead>
-							<tbody>
-								{% for x in err_list %}
-								<tr id='{{ x.caseName }}' class='danger'>
-									<td>{{ x.id }}</td>
-									<td>{{ x.caseName }}</td>
-									<td>{{ x.runAt }}/{{ x.storySize }}</td>
-									<td>{{ x.caseTestTime }}</td>
-									<td>{{ x.owner }}</td>
-								</tr>
-								<tr>
-									<td colspan="5">
-										{% for y in x.stepList %}
-										<h3>第{{ y.stepIndex }}步</h3>
-										<p class="bg-{% if y.stepPassStatus == 'pass' %}success{% else %}danger{% endif %}"> {{ y.stepDescription }}</p>
-										<p class='text-danger'>{{ y.errorMessage |safe}}</p>
-										<img src='{{ y.screenShotsPath }}'> {% endfor %}
-									</td>
-								</tr>
-								{% endfor %}
-							</tbody>
-						</table>
+					<div role="tabpanel" class="tab-pane" id="m">
+						{% if Mmessage %}<div class="alert alert-info" role="alert">{{ Mmessage }}</div>{% endif %}
+						{% if Mcases %}
+						<div class="htmleaf-container">
+							<header class="htmleaf-header">
+								<h3>M站汇总结果</h3></header>
+							<!-- statisticsStart -->
+							<table class="table table-bordered">
+								<thead></thead>
+								<tbody>
+									<tr>
+										<td>测试用例总数</td>
+										<td>{{ MallNum }}</td>
+										<td>测试开始时间</td>
+										<td>{{ MsTime|date:"Y-m-d H:i:s" }}</td>
+										<td>测试结束时间</td>
+										<td>{{ MeTime|date:"Y-m-d H:i:s" }}</td>
+									</tr>
+									<tr>
+										<td><span class="label label-success">通过</span></td>
+										<td>{{ MpassNum }}</td>
+										<td>测试时长</td>
+										<td>{{ MtestTime }}秒</td>
+										<td>测试用户名</td>
+										<td>loadtest000007</td>
+									</tr>
+									<tr>
+										<td><span class="label label-danger">失败</span></td>
+										<td>{{ MfailNum }}</td>
+										<td>通过率</td>
+										<td>{{ MpassRate }}%</td>
+										<td>测试账号密码</td>
+										<td>987654321</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div class="htmleaf-container">
+							<div class="col-md-6">
+								<header class="htmleaf-header">
+									<h3>成功列表</h3></header>
+								<table class="table table-expandable table-sticky-header">
+									<thead>
+										<tr>
+											<th class='col-xs-1'>ID</th>
+											<th class='col-xs-7'>名称</th>
+											<th class='col-xs-1'>步骤</th>
+											<th class='col-xs-1'>操作时长</th>
+											<th class='col-xs-2'>所属</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for x in Mpass_list %}
+										<tr id='{{ x.caseName }}' class='success'>
+											<td>{{ x.id }}</td>
+											<td>{{ x.caseName }}</td>
+											<td>{{ x.runAt }}/{{ x.storySize }}</td>
+											<td>{{ x.caseTestTime }}</td>
+											<td>{{ x.owner }}</td>
+										</tr>
+										<tr>
+											<td colspan="5">
+												{% for y in x.jsonStory %}
+													<h3>第{{y.index}}步:{{y.storyDescription}} | {{y.stepPassStatus}} | 耗时 {{y.stepTime}}</h3>
+													<p><span class="label label-primary">起点</span> {{y.where}}</p>
+													<p><span class="label label-primary">步骤</span></p>
+													{% for z in y.action %}
+														<li>
+															{% if z.target.targetName %}<strong>找到</strong> {{z.target.targetName}}，{% endif %}
+															{% if z.target.foundTargetTime %}<strong>耗时</strong> {{z.target.foundTargetTime}}，{% endif %}
+															{% if z.actionCode %}<strong>{{z.actionCode}}</strong>，{% endif %}
+															{% if z.behaviorPara.inputValue %}{{z.behaviorPara.inputValue}}，{% endif %}
+															{% if z.actionDoneTime %}<strong>耗时</strong> {{z.actionDoneTime}}{% endif %}
+														</li>
+													{% endfor %}
+													<p><span class="label label-primary">校验</span></p>
+													{% for z in y.checkString %}
+														<li>
+															{% if z.expeted %}<strong>预期</strong> {{z.expeted}}，{% endif %}
+															{% if z.checkType %}<strong>结果</strong> {{z.checkType}} {{z.elementName}}{{z.enterActivity}} {{z.status}} ，{% endif %}
+															{% if z.expetedTime %}<strong>耗时</strong> {{z.expetedTime}}{% endif %}
+														</li>
+													{% endfor %}
+													{% if y.enterActivity %}<p><span class="label label-primary">终点</span> {{y.enterActivity}}</p>{% endif %}
+													{% if y.errorMessage %}<p><span class="label label-primary">错误信息</span> <pre style='white-space: pre-wrap;word-break:break-all;'>{{y.errorMessage}}</pre></p>{% endif %}
+													{% if y.screenShotsPath %}<p><span class="label label-primary">截图</span></p><img src='{{ y.screenShotsPath }}'>{% endif %}
+												{% endfor %}
+											</td>
+										</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+							<div class="col-md-6">
+								<header class="htmleaf-header">
+									<h3>失败列表</h3></header>
+								<table class="table table-expandable table-sticky-header">
+									<thead>
+										<tr>
+											<th class='col-xs-1'>ID</th>
+											<th class='col-xs-7'>名称</th>
+											<th class='col-xs-1'>步骤</th>
+											<th class='col-xs-1'>操作时长</th>
+											<th class='col-xs-2'>所属</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for x in Merr_list %}
+										<tr id='{{ x.caseName }}' class='danger'>
+											<td>{{ x.id }}</td>
+											<td>{{ x.caseName }}</td>
+											<td>{{ x.runAt }}/{{ x.storySize }}</td>
+											<td>{{ x.caseTestTime }}</td>
+											<td>{{ x.owner }}</td>
+										</tr>
+										<tr>
+											<td colspan="5">
+												{% for y in x.jsonStory %}
+													<h3>第{{y.index}}步:{{y.storyDescription}} | {{y.stepPassStatus}} | 耗时 {{y.stepTime}}</h3>
+													<p><span class="label label-primary">起点</span> {{y.where}}</p>
+													<p><span class="label label-primary">步骤</span></p>
+													{% for z in y.action %}
+														<li>
+															{% if z.target.targetName %}<strong>找到</strong> {{z.target.targetName}}，{% endif %}
+															{% if z.target.foundTargetTime %}<strong>耗时</strong> {{z.target.foundTargetTime}}，{% endif %}
+															{% if z.actionCode %}<strong>{{z.actionCode}}</strong>，{% endif %}
+															{% if z.behaviorPara.inputValue %}{{z.behaviorPara.inputValue}}，{% endif %}
+															{% if z.actionDoneTime %}<strong>耗时</strong> {{z.actionDoneTime}}{% endif %}
+														</li>
+													{% endfor %}
+													<p><span class="label label-primary">校验</span></p>
+													{% for z in y.checkString %}
+														<li>
+															{% if z.expeted %}<strong>预期</strong> {{z.expeted}}，{% endif %}
+															{% if z.checkType %}<strong>结果</strong> {{z.checkType}} {{z.elementName}}{{z.enterActivity}} {{z.status}} ，{% endif %}
+															{% if z.expetedTime %}<strong>耗时</strong> {{z.expetedTime}}{% endif %}
+														</li>
+													{% endfor %}
+													{% if y.enterActivity %}<p><span class="label label-primary">终点</span> {{y.enterActivity}}</p>{% endif %}
+													{% if y.errorMessage %}<p><span class="label label-primary">错误信息</span> <pre style='white-space: pre-wrap;word-break:break-all;'>{{y.errorMessage}}</pre></p>{% endif %}
+													{% if y.screenShotsPath %}<p><span class="label label-primary">截图</span></p><img src='{{ y.screenShotsPath }}'>{% endif %}
+												{% endfor %}
+											</td>
+										</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						</div>
+						{% endif %}
 					</div>
 				</div>
+
 			</div>
 		</div>
 	</div>

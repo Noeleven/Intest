@@ -95,6 +95,7 @@
 
 						<h3>接口服务器处理耗时 来自线上COBRA</h3>
 						<ul class="nav side-menu">
+                            <li><a href="/cobra/project"><i class="fa fa-cloud"></i> 服务器调用量 </a></li>
 							<li><a href="/cobra/cobra_chart"><i class="fa fa-star"></i> 占比趋势</a></li>
 							<li><a href="/cobra/cobra_datas"><i class="fa fa-bicycle"></i> 耗时&访问量  </a></li>
 							<li><a href="/cobra/cobra_trace"><i class="fa fa-automobile"></i> 追踪不稳定接口 </a></li>
@@ -127,8 +128,8 @@
         <!-- page content -->
 		<script src="{% static 'js/echarts.min.js' %}" charset="UTF-8"></script>
         <div class="right_col" role="main">
-		{% block content %}
-		{% endblock content %}
+    		{% block content %}
+    		{% endblock content %}
 		</div>
 
         <!-- footer content -->
@@ -160,14 +161,14 @@
 	<script src="{% static 'js/bootstrap-datetimepicker.min.js' %}" charset="UTF-8"></script>
     <script src="{% static 'js/locales/bootstrap-datetimepicker.zh-CN.js' %}"  charset="UTF-8"></script>
 	<script>
-	$('#myAffix').affix({
-	  offset: {
-		top: 100,
-		bottom: function () {
-		  return (this.bottom = $('.footer').outerHeight(true))
-		}
-	  }
-	})
+    	$('#myAffix').affix({
+    	  offset: {
+    		top: 100,
+    		bottom: function () {
+    		  return (this.bottom = $('.footer').outerHeight(true))
+    		}
+    	  }
+    	})
 	</script>
 	<script type="text/javascript">
 		$(".form_date").datetimepicker({

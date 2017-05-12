@@ -22,7 +22,7 @@
 				<input type="hidden" id="dtp_input2" value="" />
 			</div>
 			<button class="btn btn-warning" type="submit"><span class="glyphicon glyphicon-search"></span> 查询</button> (默认显示近一个月的结果)
-		</form>				
+		</form>
 	</div>
 </div>
 <div class="panel panel-success">
@@ -34,30 +34,36 @@
 		</div>
 	</div>
 	<div class="col-lg-12 col-md-12 col-sm-12 col-sx-12">
-		<h3> Cobra 所选区间每日接口占比</h3> 
+		<div id="channel" style="height:500px">
+		</div>
+	</div>
+	<div class="col-lg-12 col-md-12 col-sm-12 col-sx-12">
+		<h3> Cobra 所选区间每日接口占比</h3>
 		<table class="table table-hover table-condensed table-responsive">
 		<thead>
 		<tr class="info">
-		<th>时间区间</th><th>接口数量</th><th>毫秒级</th><th>1~2秒</th><th>2~3秒</th><th>3~4秒</th><th>4~5秒</th><th>5秒以上</th></tr></thead>
+		<th>时间区间</th><th>接口数量</th><th>总调用量</th><th>毫秒级</th><th>1~2秒</th><th>2~3秒</th><th>3~4秒</th><th>4~5秒</th><th>5秒以上</th></tr></thead>
 		<tbody>
 		{% for x in show_data %}
-		{% for k, v in x.items %}
-		<TR><TD>{{ k }}</TD>
-		<TD>{{ v.num }}</TD>
-		<TD>{{ v.ms }}%</TD>
-		<TD>{{ v.os }}%</TD>
-		<TD>{{ v.ts }}%</TD>
-		<TD>{{ v.tts }}%</TD>
-		<TD>{{ v.fs }}%</TD>
-		<TD>{{ v.ffs }}%</TD></TR>
-		{% endfor %}
+			{% for k, v in x.items %}
+				<TR><TD>{{ k }}</TD>
+				<TD>{{ v.num }}</TD>
+				<TD>{{ v.count }}</TD>
+				<TD>{{ v.ms }}%</TD>
+				<TD>{{ v.os }}%</TD>
+				<TD>{{ v.ts }}%</TD>
+				<TD>{{ v.tts }}%</TD>
+				<TD>{{ v.fs }}%</TD>
+				<TD>{{ v.ffs }}%</TD></TR>
+			{% endfor %}
 		{% endfor %}
 		</tbody></TABLE>
 	</div>
 </div>
 <script>
-        // 基于准备好的dom，初始化echarts图表		
-        var myChart = echarts.init(document.getElementById('server')); 
+        // 基于准备好的dom，初始化echarts图表
+        var myChart = echarts.init(document.getElementById('server'));
+		var myChart1 = echarts.init(document.getElementById('channel'));
         var option = {
 			title : {
 				text: '接口处理耗时占比趋势',
@@ -221,7 +227,134 @@
 				},
 			]
 		};
-
-        myChart.setOption(option); 	
+		var option1 = {
+			title : {
+				text: '各渠道调用量占比趋势图',
+				subtext: '数据来源于cobra线上真实用户'
+			},
+			tooltip : {
+				trigger: 'axis',
+			},
+			legend: {
+				y: 'top', // 'center' | 'bottom' | {number}
+				data:['Android', 'IOS', 'M站' ]
+			},
+			toolbox: {
+				show : true,
+				orient : 'vertical',
+				feature : {
+					 mark : {
+						show : true,
+						title : {
+							mark : '辅助线开关',
+							markUndo : '删除辅助线',
+							markClear : '清空辅助线'
+						},
+						lineStyle : {
+							width : 2,
+							color : '#1e90ff',
+							type : 'dashed'
+						}
+					},
+					magicType: {
+						show: true,
+						type: ['line', 'bar', 'stack', 'tiled']
+					},
+					restore : {show: true},
+					saveAsImage : {show: true}
+				}
+			},
+			calculable : true,
+			xAxis : [
+				{
+					type : 'category',
+					boundaryGap : false,
+					data : [
+						{% for x in channel_data %}
+							{% for a, b in x.items %}
+							'{{ a }}',
+							{% endfor %}
+						{% endfor %}
+					]
+				}
+			],
+			yAxis : [
+				{
+					type : 'value',
+					axisLabel : {
+						formatter: '{value}'
+					}
+				}
+			],
+			dataZoom: [
+				{   // 这个dataZoom组件，默认控制x轴。
+					type: 'slider', // 这个 dataZoom 组件是 slider 型 dataZoom 组件
+					start: 60,      // 左边在 10% 的位置。
+					end: 100         // 右边在 60% 的位置。
+				},
+				{   // 这个dataZoom组件，也控制x轴。
+					type: 'inside', // 这个 dataZoom 组件是 inside 型 dataZoom 组件
+					start: 60,      // 左边在 10% 的位置。
+					end: 100         // 右边在 60% 的位置。
+				}
+			],
+			series : [
+				{
+					name:'Android',
+					type:'line',
+					smooth:true,
+					stack: '总量',
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					// markPoint : {
+					// 	data : [
+					// 		{type : 'max', name: '最大值'},
+					// 		{type : 'min', name: '最小值'}
+					// 	]
+					// },
+					// markLine : {
+					// 	data : [
+					// 		{type : 'average', name: '平均值'}
+					// 	]
+					// },
+					data:[
+						{% for x in channel_data %}
+							{% for a, b in x.items %}
+							'{{ b.ANDROID }}',
+							{% endfor %}
+						{% endfor %}
+					]
+				},
+				{
+					name:'IOS',
+					type:'line',
+					smooth:true,
+					stack: '总量',
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:[
+						{% for x in channel_data %}
+							{% for a, b in x.items %}
+							'{{ b.IOS }}',
+							{% endfor %}
+						{% endfor %}
+					]
+				},
+				{
+					name:'M站',
+					type:'line',
+					smooth:true,
+					stack: '总量',
+					itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:[
+						{% for x in channel_data %}
+							{% for a, b in x.items %}
+							'{{ b.TOUCH }}',
+							{% endfor %}
+						{% endfor %}
+					]
+				},
+			]
+		};
+        myChart.setOption(option);
+		myChart1.setOption(option1);
 </script>
 {% endblock %}

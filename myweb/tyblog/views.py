@@ -113,8 +113,8 @@ def ty_Overview(request):
 	crash_t_list = [x['des'] for x in crash_time]
 	crash_t_list.reverse()
 	# 开始过滤
-	other_list = ['alog.umeng.com', 'loc.map.baidu.com', 
-		'm.api.baifengdian.com', 'api.weibo.com', 'pingma.qq.com', 'api.share.mob.com',
+	other_list = ['alog.umeng.com', 'loc.map.baidu.com',
+		'm.api.baifengdian.com', 'api.weibo.com', 'pingma.qq.com', 'api.share.mob.com','data.de.coremetrics.com',
 		'api.share.mob.com:80', 'libs.cn.coremetrics.com', 'tmscdn.cn.coremetrics.com', 'scs.openspeech.cn',
 		'data.openspeech.cn', 'hm.baidu.com']
 	crash_show_a = {}

@@ -60,8 +60,7 @@ def get_data(urls):
 
 	driver = webdriver.PhantomJS(executable_path='/bin/phantomjs')
 	driver.get(
-		"https://account.tingyun.com/cas/login?service=https%3A%2F%2F"
-		"saas.tingyun.com%2Fj_acegi_cas_security_check%3FloginView%3DcasLoginTingyun")
+		"https://account.tingyun.com/cas/login?service=https%3A%2F%2Fsaas.tingyun.com%2Fj_acegi_cas_security_check%3FloginView%3DcasLoginTingyun")
 	driver.find_element_by_id("username").send_keys(username)
 	driver.find_element_by_id("password").send_keys(password)
 	driver.find_element_by_class_name("mty-btn-blue").click()

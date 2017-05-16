@@ -6,38 +6,47 @@
 		<div class="panel-body">
 
             <hr / >
-            <div class="btn-group-vertical btn-group-sm">
-                <a type="button" class="btn btn-default" href="http://10.113.2.70:8080/jenkins/" target="_blank"><i class="fa fa-android xwcms"></i> AD Jenkins</a>
-                {% for x in device_list %}
-                    {% if x.platformName == 'Android'%}
-                    <a type='submit' name='{{x.platformName}}' class="btn btn-success getCases">用例执行#{{ x.deviceName }}#{{ x.appVersion }}</a>
-                    {%endif%}
-                {% endfor %}
-            </div>
-            <div class="btn-group-vertical btn-group-sm">
-                <a type="button" class="btn btn-default" href="http://10.113.1.193:8080" target="_blank"><i class="fa fa-apple xwcms"></i> IOS Jenkins</a>
-                {% for x in device_list %}
-                    {% if x.platformName == 'IOS'%}
-                    <a type='submit' name='{{x.platformName}}' class="btn {% if x.platformName == 'IOS'%}btn-default{% elif x.platformName == 'M' %}btn-warning{% else %}btn-success{%endif%} getCases">用例执行#{{ x.deviceName }}#{{ x.appVersion }}</a>
-                    {%endif%}
-                {% endfor %}
-            </div>
-            <div class="btn-group-vertical btn-group-sm">
-                <a type="button" class="btn btn-default" href="http://10.113.2.70:8080/jenkins/" target="_blank"><i class="fa fa-chrome xwcms"></i> M Jenkins</a>
-                {% for x in device_list %}
-                    {% if x.platformName == 'M'%}
-                    <a type='submit' name='{{x.platformName}}' class="btn {% if x.platformName == 'IOS'%}btn-default{% elif x.platformName == 'M' %}btn-warning{% else %}btn-success{%endif%} getCases">用例执行#{{ x.deviceName }}#{{ x.appVersion }}</a>
-                    {%endif%}
-                {% endfor %}
-            </div>
-            <div class="btn-group-vertical btn-group-sm">
-                <a href="/auto/test_list" type='button' class='btn btn-default' target="_blank"><i class="fa fa-bullhorn xwcms"></i> 测试报告</a>
+            <ul class="nav nav-tabs" role="tablist">
+              <li role="presentation" class="active"><a href="#ad" aria-controls="ad" role="tab" data-toggle="tab">Android 测试机</a></li>
+              <li role="presentation"><a href="#ios" aria-controls="ios" role="tab" data-toggle="tab">IOS 测试机</a></li>
+              <li role="presentation"><a href="#mm" aria-controls="mm" role="tab" data-toggle="tab">M站 测试机</a></li>
+              <li role="presentation"><a href="#jj" aria-controls="jj" role="tab" data-toggle="tab">Jenkins</a></li>
+            </ul>
+            <div class="tab-content">
+              <div role="tabpanel" class="tab-pane fade in active" id="ad">
+                  {% for x in device_list %}
+                      {% if x.platformName == 'Android'%}
+                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">安卓测试#{{ x.deviceName }}#{{ x.appVersion }}</a>
+                      {%endif%}
+                  {% endfor %}
+              </div>
+              <div role="tabpanel" class="tab-pane fade" id="ios">
+                  {% for x in device_list %}
+                      {% if x.platformName == 'IOS'%}
+                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">IOS#{{ x.deviceName }}#{{ x.appVersion }}</a>
+                      {%endif%}
+                  {% endfor %}
+              </div>
+              <div role="tabpanel" class="tab-pane fade" id="mm">
+                  {% for x in device_list %}
+                      {% if x.platformName == 'M'%}
+                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">M站#{{ x.deviceName }}#{{ x.appVersion }}</a>
+                      {%endif%}
+                  {% endfor %}
+              </div>
+              <div role="tabpanel" class="tab-pane fade" id="jj">
+                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.2.70:8080/jenkins/" target="_blank"><i class="fa fa-android xwcms"></i> AD Jenkins</a>
+                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.1.223:8080" target="_blank"><i class="fa fa-android xwcms"></i> AD Jenkins①</a>
+                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.1.193:8080" target="_blank"><i class="fa fa-apple xwcms"></i> IOS Jenkins</a>
+                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.2.70:8080/jenkins/" target="_blank"><i class="fa fa-chrome xwcms"></i> M Jenkins</a>
+              </div>
             </div>
             <hr>
             <div class="btn-group btn-group-sm">
-                <a href='/auto/new_add' type='button' class='btn btn-primary'><span class="glyphicon glyphicon-plus xwcms"></span> 新增用例</a>
-                <button type="submit" class="btn btn-default" id="makeGroup"><span class="glyphicon glyphicon-plus xwcms" aria-hidden="true"></span> 添加到用例集</button>
+                <a href='/auto/new_add' type='button' class='btn btn-success'><span class="glyphicon glyphicon-plus xwcms"></span> 新增用例</a>
+                <button type="submit" class="btn btn-primary" id="makeGroup"><span class="glyphicon glyphicon-plus xwcms" aria-hidden="true"></span> 添加到用例集</button>
                 <button type="submit" class="btn btn-danger" id="delCases"><span class="glyphicon glyphicon-remove xwcms" aria-hidden="true"></span> 批量删除</button>
+                <a href="/auto/test_list" type='button' class='btn btn-default' target="_blank"><i class="fa fa-bullhorn xwcms"></i> 测试报告</a>
             </div>
             <div id='delconfirm' class="alert alert-default alert-dismissible fade in" role="alert" style="display:none">
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>

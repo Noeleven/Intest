@@ -7,6 +7,6 @@ import configparser
 cf = configparser.ConfigParser()
 cf.read("/rd/pystudy/conf")
 ids = cf.get('automation', 'groupID')
-url = 'http://10.113.1.35:7000/auto/auto_config?vals=%s&mytype=group&device=AD' % ids
+url = 'http://10.113.1.35:8000/auto/auto_config?vals=%s&type=group&device=AD&isDay=yes' % ids
 print(url)
-# r = requests.get(url)
+r = requests.get(url)

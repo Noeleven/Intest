@@ -115,8 +115,11 @@ def save_datas(values, rpms, ress, channelNum, proNum):
 		if y.res == 0 and y.rpm == 0:
 			pass
 		else:
-			y.create_time = b
-			y.save()
+			try:
+				y.create_time = b
+				y.save()
+			except:
+				pass
 		for cc in ['ANDROID', 'IPHONE', 'TOUCH']:
 			cs = sum([y[1] for y in channelNum if y[0] == x and y[2] == cc])
 			if cs > 0:
@@ -140,7 +143,7 @@ def save_datas(values, rpms, ress, channelNum, proNum):
 
 
 if __name__ == '__main__':
-	for x in range(1):
+	for x in range(496,502):
 		start = get_dates(x)
 		values = start[0]
 		rpms = start[1]

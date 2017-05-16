@@ -127,6 +127,15 @@ class Errs(models.Model):
 	message = models.CharField(max_length=200,null=True,blank=True)
 	timestamp = models.DateTimeField(auto_now=True)
 
+class quanyong(models.Model):
+	url = models.TextField()
+	http_code = models.CharField(max_length=100,null=True,blank=True)
+	code = models.CharField(max_length=100,null=True,blank=True)
+	costime = models.IntegerField(blank=True, null=True)
+	response = models.TextField()
+	is_success = models.BooleanField(default=True)
+	create_time = models.DateTimeField(auto_now=True)
+
 class IntsAdmin(admin.ModelAdmin):
     list_display = ('name', 'method_version', 'ishttp', 'isget', 'type', 'inwhere', 'inuse', 'timestamp')
     list_per_page = 30

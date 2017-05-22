@@ -61,7 +61,7 @@ class caseList(models.Model):
     in_use = models.CharField(max_length=2,
         choices=USE_CHOICE,
         default='1')
-    modify_time = models.DateTimeField(default=datetime.datetime.now)
+    modify_time = models.DateTimeField(auto_now=True)
     owner = models.CharField(max_length=100)
 
 class caseVersion(models.Model):
@@ -98,11 +98,9 @@ class reportsList(models.Model):
     create_time = models.DateTimeField(default=datetime.datetime.now)
 
 class testRecording(models.Model):
-    testStartDate = models.DateTimeField()
-    testCondition = models.CharField(max_length=100)
-    testDuration = models.DateTimeField()
-    testAppVersion = models.CharField(max_length=100)
+    Version = models.CharField(max_length=10, blank=True)
     timeStamp = models.CharField(max_length=100)
+    createTime = models.DateField(default=datetime.datetime.now)
 
 class allBookRecording(models.Model):
     caseName = models.CharField(max_length=300)
@@ -115,6 +113,7 @@ class allBookRecording(models.Model):
 class caseGroup(models.Model):
     groupName = models.CharField(max_length=300)
     caseID = models.TextField()
+    versionStr = models.ForeignKey(caseVersion, default=8)
     des = models.TextField()
     TYPE_CHOICE = (('0', '禁用'), ('1', '启用'))
     status = models.CharField(max_length=2,

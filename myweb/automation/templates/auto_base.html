@@ -65,11 +65,11 @@
   <body class="nav-md">
     <div class="container body">
       <div class="main_container">
-        <div class="col-md-3 left_col"  data-spy="affix" style="position:fixed;">
+        <div class="col-md-3 left_col"  data-spy="affix">
 			<div class="left_col scroll-view">
 
-				<div class="navbar nav_title" style="border: 0;">
-					<a class="site_title">用例导航</a>
+				<div class="navbar nav_title">
+					<a  id="menu_toggle" class="site_title"><i class="fa fa-bars"></i>自动化后台</a>
 				</div>
 
 				<br>
@@ -78,9 +78,8 @@
 						<hr>
 						<h3></h3>
 						<ul class="nav side-menu">
-                            <li><a href="/auto/auto_search"><i class="fa fa-search xwcms"></i> 用例查询</a>
-                                <li><a href="/auto/auto_group"><i class="fa fa-group xwcms"></i> 用例集管理</a>
-                            </li>
+                            <li><a href="/auto/auto_search"><i class="fa fa-search xwcms"></i> 用例查询</a></li>
+                            <li><a href="/auto/auto_group"><i class="fa fa-group xwcms"></i> 用例集管理</a></li>
                             {% for x in nav_list %}
                                 {% if x.type == '废弃'%}
                                 <li><a href="/auto/auto_list?my_type={{x.type}}_all"><i class="fa fa-trash xwcms"></i> {{ x.type }} <span class="badge badge-red">{{ x.num }}</span></a></li>
@@ -94,39 +93,19 @@
                                 </li>
                                 {% endif %}
                             {% endfor %}
-							</li>
 						</ul>
 					</div>
 				</div>
 			</div>
 		</div>
 
-        <!-- top navigation -->
-        <div class="top_nav">
-          <div class="nav_menu">
-            <nav>
-              <div class="nav toggle">
-                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
-              </div>
-            </nav>
-          </div>
-        </div>
-
         <!-- page content -->
-		<script src="{% static 'js/echarts.min.js' %}" charset="UTF-8"></script>
-        <div id ='right_col' class="right_col" role="main" style="padding-top: 60px;">
+		<!-- <script src="{% static 'js/echarts.min.js' %}" charset="UTF-8"></script> -->
+        <div id ='right_col' class="right_col" role="main">
 		{% block content %}
 		{% endblock content %}
 		</div>
-        <p id="mm">{{message}}</p>
-        <!-- footer content -->
-        <!-- <footer>
-          <div class="pull-right">
-            &copy; TestTeam 2016 <a href="http://m.lvmama.com">@Lvmama</a>
-          </div>
-          <div class="clearfix"></div>
-        </footer> -->
-        <!-- /footer content -->
+        <!-- <p id="mm">{{message}}</p> -->
       </div>
     </div>
 

@@ -81,7 +81,7 @@
               <div role="tabpanel" class="tab-pane fade in active" id="ad">
                   {% for x in device_list %}
                       {% if x.platformName == 'Android'%}
-                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">安卓测试#{{ x.deviceName }}#{{ x.appVersion }}</a>
+                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">安卓#{{ x.deviceName }}#{{ x.appVersion }}</a>
                       {%endif%}
                   {% endfor %}
               </div>
@@ -100,8 +100,9 @@
                   {% endfor %}
               </div>
               <div role="tabpanel" class="tab-pane fade" id="jj">
-                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.2.70:8080/jenkins/" target="_blank"><i class="fa fa-android xwcms"></i> AD Jenkins</a>
-                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.1.223:8080" target="_blank"><i class="fa fa-android xwcms"></i> AD Jenkins①</a>
+                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.2.70:8080/jenkins/" target="_blank"><i class="fa fa-android xwcms"></i> AD791 Jenkins</a>
+                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.1.223:8080" target="_blank"><i class="fa fa-android xwcms"></i> AD791 Jenkins①</a>
+                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.1.241:8080" target="_blank"><i class="fa fa-android xwcms"></i> AD796 Jenkins①</a>
                   <a type="button" class="btn btn-default btn-sm" href="http://10.113.1.193:8080" target="_blank"><i class="fa fa-apple xwcms"></i> IOS Jenkins</a>
                   <a type="button" class="btn btn-default btn-sm" href="http://10.113.2.70:8080/jenkins/" target="_blank"><i class="fa fa-chrome xwcms"></i> M Jenkins</a>
               </div>
@@ -126,7 +127,8 @@
                     <button type="button" class="btn btn-default" id="cancle">Cancle</button>
                 </p>
             </div>
-            <div id='makeconfirm' class="alert alert-default alert-dismissible fade in" role="alert" style="display:none">
+            <div id='makeconfirm' class="alert alert-default alert-dismissible fade in row" role="alert" style="display:none">
+                <p id='make_mess' class='bg-danger'></p>
                 <h4 id='titleee'>设置用例集</h4>
                 <div class="form-group">
                     <label for="check" class="col-sm-2 control-label">设置用例集</label>
@@ -140,16 +142,24 @@
                             </select>
                             <span id="helpBB" class="help-block">选择加入某个已有用例集 或 输入新用例集名称新建</span>
                         </div>
+                        <div class="form-group">
+                            <select class="editable-select-m form-control input-sm" id="groupVersion">
+                                <option></option>
+                                {% for x in versionList %}
+                                <option>{{x}}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="help-block">如果 选择了 新建用例集 请选择对应版本号</span>
+                        </div>
                     </div>
                 </div>
                 <div id='make_butt'>
                     <button type="button" class="btn btn-success btn-sm" id="makeSure">确定</button>
                     <button type="button" class="btn btn-default btn-sm" id="makecancle">Cancle</button>
                 </div><br>
-                <p id='make_mess' class='bg-danger'>
-                </p>
             </div>
 
+            <hr>
         <div id="my_table"></div></div>
 	</div>
 </div>
@@ -255,12 +265,13 @@
                 $('#make_butt').fadeIn(500);
                 $("#makeSure").click(function(){
                     var groupName = $('#gourpName').val()
+                        groupVersion = $('#groupVersion').val()
                         valArrr = new Array;
                     $('input[name="btSelectItem"]:checked').each(function(i){
                         valArr[i] = $(this).parent().next().text();
                     });
                     var vals = valArr.join(','); // 转换为逗号隔开的字符串
-                    $.get("/auto/auto_makeGroup",{'id':vals,'groupName':groupName}, function(data,status){
+                    $.get("/auto/auto_makeGroup",{'id':vals,'groupName':groupName,'groupVersion':groupVersion}, function(data,status){
                         if (status == 'success' && data == 'success') {
                             $("#make_mess").text('成功');
                         //提交失败的操作

@@ -20,12 +20,22 @@
                         <input type="text" class="form-control input-sm" value="{{ groupInfo.groupName }}" name='groupName'>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">版本</label>
+                    <div class="col-sm-10">
+                        <select type="text" class="form-control input-sm" name='version'>
+                            {% for x in versionList %}
+                            <option {% if x.versionStr == groupInfo.versionStr.versionStr %}selected='selected'{% endif %}>{{x.versionStr}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
                 <div id="demoform" action="#" method="post" class="form-group">
                     <label class="col-sm-2 control-label">用例管理 <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="左列是所有用例，右列是当前选中用例"></span></label>
                     <div class="col-sm-10">
                         <select multiple="multiple" size="20" name="groupListBox">
                         {% for x in allCase %}
-                        <option value="case-{{ x.id }}" {% if x.sta == 'checked' %}selected='selected'{% endif %}>{{ x.id }} [{{ x.caseName }}] [{{ x.des }}] {{ x.owner }}</option>
+                        <option value="case-{{ x.id }}" {% if x.sta == 'checked' %}selected='selected'{% endif %}>{{ x.id }} [{{ x.caseName }}] [{{ x.version }}] [{{ x.des }}] {{ x.owner }}</option>
                         {% endfor %}
                         </select>
                     </div>

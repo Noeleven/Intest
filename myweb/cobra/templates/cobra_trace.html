@@ -9,19 +9,7 @@
 			<div class="panel-heading">展示近一个月都没有进入毫秒级的接口所处的level趋势</div>
 			<div class="panel-body">
 
-				<nav>
-				  <ul class="pagination pagination-sm">
-					{% if show_list.has_previous %}
-					<li><a  href="?page={{ show_list.previous_page_number }}">Previous</a></li>
-					{% endif %}
 
-					<li  class="active"><a  href="?page={{ show_list.number }}">Page {{ show_list.number }} of {{ show_list.paginator.num_pages }}</a></li>
-
-					{% if show_list.has_next %}
-					<li><a href="?page={{ show_list.next_page_number }}">Next</a></li>
-					{% endif %}
-				  </ul>
-				</nav>
 				<table class="table table-hover table-condensed table-bordered"  style="word-break:break-all;">
 					<tbody>
 					{% for x in show_list %}
@@ -40,6 +28,19 @@
 					{% endfor %}
 					</tbody>
 				</table>
+				<nav>
+				  <ul class="pagination pagination-sm">
+					{% if show_list.has_previous %}
+					<li><a  href="?page={{ show_list.previous_page_number }}">Previous</a></li>
+					{% endif %}
+
+					<li  class="active"><a  href="?page={{ show_list.number }}">Page {{ show_list.number }} of {{ show_list.paginator.num_pages }}</a></li>
+
+					{% if show_list.has_next %}
+					<li><a href="?page={{ show_list.next_page_number }}">Next</a></li>
+					{% endif %}
+				  </ul>
+				</nav>
 			</div>
 		</div>
 	</div>

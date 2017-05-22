@@ -13,6 +13,8 @@ import hashlib
 import smtplib
 import configparser
 import logging
+import copy
+import random
 from email import encoders
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -73,41 +75,33 @@ def new_select_list(controlListType, plantform, version='all'):
 	return target_list
 
 # 接口签名（未用）
-def user_sign(request):
-	# 判断时间差，5分钟
-	client_time = request.POST['TimeStr']
-	signId = request.POST['signId']
-	server_time = str(time.time()).split('.')[0]
-	time_sub = int(server_time) - int(client_time)
-	if time_sub > 300:
-		return 'timeout'
-	else:
-		md5 = hashlib.md5()
-		sign_str = (client_time + '@djangoSign').encode(encoding='utf-8')
-		md5.update(sign_str)
-		result = md5.hexdigest()
-		if result == signId:
-			return 'success'
-		else:
-			return 'error'
+# def user_sign(request):
+# 	# 判断时间差，5分钟
+# 	client_time = request.POST['TimeStr']
+# 	signId = request.POST['signId']
+# 	server_time = str(time.time()).split('.')[0]
+# 	time_sub = int(server_time) - int(client_time)
+# 	if time_sub > 300:
+# 		return 'timeout'
+# 	else:
+# 		md5 = hashlib.md5()
+# 		sign_str = (client_time + '@djangoSign').encode(encoding='utf-8')
+# 		md5.update(sign_str)
+# 		result = md5.hexdigest()
+# 		if result == signId:
+# 			return 'success'
+# 		else:
+# 			return 'error'
 
-# controllist翻译 save时只正向翻译，只有显示和report时才反向翻译
-def trans_meA(aname, type, ptype):
+# controllist翻译 保存用例，展示用例，展示报告都需要带版本一一对应
+def trans_me(aname, type, ptype, ver):
 	plist = {'android':'0','ios':'1','m':'2'}
 	cc = plist[ptype.lower()]
-	targetRange = controlList.objects.filter(controlType=cc).filter(TYPE=type)
+	targetRange = controlList.objects.filter(controlType=cc).filter(TYPE=type).filter(versionStr__versionStr=ver)
+	# 中文 到 英文
 	if targetRange.filter(controlName=aname):
 		bname = targetRange.get(controlName=aname).controlFiled
-	else:
-		bname = aname
-	return bname
-
-def trans_me(aname, type, ptype):
-	plist = {'android':'0','ios':'1','m':'2'}
-	cc = plist[ptype.lower()]
-	targetRange = controlList.objects.filter(controlType=cc).filter(TYPE=type)
-	if targetRange.filter(controlName=aname):
-		bname = targetRange.get(controlName=aname).controlFiled
+	# 英到中
 	elif targetRange.filter(controlFiled=aname):
 		bname = targetRange.get(controlFiled=aname).controlName
 	else:
@@ -118,41 +112,42 @@ def trans_me(aname, type, ptype):
 def trans_report_list(myList):
 	for x in myList:
 		plant = caseList.objects.get(id=x['id']).plantform
+		ver = caseList.objects.get(id=x['id']).version
 		for y in x['jsonStory']:
-			y['where'] = trans_me(y['where'], 'where', plant)
-			y['enterActivity'] = trans_me(y['enterActivity'], 'where', plant)
+			y['where'] = trans_me(y['where'], 'where', plant, ver)
+			y['enterActivity'] = trans_me(y['enterActivity'], 'where', plant, ver)
 			for z in y['checkString']:
-				z['checkType'] = trans_me(z['checkType'], 'checkString', plant)
+				z['checkType'] = trans_me(z['checkType'], 'checkString', plant, ver)
 				if z.get('enterActivity'):
-					z['enterActivity'] = trans_me(z['enterActivity'], 'where', plant)
+					z['enterActivity'] = trans_me(z['enterActivity'], 'where', plant, ver)
 				if z.get('elementName'):
-					z['elementName'] = trans_me(z['elementName'], 'targetName', plant)
+					z['elementName'] = trans_me(z['elementName'], 'targetName', plant, ver)
 			for z in y['action']:
-				z['actionCode'] = trans_me(z['actionCode'], 'action', plant)
-				z['target']['targetName'] = trans_me(z['target']['targetName'], 'targetName', plant)
+				z['actionCode'] = trans_me(z['actionCode'], 'action', plant, ver)
+				z['target']['targetName'] = trans_me(z['target']['targetName'], 'targetName', plant, ver)
 	return myList
 
 # NORMAL DB
-def doDB(method, myList):
-	# myList = [caseName, bigstep, my_case, caseStatus, csType, caseVersion]
-	conn = mysql.connector.connect(user='root', password='lvmama', database='lmmpicTest', host='127.0.0.1')
-	cursor = conn.cursor()
-	cursor = conn.cursor(buffered=True)
-	inputTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-	if method == 'insert':
-		cursor.execute('insert into bookShelf (caseName, needTest, inputTime, classType, appVersion) values (%s, %s, %s, %s, %s)', [myList[0], myList[3], inputTime, myList[4], myList[5]])
-		cursor.execute('insert into testStory (caseName, caseLength, jsonStory, caseUpdateTime, caseType) values (%s, %s,%s, %s,%s)', [myList[0], myList[1], myList[2], inputTime, myList[4]])
-	elif method == 'update':
-		cursor.execute('update bookShelf set needTest=%s, classType=%s, appVersion=%s where caseName=%s', [myList[3], myList[4], myList[5], myList[0]])
-		cursor.execute('update testStory set caseLength=%s, jsonStory=%s, caseUpdateTime=%s, caseType=%s where caseName=%s', [myList[1], myList[2], inputTime, myList[4], myList[0]])
-	elif method == 'delete':
-		cursor.execute('delete from bookShelf where caseName=%s', [myList[0]])
-		cursor.execute('delete from testStory where caseName=%s', [myList[0]])
-	else:
-		logger.info('doDB unknow!')
-	conn.commit()
-	cursor.close()
-	conn.close()
+# def doDB(method, myList):
+# 	# myList = [caseName, bigstep, my_case, caseStatus, csType, caseVersion]
+# 	conn = mysql.connector.connect(user='root', password='lvmama', database='lmmpicTest', host='127.0.0.1')
+# 	cursor = conn.cursor()
+# 	cursor = conn.cursor(buffered=True)
+# 	inputTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+# 	if method == 'insert':
+# 		cursor.execute('insert into bookShelf (caseName, needTest, inputTime, classType, appVersion) values (%s, %s, %s, %s, %s)', [myList[0], myList[3], inputTime, myList[4], myList[5]])
+# 		cursor.execute('insert into testStory (caseName, caseLength, jsonStory, caseUpdateTime, caseType) values (%s, %s,%s, %s,%s)', [myList[0], myList[1], myList[2], inputTime, myList[4]])
+# 	elif method == 'update':
+# 		cursor.execute('update bookShelf set needTest=%s, classType=%s, appVersion=%s where caseName=%s', [myList[3], myList[4], myList[5], myList[0]])
+# 		cursor.execute('update testStory set caseLength=%s, jsonStory=%s, caseUpdateTime=%s, caseType=%s where caseName=%s', [myList[1], myList[2], inputTime, myList[4], myList[0]])
+# 	elif method == 'delete':
+# 		cursor.execute('delete from bookShelf where caseName=%s', [myList[0]])
+# 		cursor.execute('delete from testStory where caseName=%s', [myList[0]])
+# 	else:
+# 		logger.info('doDB unknow!')
+# 	conn.commit()
+# 	cursor.close()
+# 	conn.close()
 
 # 导航list
 def auto_list(request):
@@ -209,9 +204,9 @@ def auto_edit_save(request, id):
 			bgElement = {
 				"storyDescription":my_form.get('storyDescription')[bgSub],
 				"index":bgSub + 1,
-				"where":trans_meA(my_form.get('where')[bgSub],'where',casePlantform),
+				"where":trans_me(my_form.get('where')[bgSub], 'where', casePlantform, caseVersion),
 				'action':[],
-				"enterActivity":trans_meA(my_form.get('enterActivity')[bgSub],'where',casePlantform),
+				"enterActivity":trans_me(my_form.get('enterActivity')[bgSub], 'where', casePlantform, caseVersion),
 				"checkString":[],
 				}
 			# 预期列表，处理checkString
@@ -221,9 +216,9 @@ def auto_edit_save(request, id):
 				cType = my_form.get('checkType')[smExpend]
 				eName = my_form.get('elementname')[smExpend]
 				expendDict = {
-					"checkType": trans_meA(cType, 'checkString', casePlantform),
+					"checkType": trans_me(cType, 'checkString', casePlantform, caseVersion),
 					"expeted": my_form.get('expeted')[smExpend],
-					"elementName": trans_meA(eName, 'targetName', casePlantform),
+					"elementName": trans_me(eName, 'targetName', casePlantform, caseVersion),
 				}
 				bgElement['checkString'].append(expendDict)
 
@@ -232,12 +227,12 @@ def auto_edit_save(request, id):
 			# 循环小步下标，获取数值
 			for smSub in range(startIndex, startIndex + len(steplist)):
 				actionDict = {
-					"actionCode": trans_meA(my_form.get('actionCode')[smSub], 'action', casePlantform),
+					"actionCode": trans_me(my_form.get('actionCode')[smSub], 'action', casePlantform, caseVersion),
 					"behaviorPara":{
 						"inputValue":my_form.get('inputValue')[smSub],
 						},
 					"target": {
-						"targetName": trans_meA(my_form.get('targetName')[smSub], 'targetName', casePlantform),
+						"targetName": trans_me(my_form.get('targetName')[smSub], 'targetName', casePlantform, caseVersion),
 						},
 					"needWait": (bool(1) if my_form.get('needWait')[smSub] == '等待' else bool(0)),
 					}
@@ -247,26 +242,15 @@ def auto_edit_save(request, id):
 			expendIndex += len(expendlist)
 			json_home.append(bgElement)
 		my_case = json.dumps(json_home, ensure_ascii=False)
-		mydbList = [caseName, bigstep, my_case, caseStatus, csType, caseVersion]
-		conn = mysql.connector.connect(user='root', password='lvmama', database='lmmpicTest', host='127.0.0.1')
-		cursor = conn.cursor(buffered=True)
-		cursor.execute('select * from testStory where caseName=%s', (caseName,))
-		values = cursor.fetchall()
-		if values:
-			doDB('update', mydbList)
-		else:
-			doDB('insert', mydbList)
-		conn.commit()
-		cursor.close()
-		conn.close()
+
 	elif casePlantform == 'IOS':
 		for bgSub in range(bigstep):
 			# 大步字典
 			bgElement = {
 				"des":my_form.get('storyDescription')[bgSub],
 				"index":bgSub + 1,
-				'action':trans_meA(my_form.get('actionCode')[bgSub], 'action', casePlantform),
-				'type':trans_meA(my_form.get('typeCode')[bgSub], 'type', casePlantform),
+				'action':trans_me(my_form.get('actionCode')[bgSub], 'action', casePlantform, caseVersion),
+				'type':trans_me(my_form.get('typeCode')[bgSub], 'type', casePlantform, caseVersion),
 				'typeText':my_form.get('inputValue')[bgSub],
 				'label':my_form.get('targetName')[bgSub],
 				}
@@ -292,23 +276,24 @@ def auto_edit_save(request, id):
 
 # 点击生成配置
 def auto_config(request):
-	ids = request.GET['vals'].split(',')    # 待测id列表
-	device = request.GET['device']  # 待测设备
-	mytype = request.GET['type']	# 用例还是用例集
-	isDay = request.GET['isDay']	# 用例还是用例集
+	ids = request.GET['vals'].split(',')    # 获取用例或集合的ID
+	device = request.GET['device']  # 获取类型是AD、ios还是M
+	mytype = request.GET['type']	# 标识用例还是用例集
+	isDay = request.GET['isDay']	# 标记日常还是测试
+
+	# 整理待测用例ID
 	cases = []
-	logger.debug('%s##%s##%s' %(ids,device,mytype))
 	if mytype == 'group':
+		groupVersion = caseGroup.objects.get(id=ids[0]).versionStr.versionStr	# 获取用例集版本
 		# 汇总用例集所有用例 在均分
 		casetmp = []
 		for x in ids:
 			casetmp += json.loads(caseGroup.objects.get(id=x).caseID)
-	else:	# id就是用例
-		casetmp = ids
-	logger.debug(set(casetmp))
-	filter_id = set(casetmp)
-	newid = []
+	else:
+		casetmp = [int(x) for x in ids]
+	filter_id = set(casetmp)	# 用例集去重
 	# 过滤无效用例
+	newid = []
 	for y in filter_id:
 		if caseList.objects.filter(in_use='1').filter(id=y):
 			cases.append(caseList.objects.filter(in_use='1').filter(id=y)[0].caseName)
@@ -316,12 +301,14 @@ def auto_config(request):
 		else:
 			continue
 	logger.debug('cases:%s caseid:%s' % (cases, newid))
-	# device:IOS,AD,62001,62025,M,chrome之类，如果ios直接存
+
+	# IOS和AD，M站分叉路
 	if device == 'IOS':
 		#IOS jenkins
+		myTime = int(time.time())
 		mydevice = deviceList.objects.filter(deviceName=device)[0]  #待测设备属性
 		server = jenkins.Jenkins(mydevice.url, username=mydevice.username, password=mydevice.password)
-		myTime = int(time.time())
+		job_name = mydevice.job_name
 		jsonStr = {
 			"deviceName": mydevice.deviceName,    # 设备:ip
 			"deviceIP": mydevice.deviceIP,
@@ -330,7 +317,7 @@ def auto_config(request):
 			"platformName": mydevice.platformName,  # IOS
 			"timeStamp": str(myTime),
 		}
-		job_name = mydevice.job_name
+
 		# 判断有没有该设备，并存入config表供jenkins调用，但不需要timeStamp的ids
 		hasD = myConfig.objects.filter(device=mydevice.deviceName)
 		if hasD:
@@ -342,41 +329,46 @@ def auto_config(request):
 			p.save()
 
 		server.build_job(job_name)  # 执行构建
-		build_number = server.get_job_info(job_name)['lastBuild']['number']
-		# 报告存入report，需要ids
+		try:
+			build_number = server.get_job_info(job_name)['lastBuild']['number']
+		except TypeError as e:
+			build_number = 0
+		# 存报告
 		time_case = jsonStr['timeStamp'] + '_' + ('_').join(casetmp)
 		pp = reportsList(timeStamp=time_case)
 		pp.buildNUM = '#' + str(build_number + 1)
-		pp.reportURL = ('%s/%s/report.html' % (mydevice.url,(build_number + 1)))
-		logger.info('保存报告url：%s' % pp.reportURL)
+		pp.reportURL = ('http://10.113.1.193:8001/%s/report.html' % (build_number + 1))
 		pp.status = str(server.get_build_info(job_name,build_number)['building'])
 		pp.deviceName = deviceList.objects.get(deviceName=device)
 		pp.save()
 	else:
-		# jenkins
+		# 确认测试机
 		if device == 'AD':
-			mydevice = deviceList.objects.filter(in_use='1').filter(platformName='Android')  # 多台
+			mydevice = deviceList.objects.filter(in_use='1').filter(platformName='Android').filter(appVersion=groupVersion)  # AD测试机器集合
 		elif device == 'M':
-			mydevice = deviceList.objects.filter(in_use='1').filter(platformName='M')  # M站多台
+			mydevice = deviceList.objects.filter(in_use='1').filter(platformName='M')  # M站不用带版本
 		else:
 			mydevice = deviceList.objects.filter(deviceName=device)  # 单台
-		# 步长计算
-		if len(cases) >= len(mydevice):
-			if (len(cases) % len(mydevice)) == 0:
-				mdl = len(cases) // len(mydevice)
+
+		# 计算用例步长
+		if len(newid) >= len(mydevice):
+			if (len(newid) % len(mydevice)) == 0:
+				mdl = len(newid) // len(mydevice)
 			else:
-				if (len(cases) % len(mydevice)) >= (len(mydevice) // 2):
-					mdl = len(cases) // len(mydevice) + 1
+				if (len(newid) % len(mydevice)) >= (len(mydevice) // 2):
+					mdl = len(newid) // len(mydevice) + 1
 				else:
-					mdl = len(cases) // len(mydevice)
+					mdl = len(newid) // len(mydevice)
 		else:
 			mdl = 1
+		# 分配用例
 		start = end = 0
 		logger.info('dev:%s 步长:%s' % (mydevice, mdl))
+		groupTime = 'autoTestIn' + datetime.datetime.now().strftime('%Y%m%d') + str(random.randint(10000,99999))
 		for x in mydevice:
 			end += mdl
 			myTime = int(time.time())
-			if start < len(cases):
+			if start < len(newid):
 				jsonStr = {
 					"APPIUMSERVERSTART": x.APPIUMSERVERSTART,
 					"appiumServicePath": x.appiumServicePath,
@@ -392,17 +384,23 @@ def auto_config(request):
 					"appLaunchActivity": x.appLaunchActivity,
 				}
 				logger.info('是否每日构建：%s' % isDay)
-				if isDay == 'yes':
-					jsonStr['timeStamp'] = 'autoTestIn' + datetime.datetime.now().strftime('%Y%m%d')
+				# 确认timestamp
+				# if isDay == 'yes':
+				if mytype == 'group':
+					jsonStr['timeStamp'] = groupTime
+					tt = testRecording(timeStamp=jsonStr['timeStamp'])
+					tt.Version = groupVersion
+					tt.save()
 				else:
 					jsonStr['timeStamp'] = str(myTime)
-				if end > len(cases):	# end + 步长 超过就不要在分了，直接结束
-					jsonStr["testCaseSQL"] = cases[start:]
-					logger.debug(cases[start:])
+				# 具体分配用例
+				if end > len(newid):	# end + 步长 超过就不要在分了，直接结束
+					jsonStr["testCaseSQL"] = newid[start:]
+					logger.debug(newid[start:])
 				else:
-					jsonStr["testCaseSQL"] = cases[start:end]
-					logger.debug(cases[start:end])
-				job_name = x.job_name
+					jsonStr["testCaseSQL"] = newid[start:end]
+					logger.debug(newid[start:end])
+
 				# 判断有没有该设备，并存入config表供jenkins调用，但不需要timeStamp的ids
 				hasD = myConfig.objects.filter(device=x.deviceName)
 				if hasD:
@@ -412,11 +410,17 @@ def auto_config(request):
 					p = myConfig(device=x.deviceName)
 					p.caseStr = json.dumps(jsonStr, ensure_ascii=False)
 					p.save()
+
 				server = jenkins.Jenkins(x.url, username=x.username, password=x.password)
+				job_name = x.job_name
 				server.build_job(job_name)  # 执行构建
-				build_number = server.get_job_info(job_name)['lastBuild']['number']
+
+				try:
+					build_number = server.get_job_info(job_name)['lastBuild']['number']
+				except TypeError as e:
+					build_number = 0
 				# 报告存入report，需要ids
-				if end >= len(cases):	# end + 步长超过就不要在分了，直接结束
+				if end >= len(newid):	# end + 步长超过就不要在分了，直接结束
 					time_case = jsonStr['timeStamp'] + '_' + ('_').join([str(x) for x in list(newid)[start:]])
 				else:
 					time_case = jsonStr['timeStamp'] + '_' + ('_').join([str(x) for x in list(newid)[start:end]])
@@ -424,9 +428,10 @@ def auto_config(request):
 				pp = reportsList(timeStamp=time_case)
 				pp.buildNUM = '#' + str(build_number + 1)
 				pp.reportURL = ("http://10.113.1.35:8000/auto/api_report_page?timeStamp=" + "%s" % jsonStr['timeStamp'])
-				pp.status = str(server.get_build_info(job_name,build_number)['building'])
+				pp.status = str(server.get_build_info(job_name, build_number)['building'])
 				pp.deviceName = deviceList.objects.get(deviceName=x.deviceName)
 				pp.save()
+
 				start += mdl
 			else:
 				break
@@ -447,7 +452,6 @@ def auto_del(request):
 		id = request.GET['id'].split(',')
 		for x in id:
 			myCase = caseList.objects.get(id=x)
-			doDB('delete', [x for x in myCase.caseName])
 			myCase.in_use = '0'
 			myCase.save()
 		data = 'success'
@@ -465,20 +469,11 @@ def auto_copy(request):
 			if caseList.objects.filter(caseName=cName):
 				data = '0' # 重复名称
 			else:
-				sorceCase = caseList.objects.get(id=id)
-				p = caseList(caseName=cName)
-				p.type_field = sorceCase.type_field
-				p.plantform = sorceCase.plantform
-				p.version = sorceCase.version
-				p.case = sorceCase.case
-				p.des = sorceCase.des
-				p.in_use = sorceCase.in_use
-				p.owner = sorceCase.owner
-				p.second_Type_id = '1'
-				p.save()
-				bgstep = len(json.loads(sorceCase.case))
-				mydbList = [cName, bgstep, sorceCase.case, sorceCase.in_use, sorceCase.type_field.type_field, sorceCase.version]
-				doDB('insert',mydbList)
+				a = caseList.objects.get(id=id)
+				b = copy.deepcopy(a)
+				b.id = None
+				b.caseName = cName
+				b.save()
 				data = '1' # 用例名OK
 		else:
 			data = '3' # 没输入
@@ -531,9 +526,6 @@ def new_save(request):
 		p.owner = owner
 		p.second_Type_id = str(secondType.objects.get(second_Type=s_Type).id)  # todo 增加二类型选择
 		p.save()
-		if casePlantform == 'Android':
-			mydbList = [caseName, 1, defaultCase, caseStatus, csType, caseVersion]
-			doDB('insert', mydbList)
 		# 获取当前用例ID
 		myID = caseList.objects.filter(plantform=casePlantform).filter(caseName=caseName).values('id')[0]['id']
 		return HttpResponseRedirect("/auto/new_edit/%s" % myID)
@@ -547,7 +539,6 @@ def new_edit(request, id):
 	# 反向解析json存入表单 首先从DB获取json字符串，并解析成数据类型
 	if caseList.objects.filter(id=id).exists():
 		json_dict = caseList.objects.filter(id=id).values()[0]
-		# logger.info(json_dict)
 		# 转义品类名称
 		try:
 			json_dict['type_field_id'] = caseType.objects.get(id=json_dict['type_field_id']).type_name
@@ -573,15 +564,15 @@ def new_edit(request, id):
 			if myPlantform == 'Android' or myPlantform == 'M':
 				wait_list = ['等待','不等待']
 				for x in BgStep:
-					x['enterActivity'] = trans_me(x['enterActivity'],'where',json_dict['plantform'])
-					x['where'] = trans_me(x['where'],'where',json_dict['plantform'])
+					x['enterActivity'] = trans_me(x['enterActivity'],'where',json_dict['plantform'], json_dict['version'])
+					x['where'] = trans_me(x['where'],'where',json_dict['plantform'], json_dict['version'])
 					where.append(x['where'])
 					enterActivity.append(x['enterActivity'])
 					ai = ci = 1
 					for y in x['action']:
-						y['target']['targetName'] = trans_me(y['target']['targetName'],'targetName',json_dict['plantform'])
+						y['target']['targetName'] = trans_me(y['target']['targetName'],'targetName',json_dict['plantform'], json_dict['version'])
 						targetname.append(y['target']['targetName'])
-						y['actionCode'] = trans_me(y['actionCode'],'action',json_dict['plantform'])
+						y['actionCode'] = trans_me(y['actionCode'],'action',json_dict['plantform'], json_dict['version'])
 						if y['needWait'] == True:
 							y['needWait'] = '等待'
 						else:
@@ -589,11 +580,11 @@ def new_edit(request, id):
 						y['index'] = str(x['index']) + '-' + str(ai)
 						ai += 1
 					for y in x['checkString']:
-						y['elementName'] = trans_me(y['elementName'],'targetName',json_dict['plantform'])
+						y['elementName'] = trans_me(y['elementName'],'targetName',json_dict['plantform'], json_dict['version'])
 						elementname.append(y['elementName'])
 						y['index'] = str(x['index']) + '-' + str(ci)
 						ci += 1
-						y['checkType'] = trans_me(y['checkType'],'checkString',json_dict['plantform'])
+						y['checkType'] = trans_me(y['checkType'],'checkString',json_dict['plantform'], json_dict['version'])
 					control_list = new_select_list('action', json_dict['plantform'], json_dict['version'])
 					where_list = new_select_list('where', json_dict['plantform'], json_dict['version'])
 					target_list = new_select_list('targetName', json_dict['plantform'], json_dict['version'])
@@ -604,8 +595,8 @@ def new_edit(request, id):
 				for x in BgStep:
 					x['index'] = str(ai)
 					ai += 1
-					x['action'] = trans_me(x['action'],'action',json_dict['plantform'])
-					x['type'] = trans_me(x['type'],'type',json_dict['plantform'])
+					x['action'] = trans_me(x['action'],'action',json_dict['plantform'], json_dict['version'])
+					x['type'] = trans_me(x['type'],'type',json_dict['plantform'], json_dict['version'])
 					targetname.append(x['label'])
 					target_type_list = new_select_list('type', json_dict['plantform'], json_dict['version'])
 					control_list = new_select_list('action', json_dict['plantform'], json_dict['version'])
@@ -798,14 +789,14 @@ def do_mail(htmlStr):
 def api_report(request):
 	try:
 		timeTarget = request.GET['timeStamp']
+		vver = request.GET['ver']
 	except:
 		jsonStr = {
 			"code": "-1",
-			"message":"参数错误,需要timeStamp"
+			"message":"参数错误,需要timeStamp和version"
 		}
 	else:
 		cases = allBookRecording.objects.filter(timeStamp=timeTarget)
-		# allin = testRecording.objects.filter(timeStamp=timeTarget)
 		if cases:
 			# 返回一个报告页面 URL，通过此url可以访问对应的数据构造页面
 			jsonStr = {
@@ -820,11 +811,8 @@ def api_report(request):
 			passNum = pass_list.count()
 			failNum = err_list.count()
 			passRate = round((passNum / allNum * 100),2)
-			# sTime = allin.values('testStartDate').order_by('testStartDate')[0]['testStartDate']
-			# eTime = allin.values('testDuration').order_by('-testDuration')[0]['testDuration']
-			# testTime = (eTime - sTime).seconds
 			# email发送
-			html_string0 = "<h3>UI自动化报告</h3><h4><p>用例总数:%s | 通过:%s | 失败:%s</p><p>通过率:%s %%</p><p><a href=%s target=_blank>点击查看错误详情和截图</a></p></h4>" % (allNum, passNum, failNum, passRate, myUrl)
+			html_string0 = "<h3>UI自动化报告</h3><h4><p>用例总数:%s | 通过:%s | 失败:%s | APP版本:%s</p><p>通过率:%s %%</p><p><a href=%s target=_blank>点击查看错误详情和截图</a></p></h4>" % (allNum, passNum, failNum, vver, passRate, myUrl)
 			html_string1 = ""
 			html_string3 = "</table>"
 			if err_list:
@@ -863,7 +851,7 @@ def api_report(request):
 		return HttpResponse(result, content_type="application/json")
 
 # 根据url参数返回报表页面
-@cache_page(30)
+@cache_page(60)
 def api_report_page(request):
 	try:
 		timeTarget = request.GET['timeStamp']
@@ -872,6 +860,9 @@ def api_report_page(request):
 	else:
 		Acases = allBookRecording.objects.filter(timeStamp=timeTarget).filter(testResultDoc__contains='platformName":"Android"')
 		if Acases:
+			vver = testRecording.objects.filter(timeStamp=timeTarget)
+			if vver:
+				version = vver[0].Version
 			Apass_list = [json.loads(x['testResultDoc']) for x in Acases.filter(status='success').values('testResultDoc')]
 			Aerr_list = [json.loads(x['testResultDoc']) for x in Acases.filter(status='danger').values('testResultDoc')]
 			AallNum = int(Acases.count())
@@ -888,6 +879,7 @@ def api_report_page(request):
 				AtestTime = (AeTime - AsTime).seconds
 		else:
 			Amessage = '没有匹配内容'
+
 		Mcases = allBookRecording.objects.filter(timeStamp=timeTarget).filter(testResultDoc__contains='platformName":"M"')
 		if Mcases:
 			Mpass_list = [json.loads(x['testResultDoc']) for x in Mcases.filter(status='success').values('testResultDoc')]
@@ -983,6 +975,7 @@ def auto_makeGroup(request):
 		ids = [int(x) for x in request.GET['id'].split(',')]
 		# ids = request.GET['id']
 		groupName = request.GET['groupName']
+		groupVersion = request.GET['groupVersion']
 		# 判断用例集是否存在
 		if caseGroup.objects.filter(groupName=groupName).exists():
 			temp = caseGroup.objects.get(groupName=groupName)
@@ -994,6 +987,10 @@ def auto_makeGroup(request):
 		else:
 			temp = caseGroup(groupName=groupName)
 			temp.caseID = json.dumps(ids)
+			if groupVersion:
+				temp.versionStr = caseVersion.objects.get(versionStr=groupVersion)
+			else:
+				temp.versionStr = caseVersion.objects.order_by('-versionStr')[0]
 			temp.save()
 		data = 'success'
 	except TypeError as e:
@@ -1016,13 +1013,14 @@ def group_edit(request):
 	# 需要获取group信息、所有用例名信息、当前用例集用例名信息
 	groupInfo = caseGroup.objects.get(id=groupID)
 	gourpIDS = json.loads(groupInfo.caseID)
-	allCase = caseList.objects.filter(in_use='1').values('id', 'caseName', 'des', 'owner').order_by('caseName')
+	allCase = caseList.objects.filter(in_use='1').values('id', 'caseName', 'version', 'des', 'owner').order_by('caseName')
 	for x in allCase:
 		if x['id'] in gourpIDS:
 			x['sta'] = 'checked'
 		else:
 			x['sta'] = 'unchecked'
 	nav_list = navList()
+	versionList = caseVersion.objects.all()
 	logger.debug('%s' % allCase[:10])
 	return render(request, 'group_edit.html', locals())
 
@@ -1033,6 +1031,7 @@ def group_save(request):
 		groupId = request.POST.get('ID')
 		group = caseGroup.objects.get(id=groupId)
 		group.des = request.POST.get('des')
+		group.versionStr = caseVersion.objects.get(versionStr=request.POST.get('version'))
 		group.groupName = request.POST.get('groupName')
 		if request.POST.get('groupListBox'):
 			group.caseID = json.dumps([int(x.split('-')[1]) for x in request.POST.getlist('groupListBox')])
@@ -1044,20 +1043,29 @@ def group_save(request):
 	finally:
 		return HttpResponseRedirect('/auto/auto_group')
 
+# controlList对应关系处理，入参 渠道类型channel，版本号ver
 def many_many(request):
-	v = caseVersion.objects.all()
-	c = controlList.objects.all()
-	back = []
-	for x in c:
-		if not x.versionStr.all():
-			for y in v:
-				x.versionStr.add(y)
-			x.save()
-			back.append(x.controlName)
-		else:
-			continue
-	back = json.dumps(back, ensure_ascii=False)
-	return HttpResponse(back, content_type="application/json")
+	try:
+		channel = request.GET['channel']
+		ver = request.GET['ver']
+	except:
+		back = {'code':'-1','message':'参数错误, channel,ver'}
+		return HttpResponse(json.dumps(back, ensure_ascii=False), content_type="application/json")
+	else:
+		verTrans = {'Android':'0','M':'2','IOS':'1'}
+		cid = controlList.objects.filter(controlType=verTrans[channel])
+		vid = caseVersion.objects.get(versionStr=ver).id
+		back = {'code':'1','len':'','list':[]}
+		for x in cid:
+			if x.id in x.versionStr.all():
+				continue
+			else:
+				x.versionStr.add(vid)
+				x.save()
+				back['list'].append(x.controlName)
+		back['len'] = len(back['list'])
+		back = json.dumps(back, ensure_ascii=False)
+		return HttpResponse(back, content_type="application/json")
 
 
 def sync_allbook(request):

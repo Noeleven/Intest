@@ -1,6 +1,6 @@
 from django.shortcuts import render,render_to_response
 from automation.models import *
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
 from django.views.decorators.cache import cache_page
 from django.template import loader
 from decimal import Decimal
@@ -109,23 +109,22 @@ def trans_me(aname, type, ptype, ver):
 	return bname
 
 
-def trans_report_list(myList):
-	for x in myList:
-		plant = caseList.objects.get(id=x['id']).plantform
-		ver = caseList.objects.get(id=x['id']).version
-		for y in x['jsonStory']:
-			y['where'] = trans_me(y['where'], 'where', plant, ver)
-			y['enterActivity'] = trans_me(y['enterActivity'], 'where', plant, ver)
-			for z in y['checkString']:
-				z['checkType'] = trans_me(z['checkType'], 'checkString', plant, ver)
-				if z.get('enterActivity'):
-					z['enterActivity'] = trans_me(z['enterActivity'], 'where', plant, ver)
-				if z.get('elementName'):
-					z['elementName'] = trans_me(z['elementName'], 'targetName', plant, ver)
-			for z in y['action']:
-				z['actionCode'] = trans_me(z['actionCode'], 'action', plant, ver)
-				z['target']['targetName'] = trans_me(z['target']['targetName'], 'targetName', plant, ver)
-	return myList
+def trans_report_list(x):
+	plant = caseList.objects.get(id=x['id']).plantform
+	ver = caseList.objects.get(id=x['id']).version
+	for y in x['jsonStory']:
+		y['where'] = trans_me(y['where'], 'where', plant, ver)
+		y['enterActivity'] = trans_me(y['enterActivity'], 'where', plant, ver)
+		for z in y['checkString']:
+			z['checkType'] = trans_me(z['checkType'], 'checkString', plant, ver)
+			if z.get('enterActivity'):
+				z['enterActivity'] = trans_me(z['enterActivity'], 'where', plant, ver)
+			if z.get('elementName'):
+				z['elementName'] = trans_me(z['elementName'], 'targetName', plant, ver)
+		for z in y['action']:
+			z['actionCode'] = trans_me(z['actionCode'], 'action', plant, ver)
+			z['target']['targetName'] = trans_me(z['target']['targetName'], 'targetName', plant, ver)
+	return x
 
 # NORMAL DB
 # def doDB(method, myList):
@@ -285,6 +284,7 @@ def auto_config(request):
 	cases = []
 	if mytype == 'group':
 		groupVersion = caseGroup.objects.get(id=ids[0]).versionStr.versionStr	# 获取用例集版本
+		groupId = ids
 		# 汇总用例集所有用例 在均分
 		casetmp = []
 		for x in ids:
@@ -344,7 +344,7 @@ def auto_config(request):
 	else:
 		# 确认测试机
 		if device == 'AD':
-			mydevice = deviceList.objects.filter(in_use='1').filter(platformName='Android').filter(appVersion=groupVersion)  # AD测试机器集合
+			mydevice = deviceList.objects.filter(in_use='1').filter(platformName='Android').filter(appVersion=groupVersion).order_by('-deviceName')  # AD测试机器集合
 		elif device == 'M':
 			mydevice = deviceList.objects.filter(in_use='1').filter(platformName='M')  # M站不用带版本
 		else:
@@ -390,6 +390,7 @@ def auto_config(request):
 					jsonStr['timeStamp'] = groupTime
 					tt = testRecording(timeStamp=jsonStr['timeStamp'])
 					tt.Version = groupVersion
+					tt.groupId = json.dumps(groupId)
 					tt.save()
 				else:
 					jsonStr['timeStamp'] = str(myTime)
@@ -413,7 +414,7 @@ def auto_config(request):
 
 				server = jenkins.Jenkins(x.url, username=x.username, password=x.password)
 				job_name = x.job_name
-				server.build_job(job_name)  # 执行构建
+				server.build_job(job_name, {'deviceName':x.deviceName})  # 执行构建
 
 				try:
 					build_number = server.get_job_info(job_name)['lastBuild']['number']
@@ -427,7 +428,7 @@ def auto_config(request):
 
 				pp = reportsList(timeStamp=time_case)
 				pp.buildNUM = '#' + str(build_number + 1)
-				pp.reportURL = ("http://10.113.1.35:8000/auto/api_report_page?timeStamp=" + "%s" % jsonStr['timeStamp'])
+				pp.reportURL = ("http://10.113.3.46:8000/auto/api_report_page?timeStamp=" + "%s" % jsonStr['timeStamp'])
 				pp.status = str(server.get_build_info(job_name, build_number)['building'])
 				pp.deviceName = deviceList.objects.get(deviceName=x.deviceName)
 				pp.save()
@@ -655,40 +656,18 @@ def auto_caseJson(request):
 		return HttpResponse(jsonStr, content_type="application/json")
 
 
-@cache_page(15)
+# @cache_page(60)
 def test_list(request):
 	# 右侧对应品类的用例列表
-	dList = deviceList.objects.filter(in_use='1')   #设备列表
-	testResults = []
-	for x in dList:
-		server = jenkins.Jenkins(x.url, username=x.username, password=x.password)
-		rList = reportsList.objects.filter(deviceName__deviceName=x.deviceName).order_by('-create_time')[:20]    #结果列表
-		x.buildLog = []
-		for y in rList:
-			# 若果用例被删除，那就查不到了
-			mycase = []
-			for z in y.timeStamp.split('_')[1:]:
-				try:
-					zz = caseList.objects.get(id=z)  # 检查该用例在不在
-					zzz = str(zz.id) + ' ' + zz.caseName
-				except:
-					zzz = '用例已被删除'
-				mycase.append(zzz)
-			myDict = {}
-			myDict['build_case'] = mycase
-			myDict['create_time'] = y.create_time.strftime('%Y-%m-%d %H:%M:%S')
-			myDict['buildNUM'] = y.buildNUM
-			myDict['reportURL'] = y.reportURL
-			try:
-				myDict['status'] = str(server.get_build_info(x.job_name, int(y.buildNUM[1:]))['result'])
-			except:
-				myDict['status'] = 'queue'
-			x.buildLog.append(myDict)
-		testResults.append(x)
-	return render(request, 'test_list.html',{
-		'nav_list':navList(),
-		'testResults':testResults,
-		})
+	dev = deviceList.objects.filter(in_use='1')   #设备列表
+	nav_list = navList()
+	groupReports = testRecording.objects.values('timeStamp', 'Version', 'createTime', 'groupId').distinct()[:20]
+	for x in groupReports:
+		x['url'] = 'http://10.113.3.46:8000/auto/api_report_page?timeStamp=' + x['timeStamp']
+		x['name'] = [caseGroup.objects.get(id=y).groupName for y in json.loads(x['groupId'])]
+		x['createTime'] = reportsList.objects.filter(timeStamp__contains=x['timeStamp'])[0].create_time
+	return render(request, 'test_list.html',locals())
+
 
 # 查询页面
 def auto_search(request):
@@ -717,7 +696,7 @@ def search_result(request):
 			myrequest[k1] = v
 	# 每个key值循环取并集，最后取交集
 	logger.debug('search:myrequest %s' % myrequest)
-	origin = caseList.objects.all()
+	origin = caseList.objects.filter(in_use='1')
 	if myrequest:
 		if_list = {}
 		# 根据条件遍历查询
@@ -804,7 +783,7 @@ def api_report(request):
 				"data":[x.caseName for x in cases]
 			}
 			# 发邮件
-			myUrl = ("http://10.113.1.35:8000/auto/api_report_page?timeStamp=%s" % timeTarget)
+			myUrl = ("http://10.113.3.46:8000/auto/api_report_page?timeStamp=%s" % timeTarget)
 			err_list = cases.filter(status='danger')
 			pass_list = cases.filter(status='success')
 			allNum = cases.count()
@@ -812,7 +791,7 @@ def api_report(request):
 			failNum = err_list.count()
 			passRate = round((passNum / allNum * 100),2)
 			# email发送
-			html_string0 = "<h3>UI自动化报告</h3><h4><p>用例总数:%s | 通过:%s | 失败:%s | APP版本:%s</p><p>通过率:%s %%</p><p><a href=%s target=_blank>点击查看错误详情和截图</a></p></h4>" % (allNum, passNum, failNum, vver, passRate, myUrl)
+			html_string0 = "<h3>UI自动化报告</h3><h4><p>用例总数:%s | 通过:%s | 失败:%s | APP版本:%s</p><p>通过率:%s %%</p><span><a href=%s target=_blank><font color='#008080'>点击查看错误详情和截图</font></a></span></h4>" % (allNum, passNum, failNum, vver, passRate, myUrl)
 			html_string1 = ""
 			html_string3 = "</table>"
 			if err_list:
@@ -820,13 +799,14 @@ def api_report(request):
 				html_string2 = ""
 				build_list = []
 				for x in err_list:
+					sou = json.loads(x.testResultDoc)
 					tmp = {
-						'id':caseList.objects.filter(caseName=x.caseName)[0].id,
-						'type':caseList.objects.filter(caseName=x.caseName)[0].type_field.type_name,
+						'id':sou['id'],
+						'type':caseList.objects.get(id=sou['id']).type_field.type_name,
 						'caseName':x.caseName,
 						'status':x.status,
 						'usedTime':x.usedTime,
-						'user':caseList.objects.filter(caseName=x.caseName)[0].owner
+						'user':sou['owner'],
 					}
 					build_list.append(tmp)
 				build_list = sorted(build_list, key = lambda x:x['type'])
@@ -851,55 +831,57 @@ def api_report(request):
 		return HttpResponse(result, content_type="application/json")
 
 # 根据url参数返回报表页面
-@cache_page(60)
+# @cache_page(3600)
 def api_report_page(request):
-	try:
-		timeTarget = request.GET['timeStamp']
-	except:
-		message = "参数错误,需要timeStamp"
+# try:
+	timeTarget = request.GET['timeStamp']
+# except:
+# 	message = "参数错误,需要timeStamp"
+# else:
+	rec = allBookRecording.objects.filter(timeStamp=timeTarget)
+	if rec:
+		# 计算测试时长
+		time = rec.values('create_time')
+		if time:
+			sTime = time.order_by('create_time')[0]['create_time']
+			eTime = time.order_by('-create_time')[0]['create_time']
+			m,s = divmod((eTime - sTime).seconds, 60)
+			testTime = '%s分%s秒' % (m,s)
+		# 重构列表
+		cases = []
+		plats = []
+		for x in rec:
+			doc = json.loads(x.testResultDoc)
+			tmp = {
+				'runAt':doc['runAt'],
+				'storySize':doc['storySize'],
+				'caseTestTime':doc['caseTestTime'],
+				'info':caseList.objects.get(id=doc['id']),
+				'status':x.status,
+				'id':x.id,
+			}
+			cases.append(tmp)
+			plats.append(doc["platformName"])
+		plat = set(plats)
+		version = set([x['info'].version for x in cases])
+		# 计算其让指标
+		pass_list = [x for x in cases if x['status'] == 'success']
+		err_list = [x for x in cases if x['status'] == 'danger']
+		# 计算各种结果
+		allNum = len(cases)
+		passNum = len(pass_list)
+		failNum = len(err_list)
+		passRate = round((passNum / allNum) * 100, 2)
 	else:
-		Acases = allBookRecording.objects.filter(timeStamp=timeTarget).filter(testResultDoc__contains='platformName":"Android"')
-		if Acases:
-			vver = testRecording.objects.filter(timeStamp=timeTarget)
-			if vver:
-				version = vver[0].Version
-			Apass_list = [json.loads(x['testResultDoc']) for x in Acases.filter(status='success').values('testResultDoc')]
-			Aerr_list = [json.loads(x['testResultDoc']) for x in Acases.filter(status='danger').values('testResultDoc')]
-			AallNum = int(Acases.count())
-			ApassNum = len(Apass_list)
-			AfailNum = len(Aerr_list)
-			Apass_list = trans_report_list(Apass_list)
-			Aerr_list = trans_report_list(Aerr_list)
-			if AallNum != 0:
-				ApassRate = round((ApassNum / AallNum) * 100, 2)
-			Atime = Acases.values('create_time')
-			if Atime:
-				AsTime = Atime.order_by('create_time')[0]['create_time']
-				AeTime = Atime.order_by('-create_time')[0]['create_time']
-				AtestTime = (AeTime - AsTime).seconds
-		else:
-			Amessage = '没有匹配内容'
+		Amessage = '没有结果'
+# finally:
+	return render_to_response('report.html', locals())
 
-		Mcases = allBookRecording.objects.filter(timeStamp=timeTarget).filter(testResultDoc__contains='platformName":"M"')
-		if Mcases:
-			Mpass_list = [json.loads(x['testResultDoc']) for x in Mcases.filter(status='success').values('testResultDoc')]
-			Merr_list = [json.loads(x['testResultDoc']) for x in Mcases.filter(status='danger').values('testResultDoc')]
-			MallNum = int(Mcases.count())
-			MpassNum = len(Mpass_list)
-			MfailNum = len(Merr_list)
-			Mpass_list = trans_report_list(Mpass_list)
-			Merr_list = trans_report_list(Merr_list)
-			if MallNum != 0:
-				MpassRate = round((MpassNum / MallNum) * 100, 2)
-			Mtime = Mcases.values('create_time')
-			if Mtime:
-				MsTime = Mtime.order_by('create_time')[0]['create_time']
-				MeTime = Mtime.order_by('-create_time')[0]['create_time']
-				MtestTime = (MeTime - MsTime).seconds
-		else:
-			Mmessage = '没有匹配内容'
-	finally:
-		return render_to_response('report.html', locals())
+
+def snapshot(request):
+	bid = request.GET['id']
+	book = trans_report_list(json.loads(allBookRecording.objects.get(id=bid).testResultDoc))
+	return render(request, 'snapshot.html', locals())
 
 
 def search_report(request):
@@ -914,7 +896,8 @@ def search_report(request):
 	Mpass_list = []
 	if user:
 		for x in Acases:
-			case = caseList.objects.filter(in_use='1').get(caseName=x.caseName)
+			cid = json.loads(x.testResultDoc)['id']
+			case = caseList.objects.filter(in_use='1').get(id=cid)
 			if user in case.owner:
 				if x.status == 'danger':
 					logger.info('search_report %s' % x.caseName)
@@ -922,7 +905,8 @@ def search_report(request):
 				else:
 					Apass_list.append(json.loads(x.testResultDoc))
 		for x in Mcases:
-			case = caseList.objects.filter(in_use='1').get(caseName=x.caseName)
+			cid = json.loads(x.testResultDoc)['id']
+			case = caseList.objects.filter(in_use='1').get(id=cid)
 			if user in case.owner:
 				if x.status == 'danger':
 					logger.info('search_report %s' % x.caseName)
@@ -1068,25 +1052,33 @@ def many_many(request):
 		return HttpResponse(back, content_type="application/json")
 
 
-def sync_allbook(request):
-	source_list = allBookRecording.objects.filter(timeStamp__contains='autoTestIn')
-	other_list = allBookRecording.objects.exclude(timeStamp__contains='est')
-	ok_list = []
-	for x in source_list:
+def test_ajax(request):
+	# 右侧对应品类的用例列表
+	dev = request.GET['device']
+	testResults = []
+	x = deviceList.objects.get(deviceName=dev)
+	server = jenkins.Jenkins(x.url, username=x.username, password=x.password)
+	rList = reportsList.objects.filter(deviceName__deviceName=x.deviceName).order_by('-create_time')[:10]    #结果列表
+	x.buildLog = []
+	for y in rList:
+		# 若果用例被删除，那就查不到了
+		mycase = []
+		for z in y.timeStamp.split('_')[1:]:
+			try:
+				zz = caseList.objects.get(id=z)  # 检查该用例在不在
+				zzz = str(zz.id) + ' ' + zz.caseName
+			except:
+				zzz = '用例已被删除'
+			mycase.append(zzz)
+		myDict = {}
+		myDict['build_case'] = mycase
+		myDict['create_time'] = y.create_time.strftime('%Y-%m-%d %H:%M:%S')
+		myDict['buildNUM'] = y.buildNUM
+		myDict['reportURL'] = y.reportURL
 		try:
-			ctime = datetime.datetime.strptime(x.timeStamp.split('autoTestIn')[1],'%Y%m%d').strftime('%Y-%m-%d %H:%M:%S')
-			x.create_time = ctime
-			x.save()
-			ok_list.append(x.id)
+			myDict['status'] = str(server.get_build_info(x.job_name, int(y.buildNUM[1:]))['result'])
 		except:
-			pass
-	for x in other_list:
-		try:
-			ctime = datetime.datetime.fromtimestamp(int(x.timeStamp)).strftime('%Y-%m-%d %H:%M:%S')
-			x.create_time = ctime
-			x.save()
-			ok_list.append(x.id)
-		except:
-			pass
-	back = json.dumps({'code':'1','oklist':ok_list})
-	return HttpResponse(back, content_type="application/json")
+			myDict['status'] = 'queue'
+		x.buildLog.append(myDict)
+	nav_list = navList()
+	return render(request, 'test_ajax.html',locals())

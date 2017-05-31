@@ -14,5 +14,5 @@ from automation.models import testRecording
 today = datetime.datetime.now()
 timeStamp = testRecording.objects.filter(createTime=today).values('timeStamp', 'Version').distinct()
 for x in timeStamp:
-    url = 'http://10.113.1.35:8000/auto/api_report?timeStamp=%s&ver=%s' % (x['timeStamp'], x['Version'])
+    url = 'http://10.113.3.46:8000/auto/api_report?timeStamp=%s&ver=%s' % (x['timeStamp'], x['Version'])
     r = requests.get(url)

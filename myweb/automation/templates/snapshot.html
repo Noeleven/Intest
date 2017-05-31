@@ -1,0 +1,37 @@
+    {% load staticfiles %}
+    {% for y in book.jsonStory %}
+        <h3>第{{y.index}}步:{{y.storyDescription}} | {{y.stepPassStatus}} | 耗时 {{y.stepTime}}</h3>
+        {% if y.stepPassStatus == '未测试' %}
+        {% else %}
+        <p><span class="label label-primary">起点</span> {{y.where}}</p>
+        <p><span class="label label-primary">步骤</span></p>
+        {% for z in y.action %}
+            {% if z.actionDoneTime %}
+            <li>
+            {% else %}
+            <li class='text-danger'>
+            {% endif %}
+                {% if z.target.targetName %}<strong>寻找</strong> {{z.target.targetName}}，{% endif %}
+                {% if z.target.foundTargetTime %}<strong>耗时</strong> {{z.target.foundTargetTime}}，{% endif %}
+                {% if z.actionCode %}<strong>{{z.actionCode}}</strong>，{% endif %}
+                {% if z.behaviorPara.inputValue %}{{z.behaviorPara.inputValue}}，{% endif %}
+                {% if z.actionDoneTime %}<strong>耗时</strong> {{z.actionDoneTime}}{% endif %}
+            </li>
+        {% endfor %}
+        <p><span class="label label-primary">校验</span></p>
+        {% for z in y.checkString %}
+            {% if '验证成功' in z.status %}
+            <li>
+            {% else %}
+            <li class='text-danger'>
+            {% endif %}
+                {% if z.expeted %}<strong>预期</strong> {{z.expeted}}，{% endif %}
+                {% if z.checkType %}<strong>结果</strong> {{z.checkType}} {{z.elementName}}{{z.enterActivity}} {{z.status}} ，{% endif %}
+                {% if z.expetedTime %}<strong>耗时</strong> {{z.expetedTime}}{% endif %}
+            </li>
+        {% endfor %}
+        {% if y.enterActivity %}<p><span class="label label-primary">终点</span> {{y.enterActivity}}</p>{% endif %}
+        {% if y.errorMessage %}<p><span class="label label-primary">错误信息</span> <pre style='white-space: pre-wrap;word-break:break-all;'>{{y.errorMessage}}</pre></p>{% endif %}
+        {% if y.screenShotsPath %}<p><span class="label label-primary">截图</span></p><img class="img-responsive" src='{{ y.screenShotsPath }}'>{% endif %}
+        {% endif %}
+    {% endfor %}

@@ -1,0 +1,52 @@
+    {% load staticfiles %}
+    <span class='label label-primary'>设备号：{{ x.deviceName }}
+    任务名称：{{ x.job_name }}</span>
+
+    <table data-toggle="table"  data-click-to-select="true" data-query-params="queryParams" data-pagination="true" data-search="true">
+        <thead>
+            <tr>
+                <th data-field="构建ID"  data-sortable="true" class="col-xs-2"> 构建ID</th>
+                <th data-field="用例集" data-sortable="true" class="col-xs-2">
+                    用例ID_用例名称
+                </th>
+                <th data-field="测试报告" class="col-xs-2">
+                    测试报告
+                </th>
+                <th data-field="测试状态" class="col-xs-2">
+                    测试状态
+                </th>
+                <th data-field="测试时间" class="col-xs-2" data-sortable="true">
+                    测试创建时间
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for y in x.buildLog %}
+            <tr>
+                <td>{{ y.buildNUM }}</td>
+                <td>{% for z in y.build_case %}<p>{{ z }}</p>{% endfor %}</td>
+                <td><a href="{{ y.reportURL }}" target="_blank">查看报告</a></td>
+                <td>
+                    {% if y.status == 'ABORTED' %}
+                    <span class='label label-default'>测试被中断</span>
+                    {% elif y.status == 'SUCCESS' %}
+                    <span class='label label-success'>测试完成</span>
+                    {% else %}
+                    <span class='label label-warning'>测试未完成</span>
+                    {% endif %}
+                </td>
+                <td>{{ y.create_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <script src="{% static 'js/bootstrap-table.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap-table-zh-CN.min.js' %}"></script>
+    <script>
+    	var $table = $('#tableList');
+    	$(function () {
+    		$table.on('click-row.bs.table', function (e, row, $element) {
+    				$($element).toggleClass('success');
+    		});
+    	});
+    </script>

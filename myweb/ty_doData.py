@@ -564,7 +564,7 @@ def do_rr():
 
 def do_contents():
 	# 第一部分 头
-	html_string0 = "<h3><font face='微软雅黑'> 简要接口报告 </font></h3><h4><span style='font-weight: normal;'><font face='微软雅黑'><font size='3'></font>&nbsp;<a href='http://10.113.1.35:8000/tyblog/' target='_blank'>查看更多图表和丰富数据</a></font></span></h4>"
+	html_string0 = "<h3><font face='微软雅黑'> 简要接口报告 </font></h3><h4><span style='font-weight: normal;'><font face='微软雅黑'><font size='3'></font>&nbsp;<a href='http://10.113.3.46:8000/tyblog/' target='_blank'>查看更多图表和丰富数据</a></font></span></h4>"
 	# 第二部分 占比图表
 	html_string1 = "<h3>【接口占比趋势】</h3><p>算法微调，和之前数据有少许偏差</p><table border=1 width=100%%><tr style=\'background-color:cadetblue\'><th>时间区间</th><th>毫秒级</th><th>1~2秒</th><th>2~3秒</th><th>3~4秒</th><th>4~5秒</th><th>5秒以上</th></tr>\n\r"
 	rates = Rates.objects.all().order_by('des')

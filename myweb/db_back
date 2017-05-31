@@ -1,12 +1,34 @@
 #!/bin/bash
 
 #清理intest fzsdata数据，清理前天的，保留昨天的用于偶尔测试
-now=`date '+%Y-%m-%d %H:%M:%S'`
-mysql -plvmama intest -e 'delete from fz_sdata where timestamp < "$now"'
+#now=`date '+%Y-%m-%d %H:%M:%S'`
+#mysql -plvmama intest -e 'delete from fz_sdata where timestamp < "$now"'
+
+
+d=`date '+%Y-%m-%d'`
+
 pushd /rd/监控脚本/ServerDBbackup
+# 先删掉 30 天之前的数据
+currentDate=`date +%s`
+expired=30
+for x in `find . -name *.zip`
+do
+modifyDate=`stat -c %Y ${x}`
+ExistTime=(${currentDate} - ${modifyDate})/86400
+if [[ ${ExistTime} -gt ${expired} ]]
+then
+svn delete ${x}
+rm -f ${x}
+else
+    echo 'pass'
+fi
+done
+
+# 备份今天的并且上传到svn
 mysqldump -plvmama lmmpicTest > lmmpicTest.sql
 mysqldump -plvmama tingyun > tingyun.sql
 mysqldump -plvmama intest > intest.sql
+zip -m ${d} *.sql
 svn add *
 svn commit -m 'DB备份'
 popd
@@ -16,4 +38,4 @@ popd
 
 #导入
 #python manage.py loaddata /rd/pystudy/myweb/intest/db/intest.json
-
+exit 0

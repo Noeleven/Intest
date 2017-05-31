@@ -28,5 +28,6 @@ urlpatterns = [
 	url(r'^group_edit$', group_edit, name='group_edit'),	# 编辑用例集
 	url(r'^group_save$', group_save, name='group_save'),	# 用例集保存
 	url(r'^many_many$', many_many, name='many_many'),	# 控制列表对应关系一键处理
-	url(r'^sync_allbook$', sync_allbook, name='sync_allbook'),	# 用例集保存
+	url(r'^test_ajax$', test_ajax, name='test_ajax'),	# 普通报告ajax请求
+	url(r'^snapshot$', snapshot, name='snapshot'),	# 普通报告ajax请求
 ]

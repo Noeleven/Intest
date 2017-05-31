@@ -7,14 +7,14 @@ import datetime
 class caseType(models.Model):
     type_name = models.CharField(blank=True, max_length=100)
     type_field = models.CharField(blank=True, max_length=100)
-    modify_time = models.DateTimeField(blank=True, default=datetime.datetime.now)
+    modify_time = models.DateTimeField(blank=True, auto_now=True)
 
     def __str__(self):
         return self.type_field
 
 class secondType(models.Model):
     second_Type = models.CharField(max_length=100, default='测试')
-    modify_time = models.DateTimeField(blank=True, default=datetime.datetime.now)
+    modify_time = models.DateTimeField(blank=True, auto_now=True)
 
     def __str__(self):
         return self.second_Type
@@ -47,7 +47,7 @@ class deviceList(models.Model):
 class myConfig(models.Model):
     caseStr = models.TextField()
     device = models.CharField(max_length=100)
-    modify_time = models.DateTimeField(blank=True, default=datetime.datetime.now)
+    modify_time = models.DateTimeField(blank=True, auto_now=True)
 
 class caseList(models.Model):
     caseName = models.CharField(max_length=300)
@@ -95,12 +95,13 @@ class reportsList(models.Model):
     reportURL = models.CharField(max_length=200,blank=True)
     status = models.CharField(max_length=50,blank=True)
     deviceName = models.ForeignKey(deviceList)
-    create_time = models.DateTimeField(default=datetime.datetime.now)
+    create_time = models.DateTimeField(auto_now=True)
 
 class testRecording(models.Model):
     Version = models.CharField(max_length=10, blank=True)
     timeStamp = models.CharField(max_length=100)
-    createTime = models.DateField(default=datetime.datetime.now)
+    groupId = models.CharField(max_length=100, blank=True)
+    createTime = models.DateField(auto_now=True)
 
 class allBookRecording(models.Model):
     caseName = models.CharField(max_length=300)
@@ -108,7 +109,7 @@ class allBookRecording(models.Model):
     testResultDoc = models.TextField()
     timeStamp = models.CharField(max_length=100)
     usedTime = models.CharField(max_length=100, default='0')
-    create_time = models.DateTimeField(default=datetime.datetime.now)
+    create_time = models.DateTimeField(auto_now=True)
 
 class caseGroup(models.Model):
     groupName = models.CharField(max_length=300)
@@ -119,7 +120,7 @@ class caseGroup(models.Model):
     status = models.CharField(max_length=2,
         choices=TYPE_CHOICE,
         default='1')
-    modify_time = models.DateTimeField(default=datetime.datetime.now)
+    modify_time = models.DateTimeField(auto_now=True)
 
 class caseTypeAdmin(admin.ModelAdmin):
     list_display = ('type_name', 'type_field', 'modify_time')
@@ -132,10 +133,12 @@ class caseListAdmin(admin.ModelAdmin):
     search_fields = ['caseName', 'type_field__type_field', 'plantform', 'owner', 'version', 'des']
 
 class controlListAdmin(admin.ModelAdmin):
-    list_display = ('controlName', 'controlFiled', 'controlType','TYPE',)
+    def get_products(self, controlList):
+        return ",".join([p.versionStr for p in controlList.versionStr.all()])
+    get_products.short_description = 'versionStr'
+    list_display = ('controlName', 'controlFiled', 'controlType', 'TYPE', 'get_products')
     list_per_page = 30
-    search_fields = ['controlName', 'controlFiled', 'controlType','TYPE',]
-    # 'versionStr'
+    search_fields = ['controlName', 'controlFiled', 'controlType','TYPE']
 
 class caseUserAdmin(admin.ModelAdmin):
     list_display = ('userName', 'loginName', 'userStatus','des')

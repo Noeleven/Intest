@@ -1,68 +1,61 @@
 {% extends "auto_base.html" %}
 {% block content %}
 
-<!-- 当前测试队列：{{ queue_num }} -->
-<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-    {% for x in testResults %}
+<div class="row">
+    <div class='col-md-8'>
         <div class="panel panel-primary">
-            <a role="button" data-toggle="collapse"  href="#collapse{{ x.deviceName }}"  aria-controls="collapse{{ x.deviceName }}">
-                <div class="panel-heading" role="tab" id="heading{{ x.deviceName }}"> 设备号：{{ x.deviceName }} 默认仅显示最近20次构建</div>
-            </a>
-
-        <div id="collapse{{x.deviceName}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{ x.deviceName }}">
+            <div class="panel-heading"> 构建报告 </div>
             <div class="panel-body">
-                任务名称：{{ x.job_name }} <br / >
-                历史测试列表：
-            </div>
-            <table data-toggle="table"  data-click-to-select="true" data-query-params="queryParams" data-pagination="true" data-search="true">
-                <thead>
-                    <tr>
-                        <th data-field="构建ID"  data-sortable="true" class="col-xs-2"> 构建ID</th>
-                        <th data-field="用例集" data-sortable="true" class="col-xs-2">
-                            用例ID_用例名称
-                        </th>
-                        <th data-field="测试报告" class="col-xs-2">
-                            测试报告
-                        </th>
-                        <th data-field="测试状态" class="col-xs-2">
-                            测试状态
-                        </th>
-                        <th data-field="测试时间" class="col-xs-2" data-sortable="true">
-                            测试创建时间
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for y in x.buildLog %}
-                    <tr>
-                        <td>{{ y.buildNUM }}</td>
-                        <td>{% for z in y.build_case %}<p>{{ z }}</p>{% endfor %}</td>
-                        <td><a href="{{ y.reportURL }}" target="_blank">查看报告</a></td>
-                        <td>
-                            {% if y.status == 'ABORTED' %}
-                            <span class='label label-default'>测试被中断</span>
-                            {% elif y.status == 'SUCCESS' %}
-                            <span class='label label-success'>测试完成</span>
-                            {% else %}
-                            <span class='label label-warning'>测试未完成</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ y.create_time }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
+                {% for x in dev %}
+                <button class='bb btn btn-sm btn-default'>{{ x.deviceName }}</button>
+                {% endfor %}
+                <div id='contents'></div>
             </div>
         </div>
-        {% endfor %}
+    </div>
+    <div class='col-md-4'>
+        <div class="panel panel-primary">
+            <div class="panel-heading"> 用例集报告 </div>
+            <div class="panel-body">
+                <table data-toggle="table" data-striped="true" data-show-columns="true" data-row-style="rowStyle" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-pagination="true" data-search="true" data-sort-name='测试时间' data-sort-order='desc'>
+        			<thead>
+        				<tr>
+        					<th data-field="用例集" data-sortable="true">
+        						用例集
+        					</th>
+        					<th data-field="报告链接" data-sortable="true">
+        						报告链接
+        					</th>
+        					<th data-field="测试时间" data-sortable="true">
+        					    测试时间
+        					</th>
+        				</tr>
+        			</thead>
+        			<tbody>
+        			{% for x in groupReports %}
+        				<tr>
+                            <td>{{ x.name }}</td>
+                            <td><a href='{{ x.url }}' target="_blank">测试报告</a></td>
+            				<td>{{ x.createTime |date:"Y-m-d H:i:s"}}</td>
+                        </tr>
+        			{% endfor %}
+        			</tbody>
+        		</table>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
-    $(document).ready(function(){
-        $('#myCollapsible').collapse({
-          toggle: false
-        });
-    });
+    $('.bb').click(function() {
+        var device = $(this).text()
+        console.log(device)
+        $.get("{% url 'test_ajax' %}", {
+            'device': device,
+        }, function(ret) {
+            $("#contents").html(ret)
+        })
+    })
 </script>
 {% endblock content %}

@@ -10,7 +10,7 @@ from intest.models import *
 '''
 消灭线上下的单，添加的游玩人等
 '''
-lvses = ['96d84d8c-eafd-4a2b-a0ee-77532a78f044','7bef8d03-99d4-4b88-871a-5025340ed3f5','f1e3f8db-74ca-4010-85f6-bfd54f43914d']
+lvses = ['96d84d8c-eafd-4a2b-a0ee-77532a78f044','7bef8d03-99d4-4b88-871a-5025340ed3f5']
 addressNo = []
 
 # 返回页面内容
@@ -41,11 +41,12 @@ def cancel_order():
 	# 遍历lvsession
 	for lv in lvses:
 		orderNo = []
-		getOrderAdd = "http://api3g2.lvmama.com/api/router/rest.do?method=api.com.order.getOrderList&page=1&pageSize=20&queryType=UNPAY&version=2.0.0&lvversionCode=74&lvversion=7.9.2&firstChannel=ANDROID&formate=json&secondChannel=LVMM&lvsessionid=" + lv
-		cancelOrderAdd = 'http://api3g2.lvmama.com/api/router/rest.do?method=api.com.order.cancellOrder&version=1.0.0&firstChannel=ANDROID&osVersion=6.0.1&lvversionCode=65&lvversion=7.7.3&lvsessionid=' + lv
+		getOrderAdd = "http://m.lvmama.com/api/router/rest.do?method=api.com.order.getOrderList&page=1&pageSize=20&queryType=UNPAY&version=2.0.0&lvversionCode=74&lvversion=7.9.2&firstChannel=ANDROID&formate=json&secondChannel=LVMM&lvsessionid=" + lv
+		cancelOrderAdd = 'http://m.lvmama.com/api/router/rest.do?method=api.com.order.cancellOrder&version=1.0.0&firstChannel=ANDROID&osVersion=6.0.1&lvversionCode=65&lvversion=7.7.3&lvsessionid=' + lv
 		# 取orderId
 		try:
 			html_json = do_curl(getOrderAdd)
+			print(lv)
 			for x in html_json['data']['list']:
 				orderNo.append(x['orderId'])
 			for i in orderNo:
@@ -58,8 +59,8 @@ def cancel_order():
 
 def do_address():
 	for lvse in lvses:
-		getAddress = "https://api3g2.lvmama.com/api/router/rest.do?method=api.com.user.getAddress&version=1.0.0&firstChannel=ANDROID&formate=json&osVersion=6.0.1&lvversionCode=72&lvversion=7.9.0&deviceName=MI%2B5&secondChannel=XIAOMI&lvsessionid=" + lvse
-		delAddress = "http://api3g2.lvmama.com/api/router/rest.do?method=api.com.user.deleteAddress&version=1.0.0&firstChannel=ANDROID&formate=json&osVersion=6.0.1&lvversionCode=72&lvversion=7.9.0&deviceName=MI%2B5&secondChannel=XIAOMI&lvsessionid=" + lvse + "&addressNo="
+		getAddress = "https://m.lvmama.com/api/router/rest.do?method=api.com.user.getAddress&version=1.0.0&firstChannel=ANDROID&formate=json&osVersion=6.0.1&lvversionCode=72&lvversion=7.9.0&deviceName=MI%2B5&secondChannel=XIAOMI&lvsessionid=" + lvse
+		delAddress = "http://m.lvmama.com/api/router/rest.do?method=api.com.user.deleteAddress&version=1.0.0&firstChannel=ANDROID&formate=json&osVersion=6.0.1&lvversionCode=72&lvversion=7.9.0&deviceName=MI%2B5&secondChannel=XIAOMI&lvsessionid=" + lvse + "&addressNo="
 		html_json = do_curl(getAddress)
 		try:
 			for x in html_json['data']:
@@ -75,8 +76,8 @@ def do_address():
 
 def do_contact():
 	for lvse in lvses:
-		getContact = "https://api3g2.lvmama.com/api/router/rest.do?method=api.com.user.getContact&receiversType=CONTACT&version=1.0.0&firstChannel=ANDROID&formate=json&osVersion=6.0.1&lvversionCode=72&lvversion=7.9.0&deviceName=MI%2B5&secondChannel=XIAOMI&lvsessionid=" + lvse
-		delContact = "https://api3g2.lvmama.com/api/router/rest.do?method=api.com.user.removeContact&version=1.0.0&firstChannel=ANDROID&formate=json&osVersion=6.0.1&lvversionCode=72&lvversion=7.9.0&deviceName=MI%2B5&secondChannel=XIAOMI&receiversType=Address&lvsessionid=" + lvse + "&receiverId="
+		getContact = "https://m.lvmama.com/api/router/rest.do?method=api.com.user.getContact&receiversType=CONTACT&version=1.0.0&firstChannel=ANDROID&formate=json&osVersion=6.0.1&lvversionCode=72&lvversion=7.9.0&deviceName=MI%2B5&secondChannel=XIAOMI&lvsessionid=" + lvse
+		delContact = "https://m.lvmama.com/api/router/rest.do?method=api.com.user.removeContact&version=1.0.0&firstChannel=ANDROID&formate=json&osVersion=6.0.1&lvversionCode=72&lvversion=7.9.0&deviceName=MI%2B5&secondChannel=XIAOMI&receiversType=Address&lvsessionid=" + lvse + "&receiverId="
 		contactNo = []
 		html_json = do_curl(getContact)
 		try:

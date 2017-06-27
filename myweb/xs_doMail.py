@@ -34,7 +34,7 @@ def err_list():
 
 def do_contents():
 	my_lists = err_list()
-	html_string0 = "<h3>今天发生错误的接口 有明显异常的，请验证下线上服务<br>其他产品失效等错误，管理员会及时处理</h3><br /><h4><a href='http://10.113.3.46:8000/admin/intest/ints/' target=_blank>接口配置管理</a></h4><table border=1 width=100%><tr style='background-color:cadetblue'><th>HttpCode</th><th>Type</th><th>Name</th><th>Method</th><th>LogCode</th><th>Error</th><th>Message</th><th>ProductId</th><th>URL</th></tr>\n\r"
+	html_string0 = "<h3>今天发生错误的接口 有明显异常的，请验证下线上服务<br>其他产品失效等错误，管理员会及时处理</h3><br /><h4><a href='http://10.115.1.73:8000/admin/intest/ints/' target=_blank>接口配置管理</a></h4><table border=1 width=100%><tr style='background-color:cadetblue'><th>HttpCode</th><th>Type</th><th>Name</th><th>Method</th><th>LogCode</th><th>Error</th><th>Message</th><th>ProductId</th><th>URL</th></tr>\n\r"
 	html_string1 = ""
 
 	for x in my_lists:
@@ -52,7 +52,7 @@ def do_contents():
 		if line not in patterns:
 			patterns.append(line)
 	html_string2 = "".join(patterns)
-	html_string3="</table><h4><a href='http://10.113.3.46:8000/' target=_blank>性能监控平台</a></h4>"
+	html_string3="</table><h4><a href='http://10.115.1.73:8000/' target=_blank>性能监控平台</a></h4>"
 	html_string = html_string0 + html_string2 + html_string3
 	return html_string
 

@@ -68,7 +68,7 @@ def do_contents():
 		}
 		summary_list.append(summ)
 
-	html_string0 = ("<h4>接口测试报告<hr><font face='微软雅黑'>环境：仿真<br>用例：%s<br>成功：%s<br>失败：%s</font><br><span style='font-weight:normal;'><a href='http://10.113.1.35:8000/admin/fz/ints/' target='_blank'>配置后台</a><a href='http://10.113.1.35:8000/fz/' target='_blank'>监控平台</a></span></h4><table border=1><tr style=\'background-color:cadetblue\'><td>品类</td>" % (all_num, succ_num, err_num))
+	html_string0 = ("<h4>接口测试报告<hr><font face='微软雅黑'>环境：仿真<br>用例：%s<br>成功：%s<br>失败：%s</font><br><span style='font-weight:normal;'><a href='http://10.113.3.46:8000/admin/fz/ints/' target='_blank'>配置后台</a><a href='http://10.113.3.46:8000/fz/' target='_blank'>监控平台</a></span></h4><table border=1><tr style=\'background-color:cadetblue\'><td>品类</td>" % (all_num, succ_num, err_num))
 
 	html_string0 += ''.join([('<td>%s</td>' % x['type']) for x in summary_list]) + '</tr><tr><td>用例总数</td>'
 	html_string0 += ''.join([('<td>%s</td>' % x['num']) for x in summary_list]) + '</tr><tr style=\'background-color:Aquamarine\'><td>成功的</td>'

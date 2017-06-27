@@ -126,7 +126,7 @@ def do_curl(n, req_url, url_method="GET", method_name="未定义名称", url_api
 
 
 def do_db():
-	url_path = "api3g2.lvmama.com/api/router/rest.do?method="
+	url_path = "m.lvmama.com/api/router/rest.do?method="
 	method_list = Ints.objects.filter(inuse=1).values('method_version').order_by('method_version').distinct()
 	n = 1
 	old = "ef3d2602-7bac-4335-9251-0f1493c64154"

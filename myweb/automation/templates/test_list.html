@@ -2,18 +2,27 @@
 {% block content %}
 
 <div class="row">
-    <div class='col-md-8'>
+    <div class='col-md-7'>
         <div class="panel panel-primary">
             <div class="panel-heading"> 构建报告 </div>
             <div class="panel-body">
-                {% for x in dev %}
+                <span class='label label-success'><i class="fa fa-apple xwcms"></i></span>
+                {% for x in iosdev %}
+                <button class='bb btn btn-sm btn-default'>{{ x.deviceName }}</button>
+                {% endfor %}<br>
+                <span class='label label-success'><i class="fa fa-android xwcms"></i></span>
+                {% for x in addev %}
+                <button class='bb btn btn-sm btn-default'>{{ x.deviceName }}</button>
+                {% endfor %}<br>
+                <span class='label label-success'><i class="fa fa-chrome xwcms"></i></span>
+                {% for x in mdev %}
                 <button class='bb btn btn-sm btn-default'>{{ x.deviceName }}</button>
                 {% endfor %}
                 <div id='contents'></div>
             </div>
         </div>
     </div>
-    <div class='col-md-4'>
+    <div class='col-md-5'>
         <div class="panel panel-primary">
             <div class="panel-heading"> 用例集报告 </div>
             <div class="panel-body">
@@ -29,6 +38,9 @@
         					<th data-field="测试时间" data-sortable="true">
         					    测试时间
         					</th>
+        					<th>
+        					    操作
+        					</th>
         				</tr>
         			</thead>
         			<tbody>
@@ -37,6 +49,7 @@
                             <td>{{ x.name }}</td>
                             <td><a href='{{ x.url }}' target="_blank">测试报告</a></td>
             				<td>{{ x.createTime |date:"Y-m-d H:i:s"}}</td>
+                            <td><a href='/auto/api_report?timeStamp={{x.timeStamp}}&ver={{x.Version}}&name={{x.name}}' target=_blank class='btn btn-default btn-sm'><i class="fa fa-envelope"></i> toLvtu</a></td>
                         </tr>
         			{% endfor %}
         			</tbody>
@@ -57,5 +70,6 @@
             $("#contents").html(ret)
         })
     })
+
 </script>
 {% endblock content %}

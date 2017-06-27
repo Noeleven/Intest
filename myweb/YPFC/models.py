@@ -36,9 +36,9 @@ class mark(models.Model):
     timestamp = models.DateField(auto_now=False)
 
 class YPFCAdmin(admin.ModelAdmin):
-    list_display = ('name', 'position', 'weight', 'height', 'number', 'phone')
+    list_display = ('name', 'number', 'phone', 'status')
     list_per_page = 30
-    search_fields = ['name', 'position', 'weight', 'height', 'number', 'phone']
+    search_fields = ['name', 'number', 'phone', 'status']
 
 class myFrom(forms.Form):
     data = forms.DateField(initial=datetime.date.today)

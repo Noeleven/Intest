@@ -34,8 +34,11 @@ def memView(request):
 		else:
 			pass
 		# 判断会员的
-		if mem_content['balance'] >= 0:
+		if mem_content['balance'] > 0:
 			mem_content['status'] = '正常'
+			vip_normal.append(mem_content)
+		elif mem_content['balance'] == 0:
+			mem_content['status'] = '该缴费了'
 			vip_normal.append(mem_content)
 		else:
 			mem_content['status'] = '欠费'

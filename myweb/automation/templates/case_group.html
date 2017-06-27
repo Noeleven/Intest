@@ -9,8 +9,11 @@
                 <!-- <a type='submit' class="btn btn-sm btn-default getCases">用例集构建#IOS</a> -->
                 <a type='submit' class="btn btn-sm btn-default getCases">用例集构建#M</a>
                 <a href="/auto/test_list" type='button' class='btn btn-default btn-sm' target="_blank"><i class="fa fa-bullhorn xwcms"></i> 测试报告</a>
-            </div>
-            <p class='text text-danger'>注意：仅支持 同一个平台 + 同一个版本的用例集同时构建,不支持混杂构建</p>
+            </div><br>
+            <span class='label label-danger'>注意：仅支持 同一个平台 + 同一个版本的用例集同时构建,不支持混杂构建</span>
+            <hr>
+            AD每日自动构建用例集ID：<span class='label label-success'>{{Aid}}</span>
+            M站每日自动构建用例集ID：<span class='label label-primary'>{{Mid}}</span>
             <div id='delconfirm' class="alert alert-default alert-dismissible fade in" role="alert" style="display:none">
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
                 <h4 id='titleee'>删除确认</h4>

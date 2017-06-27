@@ -27,34 +27,34 @@
 			<!-- 整体结果 -->
 			<h3>自动化测试报告{{Amessage}}</h3>
 			<table class="table table-bordered">
-					<thead></thead>
-					<tbody>
-						<tr>
-							<td>测试用例总数</td>
-							<td>{{ allNum }}</td>
-							<td>测试开始时间</td>
-							<td>{{ sTime|date:"Y-m-d H:i:s" }}</td>
-							<td>测试平台</td>
-							<td>{{ plat }}</td>
-						</tr>
-						<tr>
-							<td><span class="label label-success">通过</span></td>
-							<td>{{ passNum }}</td>
-							<td>测试结束时间</td>
-							<td>{{ eTime|date:"Y-m-d H:i:s" }}</td>
-							<td>版本号</td>
-							<td>{{ version }}</td>
-						</tr>
-						<tr>
-							<td><span class="label label-danger">失败</span></td>
-							<td>{{ failNum }}</td>
-							<td>测试总时长</td>
-							<td>{{ testTime }}</td>
-							<td>通过率</td>
-							<td>{{ passRate }}%</td>
-						</tr>
-					</tbody>
-				</table>
+				<thead></thead>
+				<tbody>
+					<tr>
+						<td>测试用例总数</td>
+						<td>{{ allNum }}</td>
+						<td>测试开始时间</td>
+						<td>{{ sTime|date:"Y-m-d H:i:s" }}</td>
+						<td>测试平台</td>
+						<td>{{ plat }}</td>
+					</tr>
+					<tr>
+						<td><span class="label label-success">通过</span></td>
+						<td>{{ passNum }}</td>
+						<td>测试结束时间</td>
+						<td>{{ eTime|date:"Y-m-d H:i:s" }}</td>
+						<td>版本号</td>
+						<td>{{ version }}</td>
+					</tr>
+					<tr>
+						<td><span class="label label-danger">失败</span></td>
+						<td>{{ failNum }}</td>
+						<td>测试总时长</td>
+						<td>{{ testTime }}</td>
+						<td>通过率</td>
+						<td>{{ passRate }}%</td>
+					</tr>
+				</tbody>
+			</table>
 			<hr>
 			<!-- 结果表格 和 展示区域 -->
 			<ul class="nav nav-tabs" role="tablist">
@@ -151,6 +151,12 @@
 					</table>
 				</div>
 			</div>
+            <br>
+            {% if no_list %}
+            <pre>未生成报告的用例列表:{{no_list | length}}<br>
+{% for x in no_list %}{{x.id}}-{{x.caseName}}-{{x.owner}}-{%if x.in_use == '1'%}在用{%else%}废弃{%endif%}<br>{% endfor %}
+            </pre>
+            {% endif %}
 		</div>
 		<div class='col-md-4'>
 			<br>

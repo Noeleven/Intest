@@ -31,11 +31,11 @@
                     </div>
                 </div>
                 <div id="demoform" action="#" method="post" class="form-group">
-                    <label class="col-sm-2 control-label">用例管理 <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="左列是所有用例，右列是当前选中用例"></span></label>
+                    <label class="col-sm-2 control-label">用例管理 <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="左列是所有用例，右列是当前选中用例，过滤支持正则如796的成功或通过的 \[7.9.6\].*(成功|通过)"></span></label>
                     <div class="col-sm-10">
                         <select multiple="multiple" size="20" name="groupListBox">
                         {% for x in allCase %}
-                        <option value="case-{{ x.id }}" {% if x.sta == 'checked' %}selected='selected'{% endif %}>{{ x.id }} [{{ x.caseName }}] [{{ x.version }}] [{{ x.des }}] {{ x.owner }}</option>
+                        <option value="case-{{ x.id }}" {% if x.sta == 'checked' %}selected='selected'{% endif %}>{{ x.id }}+{{ x.caseName }}+{{ x.plantform }}+{{ x.version }}+{{ x.des }}+{{ x.owner }}+{{ x.in_use }}</option>
                         {% endfor %}
                         </select>
                     </div>
@@ -59,7 +59,12 @@
 
 <script src="{% static 'dist/js/jquery.bootstrap-duallistbox.min.js' %}"></script>
 <script>
-  var demo1 = $('select[name="groupListBox"]').bootstrapDualListbox();
+  var demo1 = $('select[name="groupListBox"]').bootstrapDualListbox({
+      nonSelectedListLabel: 'Non-selected',
+      selectedListLabel: 'Selected',
+      preserveSelectionOnMove: 'moved',
+      moveOnSelect: false,
+    });
   $("#demoform").submit(function() {
     alert($('[name="groupListBox"]').val());
     return false;

@@ -102,12 +102,12 @@ def cobra_datas(request):
 			'version': source.version,
 			'des' : source.des,
 			'type' : source.type,
-			'rpm' : str(round(sum([x for x in rpm_src if x > 0]))),
+			'rpm' : round(sum([x for x in rpm_src if x > 0])),
 			}
 		res_src = [x['res'] for x in range_list.filter(method_id=x).values('res') if x['res']]
 		res = [x for x in res_src if x > 0]
 		try:
-			my_dict['res'] = str(round(sum(res) / len(res), 2))
+			my_dict['res'] = round(sum(res) / len(res), 2)
 		except:
 			my_dict['res'] = ''
 		show_data.append(my_dict)

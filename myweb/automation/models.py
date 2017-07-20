@@ -37,7 +37,7 @@ class deviceList(models.Model):
     platformName = models.CharField(blank=True, default='Android', max_length=10)
     appLaunchActivity = models.CharField(blank=True, default='com.gift.android.activity.splash.WelcomeActivity', max_length=100)
     timeWait = models.IntegerField(blank=True, default=30)
-    USE_CHOICE = (('1', '启用'), ('0', '禁用'))
+    USE_CHOICE = (('1', '启用'), ('0', '禁用'), ('2', '测试用'))
     in_use = models.CharField(max_length=2,
         choices=USE_CHOICE,
         default='1')

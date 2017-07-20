@@ -23,7 +23,7 @@
 
 <body>
 	<div class="row" style="padding:20px">
-		<div class='col-md-8'>
+		<div class='col-md-3'>
 			<!-- 整体结果 -->
 			<h3>自动化测试报告{{Amessage}}</h3>
 			<table class="table table-bordered">
@@ -34,32 +34,43 @@
 						<td>{{ allNum }}</td>
 						<td>测试开始时间</td>
 						<td>{{ sTime|date:"Y-m-d H:i:s" }}</td>
-						<td>测试平台</td>
-						<td>{{ plat }}</td>
+
 					</tr>
 					<tr>
 						<td><span class="label label-success">通过</span></td>
 						<td>{{ passNum }}</td>
 						<td>测试结束时间</td>
 						<td>{{ eTime|date:"Y-m-d H:i:s" }}</td>
-						<td>版本号</td>
-						<td>{{ version }}</td>
+
 					</tr>
 					<tr>
 						<td><span class="label label-danger">失败</span></td>
 						<td>{{ failNum }}</td>
 						<td>测试总时长</td>
 						<td>{{ testTime }}</td>
-						<td>通过率</td>
-						<td>{{ passRate }}%</td>
 					</tr>
+                    <tr>
+                        <td>通过率</td>
+						<td>{{ passRate }}%</td>
+                        <td>测试平台</td>
+						<td>{{ plat }}</td>
+                    </tr>
+                    <tr>
+                        <td>版本号</td>
+						<td>{{ version }}</td>
+                    </tr>
 				</tbody>
 			</table>
-			<hr>
+		</div>
+        <div class='col-md-9'>
 			<!-- 结果表格 和 展示区域 -->
 			<ul class="nav nav-tabs" role="tablist">
 				<li role="presentation" class="active"><a href="#Succ" aria-controls="Succ" role="tab" data-toggle="tab">成功 {{passNum}}</a></li>
 				<li role="presentation"><a href="#Err" aria-controls="Err" role="tab" data-toggle="tab">失败 {{failNum}}</a></li>
+
+                {% if no_list %}
+                <li role="presentation"><a href="#Nolist" aria-controls="Nolist" role="tab" data-toggle="tab">没跑的 {{no_list | length}}</a></li>
+                {% endif %}
 			</ul>
 			<div class="tab-content">
 				<div role="tabpanel" class="tab-pane active" id="Succ">
@@ -150,15 +161,39 @@
 						</tbody>
 					</table>
 				</div>
+                <div role="tabpanel" class="tab-pane" id="Nolist">
+					<table id='tt2' data-toggle="table" data-show-columns="true" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-search="true"  data-height="450">
+						<thead>
+							<tr class='danger'>
+								<th data-field="ID" data-sortable="true"> ID</th>
+								<th data-field="用例名称" data-sortable="true">
+									用例名称
+								</th>
+								<th data-field="所属" data-sortable="true">
+									所属
+								</th>
+								<th data-field="状态" data-sortable="true">
+									状态
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+						{% for x in no_list %}
+						<tr id='{{x.id}}'>
+							<td>{{ x.id }}</td>
+							<td>{{ x.caseName }}</td>
+							<td>{{ x.owner }}</td>
+                            <td>{%if x.in_use == '1'%}在用{%else%}废弃{%endif%}</td>
+						</tr>
+						{% endfor %}
+						</tbody>
+					</table>
+				</div>
 			</div>
             <br>
-            {% if no_list %}
-            <pre>未生成报告的用例列表:{{no_list | length}}<br>
-{% for x in no_list %}{{x.id}}-{{x.caseName}}-{{x.owner}}-{%if x.in_use == '1'%}在用{%else%}废弃{%endif%}<br>{% endfor %}
-            </pre>
-            {% endif %}
 		</div>
-		<div class='col-md-4'>
+        <hr>
+		<div class='col-md-12'>
 			<br>
 			<div class="panel panel-default">
 				<div class="panel-heading">
@@ -169,8 +204,6 @@
 				</div>
 			</div>
 		</div>
-
-
 	</div>
 
     <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>

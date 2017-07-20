@@ -1,4 +1,5 @@
     {% load staticfiles %}
+    <!-- {% if book.storyAndroidLog %}<a type="button" name="button" target=_blank class='btn btn-block btn-warning' href="{{book.storyAndroidLog}}">查看Android日志</a>{%endif%} -->
     {% for y in book.jsonStory %}
         <h3>第{{y.index}}步:{{y.storyDescription}} | {{y.stepPassStatus}} | 耗时 {{y.stepTime}}</h3>
         {% if y.stepPassStatus == '未测试' %}
@@ -32,6 +33,12 @@
         {% endfor %}
         {% if y.enterActivity %}<p><span class="label label-primary">终点</span> {{y.enterActivity}}</p>{% endif %}
         {% if y.errorMessage %}<p><span class="label label-primary">错误信息</span> <pre style='white-space: pre-wrap;word-break:break-all;'>{{y.errorMessage}}</pre></p>{% endif %}
-        {% if y.screenShotsPath %}<p><span class="label label-primary">截图</span></p><img class="img-responsive" src='{{ y.screenShotsPath }}'>{% endif %}
+            {% if y.screenShotsPathList %}
+                <p><span class="label label-primary">截图</span></p>
+                {% for z in y.screenShotsPathList %}<img src='{{ z }}' style="height: 600px;">{% endfor %}
+            {% elif y.screenShotsPath %}
+                <p><span class="label label-primary">截图</span></p>
+                <img src='{{ y.screenShotsPath }}' style="height: 600px;">
+            {% endif %}
         {% endif %}
     {% endfor %}

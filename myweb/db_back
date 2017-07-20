@@ -7,10 +7,10 @@
 
 d=`date '+%Y-%m-%d'`
 
-pushd /rd/监控脚本/ServerDBbackup
+pushd /rd/databack/ServerDBbackup
 # 先删掉 30 天之前的数据
 currentDate=`date +%s`
-expired=30
+expired=15
 for x in `find . -name *.zip`
 do
 modifyDate=`stat -c %Y ${x}`
@@ -25,17 +25,11 @@ fi
 done
 
 # 备份今天的并且上传到svn
-mysqldump -plvmama lmmpicTest > lmmpicTest.sql
-mysqldump -plvmama tingyun > tingyun.sql
 mysqldump -plvmama intest > intest.sql
+mysqldump -plvmama mywiki > mywiki.sql
 zip -m ${d} *.sql
 svn add *
 svn commit -m 'DB备份'
 popd
 
-#备份intest
-#/root/.pyenv/versions/3.5.1/bin/python3 manage.py dumpdata intest > /rd/pystudy/myweb/intest/db/intest.json
-
-#导入
-#python manage.py loaddata /rd/pystudy/myweb/intest/db/intest.json
 exit 0

@@ -37,6 +37,7 @@ urlpatterns = [
     url(r'^YPFC/', include('YPFC.urls')),
     url(r'^auto/', include('automation.urls')),
 	url(r'^wiki/notifications/', get_nyt_pattern()),
-    url(r'^wiki/', get_wiki_pattern()),
+    url(r'^wiki2/', get_wiki_pattern()),
 	url(r'^media/(?P<path>.*)$',django.views.static.serve,{'document_root': settings.MEDIA_ROOT,}),
+	url(r'^wiki/', RedirectView.as_view(url=r'http://10.115.1.73:8090/pages/viewpage.action?pageId=360510')),
 ]

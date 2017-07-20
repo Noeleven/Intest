@@ -22,7 +22,7 @@ def get_dates(yestoday_num):
 	user = cf.get('cobra', 'user')
 	password = cf.get('cobra', 'password')
 	host = cf.get('cobra', 'host')
-
+	# try connet to mysql 3 times
 	for i in range(3):
 		try:
 			conn = mysql.connector.connect(user=user, password=password, database='cobra', host=host)
@@ -34,7 +34,7 @@ def get_dates(yestoday_num):
 				sys.exit(0)
 		finally:
 			time.sleep(10)
-	# 获取接口表数据
+	# get methods datas
 	cursor.execute("select id, name, description, type, version  from api_method where enabled = %s" % '1')
 	values = cursor.fetchall()
 
@@ -50,7 +50,7 @@ def get_dates(yestoday_num):
 
 	print("day_index: %s" % yestoday_num)
 
-	# daynum转日期型，为了清理已有的数据
+	# clear old datas, write new
 	this_day = datetime.datetime(2016, 1, 1) + datetime.timedelta(days=(yestoday_num))
 	Datas.objects.filter(create_time=this_day).delete()
 	print(this_day.date())
@@ -75,11 +75,13 @@ def get_dates(yestoday_num):
 
 
 def save_datas(values, rpms, ress, channelNum, proNum):
+	# get date
 	b = ress[0][2]
+	# clear old datas
 	Datas.objects.filter(create_time=b).delete()
 	Channel.objects.filter(day=b).delete()
 	Projects.objects.filter(day=b).delete()
-	# save method
+	# save method, if alreadyIn, pass, else write
 	method_IdList = []
 	for i in values:
 		method = i[1]
@@ -87,7 +89,8 @@ def save_datas(values, rpms, ress, channelNum, proNum):
 		version = i[4]
 		p = Method.objects.filter(method=method).filter(version=version)
 		if p:
-			continue
+			p[0].des = i[2]
+			p[0].type = i[3]
 		else:
 			s = Method(method=method)
 			s.id = i[0]
@@ -97,7 +100,7 @@ def save_datas(values, rpms, ress, channelNum, proNum):
 			s.save()
 	# save yestoday res&rpm
 	for x in method_IdList:
-		y = Datas(method_id=x)	# 记录datas
+		y = Datas(method_id=x)	# create new datas
 		# 汇总该接口所有的res值，求平均
 		cost_List = [z[1] for z in ress if z[0] == x]
 		total = sum(cost_List)
@@ -108,7 +111,8 @@ def save_datas(values, rpms, ress, channelNum, proNum):
 			y.res = 0
 			print("res %s count failed err:%s" % (x,e))
 		try:
-			y.rpm = sum([r[1] for r in rpms if r[0] == x])
+			rpm_li = [r[1] for r in rpms if r[0] == x]
+			y.rpm = sum(rpm_li)	# 为啥报错？
 		except IndexError as e:
 			y.rpm = 0
 			print("rpm %s count failed err:%s" % (x, e))
@@ -120,6 +124,7 @@ def save_datas(values, rpms, ress, channelNum, proNum):
 				y.save()
 			except:
 				pass
+		# save channel datas
 		for cc in ['ANDROID', 'IPHONE', 'TOUCH']:
 			cs = sum([y[1] for y in channelNum if y[0] == x and y[2] == cc])
 			if cs > 0:
@@ -143,7 +148,8 @@ def save_datas(values, rpms, ress, channelNum, proNum):
 
 
 if __name__ == '__main__':
-	for x in range(530,539):
+	# define day_index num range
+	for x in range(550,561):
 		start = get_dates(x)
 		values = start[0]
 		rpms = start[1]

@@ -30,4 +30,5 @@ urlpatterns = [
 	url(r'^many_many$', many_many, name='many_many'),	# 控制列表对应关系一键处理
 	url(r'^test_ajax$', test_ajax, name='test_ajax'),	# 普通报告ajax请求
 	url(r'^snapshot$', snapshot, name='snapshot'),	# 普通报告ajax请求
+	url(r'^stop_jenkins$', stop_jenkins, name='stop_jenkins'),	# 普通报告ajax请求
 ]

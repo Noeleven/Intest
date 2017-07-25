@@ -1,19 +1,19 @@
 {% extends "auto_base.html" %}
 {% block content %}
 <div class="row">
-    <div class="panel panel-primary">
+    <div class="panel panel-black">
         <div class="panel-heading"> {{ my_type }} </div>
 		<div class="panel-body">
-
-            <hr / >
+            {% if my_type != '废弃_all'%}
             <ul class="nav nav-tabs" role="tablist">
               <li role="presentation" class="active"><a href="#ad" aria-controls="ad" role="tab" data-toggle="tab">Android 测试机</a></li>
-              <li role="presentation"><a href="#ios" aria-controls="ios" role="tab" data-toggle="tab">IOS 测试机</a></li>
+              <li role="presentation"><a href="#ios" aria-controls="ios" role="tab" data-toggle="tab">iOS 测试机</a></li>
               <li role="presentation"><a href="#mm" aria-controls="mm" role="tab" data-toggle="tab">M站 测试机</a></li>
-              <li role="presentation"><a href="#jj" aria-controls="jj" role="tab" data-toggle="tab">Jenkins</a></li>
+              <!-- <li role="presentation"><a href="#jj" aria-controls="jj" role="tab" data-toggle="tab">Jenkins</a></li> -->
             </ul>
             <div class="tab-content">
               <div role="tabpanel" class="tab-pane fade in active" id="ad">
+                  <br>
                   {% for x in device_list %}
                       {% if x.platformName == 'Android'%}
                       <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">安卓测试#{{ x.deviceName }}#{{ x.appVersion }}</a>
@@ -21,32 +21,33 @@
                   {% endfor %}
               </div>
               <div role="tabpanel" class="tab-pane fade" id="ios">
+                  <br>
                   {% for x in device_list %}
-                      {% if x.platformName == 'IOS'%}
-                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">IOS#{{ x.deviceName }}#{{ x.appVersion }}</a>
+                      {% if x.platformName == 'iOS'%}
+                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">iOS#{{ x.deviceName }}#{{ x.appVersion }}</a>
                       {%endif%}
                   {% endfor %}
               </div>
               <div role="tabpanel" class="tab-pane fade" id="mm">
+                  <br>
                   {% for x in device_list %}
                       {% if x.platformName == 'M'%}
                       <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">M站#{{ x.deviceName }}#{{ x.appVersion }}</a>
                       {%endif%}
                   {% endfor %}
               </div>
-              <div role="tabpanel" class="tab-pane fade" id="jj">
+              <!-- <div role="tabpanel" class="tab-pane fade" id="jj">
                   <br>
-                  <!-- <a type="button" class="btn btn-default btn-sm" href="http://10.113.2.70:8080/jenkins/" target="_blank"><i class="fa fa-android xwcms"></i> AD796 Jenkins</a> -->
+                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.2.70:8080/jenkins/" target="_blank"><i class="fa fa-android xwcms"></i> AD796 Jenkins</a>
                   <a type="button" class="btn btn-default btn-sm" href="http://10.113.1.223:8080" target="_blank"><i class="fa fa-android xwcms"></i> AD796 Jenkins 2*</a>
                   <a type="button" class="btn btn-default btn-sm" href="http://10.113.1.241:8080" target="_blank"><i class="fa fa-android xwcms"></i> AD796 Jenkins 3*</a>
                   <a type="button" class="btn btn-default btn-sm" href="http://10.113.2.170:8080" target="_blank"><i class="fa fa-android xwcms"></i> AD796 Jenkins 5*</a>
                   <a type="button" class="btn btn-default btn-sm" href="http://10.113.2.123:8080" target="_blank"><i class="fa fa-android xwcms"></i> AD796 Jenkins 6*</a>
-                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.1.193:8080" target="_blank"><i class="fa fa-apple xwcms"></i> IOS Jenkins</a>
+                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.1.193:8080" target="_blank"><i class="fa fa-apple xwcms"></i> iOS Jenkins</a>
                   <a type="button" class="btn btn-default btn-sm" href="http://10.113.2.70:8080/jenkins/" target="_blank"><i class="fa fa-chrome xwcms"></i> M Jenkins</a>
-              </div>
+              </div> -->
             </div>
-            <hr>
-            <div class="btn-group btn-group-sm">
+            <div class="btn-group btn-group-sm pull-right">
                 <a href='/auto/new_add' type='button' class='btn btn-success'><span class="glyphicon glyphicon-plus xwcms"></span> 新增用例</a>
                 <button type="submit" class="btn btn-primary" id="makeGroup"><span class="glyphicon glyphicon-plus xwcms" aria-hidden="true"></span> 添加到用例集</button>
                 <button type="submit" class="btn btn-danger" id="delCases"><span class="glyphicon glyphicon-remove xwcms" aria-hidden="true"></span> 批量删除</button>
@@ -66,6 +67,7 @@
                 </p>
             </div>
 		</div>
+        {% endif %}
 
 		<table id="tableList" data-toggle="table" data-striped="true" data-show-columns="true" data-row-style="rowStyle" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-pagination="true" data-search="true" data-sort-name='修改时间' data-sort-order='desc'>
 			<thead>
@@ -154,7 +156,7 @@
                     $('#delconfirm').fadeOut(2000);
                 }else{
                     $('#titleee').text('构建确认');
-                    $("#del_mess").text('所选用例的平台和当前构建设备不匹配，IOS用例就选IOS构建，不要混用');
+                    $("#del_mess").text('所选用例的平台和当前构建设备不匹配，iOS用例就选iOS构建，不要混用');
                     $('#del_butt').fadeOut(0);
                 }
             }else{

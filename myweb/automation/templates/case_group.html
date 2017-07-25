@@ -1,16 +1,16 @@
 {% extends "auto_base.html" %}
 {% block content %}
 <div class="row">
-    <div class="panel panel-primary">
+    <div class="panel panel-black">
         <div class="panel-heading"> 用例集 </div>
 		<div class="panel-body">
+            <span class='label label-danger'>注意：仅支持 同一个平台 + 同一个版本的用例集同时构建,不支持混杂构建</span><br>
             <div class="btn-group btn-group-sm">
-                <a type='submit' class="btn btn-sm btn-default getCases">用例集构建#AD</a>
+                <a type='submit' class="btn btn-sm btn-default getCases">构建#AD</a>
                 <!-- <a type='submit' class="btn btn-sm btn-default getCases">用例集构建#IOS</a> -->
-                <a type='submit' class="btn btn-sm btn-default getCases">用例集构建#M</a>
+                <a type='submit' class="btn btn-sm btn-default getCases">构建#M</a>
                 <a href="/auto/test_list" type='button' class='btn btn-default btn-sm' target="_blank"><i class="fa fa-bullhorn xwcms"></i> 测试报告</a>
-            </div><br>
-            <span class='label label-danger'>注意：仅支持 同一个平台 + 同一个版本的用例集同时构建,不支持混杂构建</span>
+            </div>
             <hr>
             AD每日自动构建用例集ID：<span class='label label-success'>{{Aid}}</span>
             M站每日自动构建用例集ID：<span class='label label-primary'>{{Mid}}</span>

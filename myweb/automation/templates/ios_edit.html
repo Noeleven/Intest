@@ -1,6 +1,6 @@
 {% extends "auto_base.html" %} {% block content %}
 <div class="row">
-    <div class="panel panel-primary">
+    <div class="panel panel-black">
         <div class="panel-heading"> 添加用例 </div>
         <div class="panel-body">
             <form class="form-horizontal" role="form" method='GET' action="/auto/auto_edit_save/{{ id }}">
@@ -21,7 +21,7 @@
                         <div class="form-group">
                             <label for="caseName" class="col-sm-2 control-label">用例名称 <strong class="text-danger">*</strong> </label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control focus input-sm" name="caseName" autofocus="autofocus" placeholder="格式建议：品类-用例名" required="required" value="{{ json_dict.caseName }}" readonly/>
+                                <input type="text" class="form-control focus input-sm" name="caseName" autofocus="autofocus" placeholder="格式建议：品类-用例名" required="required" value="{{ json_dict.caseName }}"/>
                             </div>
                         </div>
                         <!-- 品类 -->
@@ -104,7 +104,7 @@
                       <div class="form-group">
                           <label for="from" class="col-sm-2 control-label">步骤 <strong class="text-danger">*</strong> </label>
                           <div class="col-sm-10">
-                              <table class='table table-striped table-bordered table-condensed table-responsive'>
+                              <table class='table table-condensed table-responsive'>
                                   <thead>
                                       <tr class="info">
                                           <th>序号</th>
@@ -128,16 +128,15 @@
                                               <div class="form-group">
                                                   <label for="stepDes" class="col-sm-2 control-label">动作</label>
                                                   <div class="col-sm-10">
-                                                      <table class='table table-striped table-bordered table-condensed table-responsive'>
+                                                      <table class='table table-condensed table-responsive'>
                                                           <thead>
-                                                              <tr class="danger">
+                                                              <tr>
                                                                   <th class="col-sm-1">## <strong class="text-danger">*</strong> </th>
-                                                                  <th class="col-sm-3">做什么动作 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="标记需要配置元素的选型，一定要配置元素，除此之外都可以不要"></span></th>
-                                                                  <th class="col-sm-3">元素类型 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="按钮、输入框等类型"></span></th>
-                                                                  <th class="col-sm-3">元素标识
+                                                                  <th class="col-sm-3">动作 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="标记需要配置元素的选型，一定要配置元素，除此之外都可以不要"></span></th>
+                                                                  <th class="col-sm-3">元素
                                                                       <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="填入元素上显示的文字"></span>
                                                                   </th>
-                                                                  <th >输入内容</th>
+                                                                  <th>输入</th>
                                                                   <th></th>
                                                               </tr>
                                                           </thead>
@@ -153,15 +152,6 @@
                                                                           <select class="form-control input-sm" name="actionCode" required="required">
                                                                               {% for x in control_list %}
                                                                               <option {% if x.controlName == BG.action %}selected="True"{% endif %}>{{ x.controlName }}</option>
-                                                                              {% endfor %}
-                                                                          </select>
-                                                                      </div>
-                                                                  </td>
-                                                                  <td>
-                                                                      <div class="form-group">
-                                                                          <select class="form-control input-sm" name="typeCode" required="required">
-                                                                              {% for x in target_type_list %}
-                                                                              <option {% if x.controlName == BG.type %}selected="True"{% endif %}>{{ x.controlName }}</option>
                                                                               {% endfor %}
                                                                           </select>
                                                                       </div>
@@ -205,14 +195,13 @@
                     <div class="form-group">
                         <div class="col-sm-offset-2 col-sm-10">
                             <input type="submit" class="btn btn-success btn-sm" name='yes' value="提交">
-                            <!-- 提交并继续 需要上下文渲染器 -->
                             <a type="submit" class="btn btn-default btn-sm" href='/auto/'>返回</a>
                         </div>
                     </div>
                   </div>
             </form>
 
-            <!-- Modal -->
+            <!-- 蒙版层 -->
             <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -229,9 +218,10 @@
                     </div>
                 </div>
             </div>
-            <!-- model -->
+
+            <!-- 模板 -->
             <div style="display:none">
-                <table class='table table-striped table-bordered table-condensed table-responsive'>
+                <table class='table table-condensed table-responsive'>
                     <thead><tr class="info"><th>#</th><th>用例步骤</th><th>操作</th></tr></thead>
                     <tbody id='L1TB'>
                         <tr id='L1Model' class="index_bgtr">
@@ -246,16 +236,15 @@
                                 <div class="form-group">
                                     <label for="stepDes" class="col-sm-2 control-label">动作</label>
                                     <div class="col-sm-10">
-                                        <table class='table table-striped table-bordered table-condensed table-responsive'>
+                                        <table class='table table-condensed table-responsive'>
                                             <thead>
-                                                <tr class="danger">
+                                                <tr>
                                                     <th class="col-sm-1">## <strong class="text-danger">*</strong> </th>
-                                                    <th class="col-sm-3">做什么动作 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="标记需要配置元素的选型，一定要配置元素，除此之外都可以不要"></span></th>
-                                                    <th class="col-sm-3">元素类型 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="按钮、输入框等类型"></span></th>
-                                                    <th class="col-sm-3">元素标识
+                                                    <th class="col-sm-3">动作 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="标记需要配置元素的选型，一定要配置元素，除此之外都可以不要"></span></th>
+                                                    <th class="col-sm-3">元素
                                                         <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="填入元素上显示的文字"></span>
                                                     </th>
-                                                    <th >输入内容</th>
+                                                    <th >输入</th>
                                                     <th></th>
                                                 </tr>
                                             </thead>
@@ -270,15 +259,6 @@
                                                         <div class="form-group">
                                                             <select class="form-control input-sm" name="actionCode">
                                                                 {% for x in control_list %}
-                                                                <option>{{ x.controlName }}</option>
-                                                                {% endfor %}
-                                                            </select>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div class="form-group">
-                                                            <select class="form-control input-sm" name="typeCode">
-                                                                {% for x in target_type_list %}
                                                                 <option>{{ x.controlName }}</option>
                                                                 {% endfor %}
                                                             </select>
@@ -346,7 +326,7 @@
             new_son.id = 'L1TR' + linenum;
             // 避免改模板的属性，模板不带类名，每次复制时赋予类名 还有L2的ID
             new_son.getElementsByTagName('tr')[1].id = 'L2TR1'
-            new_son.getElementsByTagName('select')[2].className = 'form-control editable input-sm'
+            new_son.getElementsByTagName('select')[1].className = 'form-control editable input-sm'
         document.getElementById('L1TB').appendChild(new_son); // 克隆元素
         // 给新加的元素设置行号，重新算行数
         trlen = document.getElementById('L1TB').rows.length;

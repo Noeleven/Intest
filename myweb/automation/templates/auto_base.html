@@ -59,6 +59,11 @@
         .badge-red{
             background-color: #c14848;
         }
+        .panel-black>.panel-heading {
+            color: #fff;
+            background-color: #222d32;
+            border-color: #222d32;
+        }
     </style>
   </head>
 
@@ -69,7 +74,7 @@
 			<div class="left_col scroll-view">
 
 				<div class="navbar nav_title">
-					<a  id="menu_toggle" class="site_title"><i class="fa fa-bars"></i>自动化后台</a>
+					<a  id="menu_toggle" class="site_title"><i class="fa fa-bars"></i> 自动化</a>
 				</div>
 
 				<br>
@@ -187,6 +192,7 @@
     </script>
     <script>
         $('input').bind('input propertychange', function() {
+            if($(this))
             // console.log($(this).val());
             var regu = /([a-zA-Z0-9]|[，,_+-*=&%$#@?(){}\[\]\s]|[\u4e00-\u9fa5])/
                 myText = $(this).val();
@@ -198,7 +204,6 @@
             }
         });
     </script>
-    <!-- <script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1262018284'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s19.cnzz.com/z_stat.php%3Fid%3D1262018284%26show%3Dpic' type='text/javascript'%3E%3C/script%3E"));</script> -->
 
   </body>
 </html>

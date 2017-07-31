@@ -45,9 +45,9 @@
 		<td>{{ x.plantform }}</td>
 		<td>{{ x.owner }}</td>
 		<td>{{ x.des }}</td>
-		<td>{% if x.in_use == '1' %}<span class='label label-success'>在用</span>{% else %}<span class='label label-danger'>废弃</span>{% endif %}</td>
+		<td>{% if x.in_use == '1' %}<span class='label label-success'>在用</span>{% elif x.in_use == '2'%}<span class='label label-warning'>过期</span>{% else %}<span class='label label-danger'>废弃</span>{% endif %}</td>
 		<td>{{ x.modify_time|date:"Y-m-d H:i:s" }}</td>
-		<td><a type='button' class="btn btn-sm btn-default" href="/auto/new_edit/{{ x.id }}/"><span class="glyphicon glyphicon-pencil xwcms" aria-hidden="true"></span> 编辑</a>
+		<td><a type='button' class="btn btn-sm btn-default" href="/auto/ver_confirm/{{ x.id }}/"><span class="glyphicon glyphicon-pencil xwcms" aria-hidden="true"></span> 编辑</a>
 			<button type="submit" class="btn btn-default btn-sm" data-index="{{ x.id }}" data-toggle="modal" data-target="#copyModal"><span class="glyphicon glyphicon-camera xwcms" aria-hidden="true"></span> 复制</button>
 		</td>
 	</tr>

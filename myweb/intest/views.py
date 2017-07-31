@@ -59,16 +59,10 @@ def tee(method, show_dict, date_from, date_to):
 		pp_value['tcp_time_rate'] = base_rate + (pp_value['tcp_time_avg'] / total) * 60
 		pp_value['server_time_rate'] = base_rate + (pp_value['server_time_avg'] / total) * 60
 		pp_value['download_time_rate'] = base_rate + (pp_value['download_time_avg'] / total) * 60
-		
-		show_dict[method] = pp_value
-	
-	# error_ready_list = Errs.objects.filter(method_version=method).filter(timestamp__range=(date_from, date_to))
-	# http_err_len = error_ready_list.exclude(httpcode='200').count()
-	# correct_len = ready_list.count()  # slow======4
-	# total_len = http_err_len + correct_len
-	# pp_value['error_rate'] = round(((http_err_len * 100) / total_len), 2)
 
-		
+		show_dict[method] = pp_value
+
+
 
 @login_required
 def home(request):
@@ -112,10 +106,10 @@ def home(request):
 
 	return render_to_response('int_home.html', {'ints_dict': ints_dict})
 
-	
+
 @login_required
 @cache_page(3600)
-def chart(request):
+def int_percent(request):
 	server = Rate.objects.filter(type='s')
 	total = Rate.objects.filter(type='t')
 	limit = Rate.objects.filter(type='l')
@@ -139,7 +133,7 @@ def chart(request):
 			server_list.append(server_dict)
 		except:
 			pass
-			
+
 		try:
 			value1 = total.filter(des=x)[0]
 			total_dict = {
@@ -154,24 +148,10 @@ def chart(request):
 			total_list.append(total_dict)
 		except:
 			pass
-		# try:
-			# value2 = limit.filter(des=x)[0]
-			# limit_dict = {
-				# 'des': value2.des,
-				# 'zero_level': value2.ms,
-				# 'one_level': value2.os,
-				# 'two_level': value2.ts,
-				# 'three_level': value2.tts,
-				# 'four_level': value2.fs,
-				# 'five_level': value2.ffs,
-			# }
-			# limit_list.append(limit_dict)
-		# except:
-			# pass
-		
+
 	return render_to_response('int_chart.html', {'server_list': server_list, 'total_list': total_list})
 
-	
+
 @login_required
 def err(request):
 	if 'from_date' and 'to_date' in request.GET and request.GET['from_date'] is not '' and request.GET[
@@ -198,8 +178,8 @@ def err(request):
 		show_errs.append(pp_error)
 	return render_to_response('int_err.html', {'show_errs': show_errs})
 
-	
-@login_required	
+
+@login_required
 @cache_page(3600)
 def trace(request):
 # 筛选下最近2周有不是0的接口
@@ -210,7 +190,7 @@ def trace(request):
 		method_list_src = Wdata.objects.filter(timestamp=time).exclude(ms_tag=0).values('method_version').distinct().order_by('method_version')
 		method_list_ready = [x['method_version'] for x in method_list_src]
 		[method_list.append(x) for x in method_list_ready]
-	
+
 	method_list = set(method_list)
 	show_list = []
 	for method in method_list:
@@ -232,5 +212,5 @@ def trace(request):
 	except EmptyPage:
 		# If page is out of range (e.g. 9999), deliver last page of results.
 		show_list = paginator.page(paginator.num_pages)
-		
+
 	return render_to_response('int_trace.html', {'show_list' : show_list})

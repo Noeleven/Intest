@@ -26,6 +26,7 @@ class deviceList(models.Model):
     appiumServicePort = models.IntegerField(blank=True)
     webDriverAgentUrl = models.CharField(blank=True, max_length=200, default='iOS use')
     bundleId = models.CharField(blank=True, max_length=200, default='iOS use')
+    udid = models.CharField(blank=True, max_length=40, default='iOS use')
     lvsessionid = models.CharField(blank=True, max_length=100)
     adbPort = models.CharField(blank=True, max_length=10, default='AD use')
     job_name = models.CharField(blank=True, max_length=100, default='AndroidAppiumAutoTest')
@@ -103,6 +104,7 @@ class testRecording(models.Model):
     Version = models.CharField(max_length=10, blank=True)
     timeStamp = models.CharField(max_length=100)
     groupId = models.CharField(max_length=100, blank=True)
+    flag = models.CharField(max_length=10, blank=True)
     createTime = models.DateField(auto_now=True)
 
 class allBookRecording(models.Model):

@@ -1,8 +1,3 @@
-{% extends "auto_base.html" %} {% block content %}
-<div class="row">
-    <div class="panel panel-black">
-        <div class="panel-heading"> 添加用例 </div>
-        <div class="panel-body">
             <form class="form-horizontal" role="form" method='GET' action="/auto/auto_edit_save/{{ id }}">
                 {% csrf_token %}
                   <!-- Nav tabs -->
@@ -50,7 +45,7 @@
                         <div class="form-group">
                             <label for="version" class="col-sm-2 control-label">版本 <strong class="text-danger">*</strong> </label>
                             <div class="col-sm-10">
-                                <select class="form-control input-sm" name='version'>
+                                <select class="form-control input-sm" name='version' readonly>
                                     {% for x in versionList %}
                                     <option {% if x == json_dict.version %}selected{% endif %}>{{ x }}</option>
                                     {% endfor %}
@@ -95,7 +90,7 @@
                         <div class="form-group">
                             <label for="caseDes" class="col-sm-2 control-label">备注</label>
                             <div class="col-sm-10">
-                                <textarea type="text" class="form-control input-sm" name="caseDes" placeholder="备注说明" rows='3'/>{{ json_dict.des }}</textarea>
+                                <textarea type="text" class="form-control input-sm" name="caseDes" placeholder="备注说明" rows='3'>{{ json_dict.des }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -168,7 +163,7 @@
                                                                   </td>
                                                                   <td>
                                                                       <div class="form-group">
-                                                                          <textarea class="form-control input-sm" name="inputValue" placeholder="如果元素是input输入框，就输入内容，否则留空" rows="3" />{{ BG.typeText }}</textarea>
+                                                                          <textarea class="form-control input-sm" name="inputValue" placeholder="如果元素是input输入框，就输入内容，否则留空" rows="3">{{ BG.typeText }}</textarea>
                                                                       </div>
                                                                   </td>
                                                               </tr>
@@ -275,7 +270,7 @@
                                                     </td>
                                                     <td>
                                                         <div class="form-group">
-                                                            <textarea class="form-control input-sm" name="inputValue" placeholder="如果元素是input输入框，就输入内容，否则留空" rows="3" /></textarea>
+                                                            <textarea class="form-control input-sm" name="inputValue" placeholder="如果元素是input输入框，就输入内容，否则留空" rows="3"></textarea>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -295,9 +290,6 @@
                 </table>
 
             </div>
-        </div>
-    </div>
-</div>
 <script>
     // 默认页面
     $('.editable-select-e').editableSelect({ filter: true });
@@ -387,4 +379,3 @@
         }
     }
 </script>
-{% endblock content %}

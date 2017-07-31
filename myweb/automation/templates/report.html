@@ -25,7 +25,7 @@
 	<div class="row" style="padding:20px">
 		<div class='col-md-3'>
 			<!-- 整体结果 -->
-			<h3>自动化测试报告{{Amessage}}</h3>
+			<h3>自动化测试报告{{Amessage}} {{groupName}}</h3>
 			<table class="table table-bordered">
 				<thead></thead>
 				<tbody>
@@ -118,6 +118,8 @@
 					</table>
 				</div>
 				<div role="tabpanel" class="tab-pane" id="Err">
+                    <br>
+                    <button type='submit' id='retry' class='btn btn-success btn-sm'>重测失败和没跑的用例</button>
 					<table id='tt1' data-toggle="table" data-show-columns="true" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-search="true"  data-height="450">
 						<thead>
 							<tr class='danger'>
@@ -238,6 +240,18 @@
 			});
 		});
 	</script>
+    <script>
+        $('#retry').click(function(){
+            var err_ids = "{{ err_ids|safe }}"
+                ver = "{{ vver|safe }}"
+                plat = "{{ platt|safe }}"
+            console.log(err_ids)
+            $.get("{% url 'retry' %}", {'ids': err_ids,'version':ver, 'plat':plat}, function(ret){
+                alert(ret)
+            })
+        })
+
+    </script>
 </body>
 
 </html>

@@ -44,7 +44,7 @@ class Ints(models.Model):
 		('wifi/电话卡', 'wifi/电话卡'),
 	)
 	type = models.CharField(max_length=10, choices=type_choice, default="其他")
-	params = models.TextField(default="URL里接口&之后的内容")
+	params = models.TextField(default="完整URL或请求参数，参数以&相连")
 	inwhere = models.TextField(default="该接口的出现页面位置")
 	inuse_choice = (
 		('0', '弃用'),
@@ -59,23 +59,27 @@ class Ints(models.Model):
 
 #记录每个接口每次测试的数据
 class Sdata(models.Model):
-	name = models.CharField(max_length=100, default="未定义接口")
+	name = models.CharField(max_length=100, default="未知接口")
 	method_version = models.CharField(max_length=100)
 	url = models.TextField()
-	code = models.CharField(max_length=100,null=True,blank=True)
+	ci = models.CharField(max_length=20)
+	method = models.CharField(max_length=10)
+	httpCode = models.CharField(max_length=100,null=True,blank=True)
+	requesTime = models.DateTimeField(null=True,blank=True)
 	log_code = models.CharField(max_length=100,null=True,blank=True)
 	log_time = models.DecimalField(max_digits=5, decimal_places=2,null=True,blank=True)
-	dns_time = models.DecimalField(max_digits=5, decimal_places=2)
-	tcp_time = models.DecimalField(max_digits=5, decimal_places=2)
-	up_time = models.DecimalField(max_digits=5, decimal_places=2)
-	server_time = models.DecimalField(max_digits=5, decimal_places=2)
-	download_time = models.DecimalField(max_digits=5, decimal_places=2)
-	download_size = models.DecimalField(max_digits=5, decimal_places=2)
-	total_time = models.DecimalField(max_digits=5, decimal_places=2)
-	error = models.CharField(max_length=200, null=True,blank=True)
-	message = models.CharField(max_length=200, null=True,blank=True)
-	timestamp = models.DateTimeField(auto_now=True)
+	dnsTime = models.DecimalField(max_digits=5, decimal_places=2,null=True,blank=True)
+	conneTime = models.DecimalField(max_digits=5, decimal_places=2,null=True,blank=True)
+	sslTime = models.DecimalField(max_digits=5, decimal_places=2,null=True,blank=True)
+	serverTime = models.DecimalField(max_digits=5, decimal_places=2,null=True,blank=True)
+	downloadTime = models.DecimalField(max_digits=5, decimal_places=2,null=True,blank=True)
+	size = models.DecimalField(max_digits=5, decimal_places=2,null=True,blank=True)
+	total_time = models.DecimalField(max_digits=5, decimal_places=2,null=True,blank=True)
+	speed = models.CharField(max_length=10,null=True,blank=True)
+	response = models.TextField()
+	recordTime = models.DateTimeField(auto_now=True)
 
+# 周数据
 class Wdata(models.Model):
 	name = models.CharField(max_length=100, default="未定义接口")
 	method_version = models.CharField(max_length=100)
@@ -91,7 +95,7 @@ class Wdata(models.Model):
 	ms_tag = models.IntegerField()
 	timestamp = models.DateField(auto_now=False)
 
-
+# 天数据
 class Ddata(models.Model):
 	method_version = models.CharField(max_length=100, default="api.com.xxx")
 	url = models.TextField()
@@ -105,6 +109,7 @@ class Ddata(models.Model):
 	total_time = models.DecimalField(max_digits=5, decimal_places=2)
 	timestamp = models.DateField(auto_now=False)
 
+# 个级别占比数据
 class Rate(models.Model):
 	des = models.CharField(max_length=20, null=True, blank=True)
 	type = models.CharField(max_length=1, default='0')
@@ -116,6 +121,7 @@ class Rate(models.Model):
 	fs = models.DecimalField(max_digits=4, decimal_places=2)
 	ffs = models.DecimalField(max_digits=4, decimal_places=2)
 
+# 错误记录表
 class Errs(models.Model):
 	name = models.CharField(max_length=100,default="未定义接口")
 	type = models.CharField(max_length=20,null=True,blank=True,default="其他")
@@ -127,14 +133,6 @@ class Errs(models.Model):
 	message = models.CharField(max_length=200,null=True,blank=True)
 	timestamp = models.DateTimeField(auto_now=True)
 
-class quanyong(models.Model):
-	url = models.TextField()
-	http_code = models.CharField(max_length=100,null=True,blank=True)
-	code = models.CharField(max_length=100,null=True,blank=True)
-	costime = models.IntegerField(blank=True, null=True)
-	response = models.TextField()
-	is_success = models.BooleanField(default=True)
-	create_time = models.DateTimeField(auto_now=True)
 
 class IntsAdmin(admin.ModelAdmin):
     list_display = ('name', 'method_version', 'ishttp', 'isget', 'type', 'inwhere', 'inuse', 'timestamp')

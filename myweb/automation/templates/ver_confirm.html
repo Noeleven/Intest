@@ -1,0 +1,43 @@
+{% extends "auto_base.html" %} {% block content %}
+<div class="row">
+    <div class="panel panel-black">
+        <div class="panel-heading"> 用例版本确认 </div>
+        <div class="panel-body">
+            <div class='alert alert-warning alert-dismissible' style='background-color:#34495e'>[!] 当年选错了用例版本，现在有机会重设了</div>
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label for="version" class="col-sm-2 control-label">用例版本</label>
+                    <div class="col-sm-6">
+                        <select class="form-control input-sm" id='version'>
+                            {% for x in versionList %}
+                            <option {% if x == case.version %}selected{% endif %}>{{ x }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <a type="submit" class="btn btn-success btn-sm" id='verConfirm'>版本确认</a>
+                        <a type="submit" class="btn btn-default btn-sm" href='/auto/'>返回</a>
+                    </div>
+                </div>
+            </form>
+            <div id='downTap'>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        $("#verConfirm").click(function(){
+            var caseID = {{ id | safe }}
+            if ($("#version").val()){version = $("#version").val();}else{version = null};
+            console.log(caseID, version)
+            $.get("{% url 'new_edit' %}",{'caseID':caseID,'version':version}, function(ret){
+                $("#downTap").html(ret)
+            })
+        });
+    });
+</script>
+{% endblock content %}

@@ -30,13 +30,16 @@
         			<thead>
         				<tr>
         					<th data-field="用例集" data-sortable="true">
-        						用例集
+        						用例集名称
         					</th>
         					<th data-field="报告链接" data-sortable="true">
-        						报告链接
+        						报告
         					</th>
         					<th data-field="测试时间" data-sortable="true">
-        					    测试时间
+        					    启动时间
+        					</th>
+                            <th data-field="类型" data-sortable="true">
+        					    类型
         					</th>
         					<th>
         					    操作
@@ -47,8 +50,9 @@
         			{% for x in groupReports %}
         				<tr>
                             <td>{{ x.name }}</td>
-                            <td><a href='{{ x.url }}' target="_blank">测试报告</a></td>
+                            <td><a href='{{ x.url }}' target="_blank">查看报告</a></td>
             				<td>{{ x.createTime |date:"Y-m-d H:i:s"}}</td>
+                            <td>{% if x.flag == '1'%}自动{% else %}手工{% endif%}</td>
                             <td><a href='/auto/api_report?timeStamp={{x.timeStamp}}&ver={{x.Version}}&name={{x.name}}' target=_blank class='btn btn-default btn-sm'><i class="fa fa-envelope"></i> toLvtu</a></td>
                         </tr>
         			{% endfor %}

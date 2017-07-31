@@ -15,6 +15,7 @@ import configparser
 import logging
 import copy
 import random
+import requests
 from email import encoders
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -146,7 +147,13 @@ def navList():
 		'type':'废弃',
 		'num':caseList.objects.filter(in_use='0').count(),
 	}
+	# 过期的
+	exDict = {
+		'type':'过期',
+		'num':caseList.objects.filter(in_use='2').count(),
+	}
 	nav_list.append(trashDict)
+	nav_list.append(exDict)
 	return nav_list
 
 # 下拉内容
@@ -175,9 +182,9 @@ def trans_me(aname, type, ptype, ver):
 		else:
 			bname = aname
 		return bname
-	except TypeError as e:
+	except:
 		logger.info('翻译%s' % aname)
-		logger.info('err:%s' % e)
+		logger.info('err:%s' % sys.exc_info()[0])
 
 # 报告翻译
 def trans_report_list(x):
@@ -197,6 +204,35 @@ def trans_report_list(x):
 			z['target']['targetName'] = trans_me(z['target']['targetName'], 'targetName', plant, ver)
 	return x
 
+# 重构失败用例
+def retry(request):
+	ids = request.GET['ids']
+	plat = request.GET['plat']
+	if plat == 'M':
+		device = 'M'
+	elif plat == 'Android':
+		device = 'AD'
+	else:
+		device = 'iOS'
+	# 临时保存测试用例集
+	name = 'ReTest' + datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
+	tg = caseGroup(groupName=name)
+	tg.caseID = ids
+	tg.des = '失败用例重测'
+	tg.status = '1'
+	tg.versionStr = caseVersion.objects.get(versionStr=request.GET['version'])
+	tg.save()
+	# 驱动测试
+	td = caseGroup.objects.get(groupName=name)
+	url = 'http://127.0.0.1:8000/auto/auto_config?vals=%s&type=group&device=%s&isDay=yes' % (td.id, device)
+	print(url)
+	r = requests.get(url)
+	# 删除用例集
+	td.status = '0'
+	td.save()
+	message = '测试已启动，请关注用例集报告'
+	return HttpResponse(message)
+
 
 ### 各PAGE ###
 # 导航list
@@ -211,6 +247,8 @@ def auto_list(request):
 			show_list = caseList.objects.filter(in_use='1')
 		elif f_type == '废弃':
 			show_list = caseList.objects.filter(in_use='0')
+		elif f_type == '过期':
+			show_list = caseList.objects.filter(in_use='2')
 		else:
 			s_type = my_type.split('_')[1]
 			try:
@@ -223,6 +261,7 @@ def auto_list(request):
 	finally:
 		device_list = deviceList.objects.exclude(in_use='0')
 		nav_list = navList()
+		print(show_list)
 		return render(request, 'auto_list.html', locals())
 
 # 编辑保存
@@ -336,7 +375,7 @@ def auto_config(request):
 	ids = request.GET['vals'].split(',')    # 获取用例或集合的ID
 	device = request.GET['device']  # 获取类型是AD、ios还是M
 	mytype = request.GET['type']	# 标识用例还是用例集
-	isDay = request.GET['isDay']	# 标记日常还是测试
+	isDay = request.GET['isDay']	# yes表示自动构建，空表示手工构建
 
 	# 整理待测用例ID
 	cases = []
@@ -405,6 +444,7 @@ def auto_config(request):
 						"platformName": x.platformName,  # iOS
 						"webDriverAgentUrl": x.webDriverAgentUrl,  # iOS
 						"bundleId": x.bundleId,  # iOS
+						"udid": x.udid,  # iOS
 						"appPackage": x.appPackage,
 						}
 				else:
@@ -429,6 +469,10 @@ def auto_config(request):
 					tt = testRecording(timeStamp=jsonStr['timeStamp'])
 					tt.Version = groupVersion
 					tt.groupId = json.dumps(groupId)
+					if isDay == 'yes':
+						tt.flag = '1'
+					else:
+						tt.flag = '0'
 					tt.save()
 				else:
 					singleTime = 'autoTestIn' + str(int(time.time())) + str(random.randint(10000,99999))
@@ -554,6 +598,21 @@ def auto_del(request):
 	finally:
 		return HttpResponse(data)
 
+# 置为过期
+def auto_ex(request):
+	try:
+		id = request.GET['id'].split(',')
+		for x in id:
+			myCase = caseList.objects.get(id=x)
+			# 0是废弃 1是在用 2是过期
+			myCase.in_use = '2'
+			myCase.save()
+		data = 'success'
+	except KeyError as e:
+		data = ('操作失败\n:%s' % e)
+	finally:
+		return HttpResponse(data)
+
 # copy用例
 def auto_copy(request):
 	try:
@@ -624,18 +683,27 @@ def new_save(request):
 		p.save()
 		# 获取当前用例ID
 		myID = caseList.objects.filter(plantform=casePlantform).filter(caseName=caseName).values('id')[0]['id']
-		return HttpResponseRedirect("/auto/new_edit/%s" % myID)
+		# return HttpResponseRedirect("/auto/new_edit/%s" % myID)
+		return HttpResponseRedirect("/auto/ver_confirm/%s" % myID)
 	except TypeError as e:
 		# data = ()
 		logger.info('新建保存用例出错了 %s' % e)
 		return
 
+# 确认版本
+def ver_confirm(request, id):
+	case = caseList.objects.get(id=id)
+	versionList = [x['versionStr'] for x in caseVersion.objects.values('versionStr').order_by('-versionStr')]
+	nav_list = navList()
+	return render(request, 'ver_confirm.html', locals())
+
 # 新增用例action
-def new_edit(request, id):
+def new_edit(request):
 	# 反向解析json存入表单 首先从DB获取json字符串，并解析成数据类型
+	id = request.GET['caseID']
+	version = request.GET['version']
 	if caseList.objects.filter(id=id).exists():
 		json_dict = caseList.objects.filter(id=id).values()[0]
-		# 转义品类名称
 		try:
 			# 开始解析用例
 			json_dict['type_field_id'] = caseType.objects.get(id=json_dict['type_field_id']).type_name
@@ -686,9 +754,9 @@ def new_edit(request, id):
 						y['index'] = str(x['index']) + '-' + str(ci)
 						ci += 1
 						y['checkType'] = trans_me(y['checkType'],'checkString',json_dict['plantform'], json_dict['version'])
-					control_list = new_select_list('action', json_dict['plantform'], json_dict['version'])
-					where_list = new_select_list('where', json_dict['plantform'], json_dict['version'])
-					target_list = new_select_list('targetName', json_dict['plantform'], json_dict['version'])
+					control_list = new_select_list('action', json_dict['plantform'], version)
+					where_list = new_select_list('where', json_dict['plantform'], version)
+					target_list = new_select_list('targetName', json_dict['plantform'], version)
 					checkType_list = new_select_list('checkString', json_dict['plantform'])
 				return render(request, 'new_edit.html',locals())
 			else:
@@ -699,8 +767,8 @@ def new_edit(request, id):
 					ai += 1
 					x['action'] = trans_me(x['action'],'action',json_dict['plantform'], json_dict['version'])
 					targetname.append(trans_me(x['value'],'targetName',json_dict['plantform'], json_dict['version']))
-					control_list = new_select_list('action', json_dict['plantform'], json_dict['version'])
-					target_list = new_select_list('targetName', json_dict['plantform'], json_dict['version'])
+					control_list = new_select_list('action', json_dict['plantform'], version)
+					target_list = new_select_list('targetName', json_dict['plantform'], version)
 				return render(request, 'ios_edit.html', locals())
 		except AttributeError as e:
 			logger.info("new_edit:%s" % e)
@@ -715,10 +783,9 @@ def test_list(request):
 	addev = deviceList.objects.exclude(in_use='0').filter(platformName='Android').order_by('deviceName')   #设备列表
 	mdev = deviceList.objects.filter(in_use='1').filter(platformName='M').order_by('deviceName')   #设备列表
 	nav_list = navList()
-	groupReports = testRecording.objects.order_by('-createTime').values('timeStamp', 'Version', 'createTime', 'groupId').distinct()[:20]
+	groupReports = testRecording.objects.order_by('-createTime').values('timeStamp', 'Version', 'createTime', 'groupId', 'flag').distinct()[:20]
 	for x in groupReports:
 		x['url'] = '/auto/api_report_page?timeStamp=' + x['timeStamp']
-		# x['name'] = [caseGroup.objects.get(id=y).groupName for y in json.loads(x['groupId'])]
 		x['name'] = caseGroup.objects.get(id=json.loads(x['groupId'])[0]).groupName
 		try:
 			x['createTime'] = reportsList.objects.filter(timeStamp__contains=x['timeStamp'])[0].create_time
@@ -893,11 +960,17 @@ def api_report(request):
 			}
 	finally:
 		result = json.dumps(jsonStr, ensure_ascii=False)
+		logger.info(result)
 		return HttpResponse(result, content_type="application/json")
 
 # 根据url参数返回报表页面
 def api_report_page(request):
 	timeTarget = request.GET['timeStamp']
+	try:
+		groupID = json.loads(testRecording.objects.filter(timeStamp=timeTarget)[0].groupId)[0]
+		groupName = caseGroup.objects.get(id=groupID).groupName
+	except:
+		logger.info('api_report_page group record maybe deleted')
 	rec = allBookRecording.objects.filter(timeStamp=timeTarget)
 	if rec:
 		# 计算测试时长
@@ -928,11 +1001,16 @@ def api_report_page(request):
 		# 计算其让指标
 		pass_list = [x for x in cases if x['status'] == 'success']
 		err_list = [x for x in cases if x['status'] == 'danger']
+		# for retry err包含 失败的和未跑的
+		err_ids = [x['info'].id for x in err_list]
+		vver = [x for x in version][0]
+		platt = [x for x in plat][0]
 		# if it's group,求差集
 		try:
 			all_list = json.loads(caseGroup.objects.get(id=json.loads(testRecording.objects.filter(timeStamp=timeTarget)[0].groupId)[0]).caseID)
 			run_list = [x['info'].id for x in cases]
 			no_list = [caseList.objects.get(id=x) for x in list(set(all_list).difference(set(run_list)))]
+			err_ids += [x.id for x in no_list]
 		except IndexError as e:
 			no_list = []
 			logger.info('api_report_page error:%s' % e)
@@ -1027,7 +1105,7 @@ def auto_makeGroup(request):
 
 # 用例集列表页
 def auto_group(request):
-	casegroup = caseGroup.objects.all()
+	casegroup = caseGroup.objects.filter(status='1')
 	nav_list = navList()
 	cf = configparser.ConfigParser()
 	cf.read("/rd/pystudy/conf")

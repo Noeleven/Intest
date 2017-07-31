@@ -76,11 +76,13 @@
             $('input[name="btSelectItem"]:checked').each(function(i){
                 valArr[i] = $(this).parent().next().text();
             });
-            var vals = valArr.join(',');//转换为逗号隔开的字符串
-            // console.log(device, vals)
+            // var vals = valArr.join(',');//转换为逗号隔开的字符串
+            // console.log(valArr)
             $('#delconfirm').fadeIn(1000);
-            if(vals){
-                $.get("/auto/auto_config",{'vals':vals,'device':device,'type':'group','isDay':''})
+            if(valArr){
+                for (var i=0;i<valArr.length;i++){
+                    $.get("/auto/auto_config",{'vals':valArr[i],'device':device,'type':'group','isDay':''})
+                    }
                 $('#titleee').text('构建确认');
                 $("#del_mess").text('构建中');
             }else{

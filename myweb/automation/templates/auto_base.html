@@ -88,6 +88,8 @@
                             {% for x in nav_list %}
                                 {% if x.type == '废弃'%}
                                 <li><a href="/auto/auto_list?my_type={{x.type}}_all"><i class="fa fa-trash xwcms"></i> {{ x.type }} <span class="badge badge-red">{{ x.num }}</span></a></li>
+                                {% elif x.type == '过期' %}
+                                <li><a href="/auto/auto_list?my_type={{x.type}}_ex"><i class="fa fa-flag xwcms"></i> {{ x.type }} <span class="badge badge-red">{{ x.num }}</span></a></li>
                                 {% else %}
                                 <li><a><i class="fa fa-paperclip xwcms"></i> {{ x.type }} <span class="badge badge-red">{{ x.num }}</span><span class="fa fa-chevron-down"></span></a>
                                     <ul class="nav child_menu">

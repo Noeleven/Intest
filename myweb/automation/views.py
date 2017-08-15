@@ -113,6 +113,7 @@ def stop_jenkins(request):
 		{'url':'http://10.115.1.77:8080'},
 		{'url':'http://10.115.1.78:8080'},
 		{'url':'http://10.115.1.75:8080'},
+		{'url':'http://10.115.1.7:8080'},
 		]
 	job_name = 'AbortAndroidUITest'
 	for x in server:
@@ -168,40 +169,45 @@ def new_select_list(controlListType, plantform, version='all'):
 	return target_list
 
 # 编辑翻译，controllist 保存用例，展示用例，展示报告都需要带版本一一对应
-def trans_me(aname, type, ptype, ver):
+def trans_me(aname, type, ptype, ver, road):
 	plist = {'android':'0','ios':'1','m':'2'}
 	cc = plist[ptype.lower()]
 	targetRange = controlList.objects.filter(controlType=cc).filter(TYPE=type).filter(versionStr__versionStr=ver)
-	# 中文 到 英文
+
 	try:
-		if targetRange.filter(controlName=aname):
-			bname = targetRange.get(controlName=aname).controlFiled
-		# 英到中
-		elif targetRange.filter(controlFiled=aname):
-			bname = targetRange.get(controlFiled=aname).controlName
+		# 区分中到英还是英到中 toE toC
+		if road == 'toE':
+			if targetRange.filter(controlName=aname):
+				bname = targetRange.get(controlName=aname).controlFiled
+			else:
+				bname = aname
 		else:
-			bname = aname
+			if targetRange.filter(controlFiled=aname):
+				bname = targetRange.get(controlFiled=aname).controlName
+			else:
+				bname = aname
 		return bname
 	except:
 		logger.info('翻译%s' % aname)
 		logger.info('err:%s' % sys.exc_info()[0])
+
 
 # 报告翻译
 def trans_report_list(x):
 	plant = caseList.objects.get(id=x['id']).plantform
 	ver = caseList.objects.get(id=x['id']).version
 	for y in x['jsonStory']:
-		y['where'] = trans_me(y['where'], 'where', plant, ver)
-		y['enterActivity'] = trans_me(y['enterActivity'], 'where', plant, ver)
+		y['where'] = trans_me(y['where'], 'where', plant, ver, 'toC')
+		y['enterActivity'] = trans_me(y['enterActivity'], 'where', plant, ver, 'toC')
 		for z in y['checkString']:
-			z['checkType'] = trans_me(z['checkType'], 'checkString', plant, ver)
+			z['checkType'] = trans_me(z['checkType'], 'checkString', plant, ver, 'toC')
 			if z.get('enterActivity'):
-				z['enterActivity'] = trans_me(z['enterActivity'], 'where', plant, ver)
+				z['enterActivity'] = trans_me(z['enterActivity'], 'where', plant, ver, 'toC')
 			if z.get('elementName'):
-				z['elementName'] = trans_me(z['elementName'], 'targetName', plant, ver)
+				z['elementName'] = trans_me(z['elementName'], 'targetName', plant, ver, 'toC')
 		for z in y['action']:
-			z['actionCode'] = trans_me(z['actionCode'], 'action', plant, ver)
-			z['target']['targetName'] = trans_me(z['target']['targetName'], 'targetName', plant, ver)
+			z['actionCode'] = trans_me(z['actionCode'], 'action', plant, ver, 'toC')
+			z['target']['targetName'] = trans_me(z['target']['targetName'], 'targetName', plant, ver, 'toC')
 	return x
 
 # 重构失败用例
@@ -224,7 +230,7 @@ def retry(request):
 	tg.save()
 	# 驱动测试
 	td = caseGroup.objects.get(groupName=name)
-	url = 'http://127.0.0.1:8000/auto/auto_config?vals=%s&type=group&device=%s&isDay=yes' % (td.id, device)
+	url = 'http://127.0.0.1:8000/auto/auto_config?vals=%s&type=group&device=%s&isDay=' % (td.id, device)
 	print(url)
 	r = requests.get(url)
 	# 删除用例集
@@ -270,7 +276,7 @@ def auto_edit_save(request, id):
 	logger.info(my_form)
 	case_obj = caseList.objects.get(id=id)
 	try:
-		caseName = case_obj.caseName
+		caseName = my_form.get('caseName')[0]
 		csType = caseType.objects.get(type_name=my_form.get('type')[0]).type_field
 		caseVersion = my_form.get('version')[0]
 		casePlantform = my_form.get('plantform')[0]
@@ -281,7 +287,7 @@ def auto_edit_save(request, id):
 	except TypeError as e:
 		logger.info('获取用例信息出错： %s' % e)
 	caseStatus = '1' if caseStatus=='use' else '0'
-
+	print(caseName)
 	# 统计有多少大步
 	bigstep = len(set([x.split('-')[0] for x in my_form.get('index_step')]))
 	#起始下标
@@ -293,9 +299,9 @@ def auto_edit_save(request, id):
 			bgElement = {
 				"storyDescription":my_form.get('storyDescription')[bgSub],
 				"index":bgSub + 1,
-				"where":trans_me(my_form.get('where')[bgSub], 'where', casePlantform, caseVersion),
+				"where":trans_me(my_form.get('where')[bgSub], 'where', casePlantform, caseVersion, 'toE'),
 				'action':[],
-				"enterActivity":trans_me(my_form.get('enterActivity')[bgSub], 'where', casePlantform, caseVersion),
+				"enterActivity":trans_me(my_form.get('enterActivity')[bgSub], 'where', casePlantform, caseVersion, 'toE'),
 				"checkString":[],
 				}
 			# 预期列表，处理checkString
@@ -305,9 +311,9 @@ def auto_edit_save(request, id):
 				cType = my_form.get('checkType')[smExpend]
 				eName = my_form.get('elementname')[smExpend]
 				expendDict = {
-					"checkType": trans_me(cType, 'checkString', casePlantform, caseVersion),
+					"checkType": trans_me(cType, 'checkString', casePlantform, caseVersion, 'toE'),
 					"expeted": my_form.get('expeted')[smExpend],
-					"elementName": trans_me(eName, 'targetName', casePlantform, caseVersion),
+					"elementName": trans_me(eName, 'targetName', casePlantform, caseVersion, 'toE'),
 				}
 				bgElement['checkString'].append(expendDict)
 
@@ -316,12 +322,12 @@ def auto_edit_save(request, id):
 			# 循环小步下标，获取数值
 			for smSub in range(startIndex, startIndex + len(steplist)):
 				actionDict = {
-					"actionCode": trans_me(my_form.get('actionCode')[smSub], 'action', casePlantform, caseVersion),
+					"actionCode": trans_me(my_form.get('actionCode')[smSub], 'action', casePlantform, caseVersion, 'toE'),
 					"behaviorPara":{
 						"inputValue":my_form.get('inputValue')[smSub],
 						},
 					"target": {
-						"targetName": trans_me(my_form.get('targetName')[smSub], 'targetName', casePlantform, caseVersion),
+						"targetName": trans_me(my_form.get('targetName')[smSub], 'targetName', casePlantform, caseVersion, 'toE'),
 						},
 					"needWait": (bool(1) if my_form.get('needWait')[smSub] == '等待' else bool(0)),
 					}
@@ -344,9 +350,9 @@ def auto_edit_save(request, id):
 			bgElement = {
 				"des":my_form.get('storyDescription')[bgSub],
 				"index":bgSub + 1,
-				'action':trans_me(my_form.get('actionCode')[bgSub], 'action', casePlantform, caseVersion),
+				'action':trans_me(my_form.get('actionCode')[bgSub], 'action', casePlantform, caseVersion, 'toE'),
 				'typeText':myInput,
-				'value':trans_me(my_form.get('targetName')[bgSub], 'targetName', casePlantform, caseVersion),
+				'value':trans_me(my_form.get('targetName')[bgSub], 'targetName', casePlantform, caseVersion, 'toE'),
 				}
 			json_home['jsonStory'].append(bgElement)
 		my_case = json.dumps(json_home, ensure_ascii=False)
@@ -354,6 +360,7 @@ def auto_edit_save(request, id):
 		logger.info('编辑保存用例 平台版本：%s' % casePlantform)
 	# logger.info(('*' * 20 + '\n' + '%s') % my_case)
 	# 存储DB
+	print(caseName)
 	p = case_obj
 	p.case = my_case
 	p.caseName = caseName
@@ -733,15 +740,15 @@ def new_edit(request):
 				wait_list = ['等待','不等待']
 				BgStep = json.loads(json_dict['case'])
 				for x in BgStep:
-					x['enterActivity'] = trans_me(x['enterActivity'],'where',json_dict['plantform'], json_dict['version'])
-					x['where'] = trans_me(x['where'],'where',json_dict['plantform'], json_dict['version'])
+					x['enterActivity'] = trans_me(x['enterActivity'],'where',json_dict['plantform'], json_dict['version'], 'toC')
+					x['where'] = trans_me(x['where'],'where',json_dict['plantform'], json_dict['version'], 'toC')
 					where.append(x['where'])
 					enterActivity.append(x['enterActivity'])
 					ai = ci = 1
 					for y in x['action']:
-						y['target']['targetName'] = trans_me(y['target']['targetName'],'targetName',json_dict['plantform'], json_dict['version'])
+						y['target']['targetName'] = trans_me(y['target']['targetName'],'targetName',json_dict['plantform'], json_dict['version'], 'toC')
 						targetname.append(y['target']['targetName'])
-						y['actionCode'] = trans_me(y['actionCode'],'action',json_dict['plantform'], json_dict['version'])
+						y['actionCode'] = trans_me(y['actionCode'],'action',json_dict['plantform'], json_dict['version'], 'toC')
 						if y['needWait'] == True:
 							y['needWait'] = '等待'
 						else:
@@ -749,11 +756,11 @@ def new_edit(request):
 						y['index'] = str(x['index']) + '-' + str(ai)
 						ai += 1
 					for y in x['checkString']:
-						y['elementName'] = trans_me(y['elementName'],'targetName',json_dict['plantform'], json_dict['version'])
+						y['elementName'] = trans_me(y['elementName'],'targetName',json_dict['plantform'], json_dict['version'], 'toC')
 						elementname.append(y['elementName'])
 						y['index'] = str(x['index']) + '-' + str(ci)
 						ci += 1
-						y['checkType'] = trans_me(y['checkType'],'checkString',json_dict['plantform'], json_dict['version'])
+						y['checkType'] = trans_me(y['checkType'],'checkString',json_dict['plantform'], json_dict['version'], 'toC')
 					control_list = new_select_list('action', json_dict['plantform'], version)
 					where_list = new_select_list('where', json_dict['plantform'], version)
 					target_list = new_select_list('targetName', json_dict['plantform'], version)
@@ -765,8 +772,8 @@ def new_edit(request):
 				for x in BgStep:
 					x['index'] = str(ai)
 					ai += 1
-					x['action'] = trans_me(x['action'],'action',json_dict['plantform'], json_dict['version'])
-					targetname.append(trans_me(x['value'],'targetName',json_dict['plantform'], json_dict['version']))
+					x['action'] = trans_me(x['action'],'action',json_dict['plantform'], json_dict['version'], 'toC')
+					targetname.append(trans_me(x['value'],'targetName',json_dict['plantform'], json_dict['version'], 'toC'))
 					control_list = new_select_list('action', json_dict['plantform'], version)
 					target_list = new_select_list('targetName', json_dict['plantform'], version)
 				return render(request, 'ios_edit.html', locals())
@@ -779,9 +786,9 @@ def new_edit(request):
 # 测试报告页
 def test_list(request):
 	# 右侧对应品类的用例列表
-	iosdev = deviceList.objects.filter(in_use='1').filter(platformName='iOS').order_by('deviceName')  #设备列表
+	iosdev = deviceList.objects.exclude(in_use='0').filter(platformName='iOS').order_by('deviceName')  #设备列表
 	addev = deviceList.objects.exclude(in_use='0').filter(platformName='Android').order_by('deviceName')   #设备列表
-	mdev = deviceList.objects.filter(in_use='1').filter(platformName='M').order_by('deviceName')   #设备列表
+	mdev = deviceList.objects.exclude(in_use='0').filter(platformName='M').order_by('deviceName')   #设备列表
 	nav_list = navList()
 	groupReports = testRecording.objects.order_by('-createTime').values('timeStamp', 'Version', 'createTime', 'groupId', 'flag').distinct()[:20]
 	for x in groupReports:
@@ -905,6 +912,13 @@ def api_report(request):
 		cases = allBookRecording.objects.filter(timeStamp=timeTarget)
 		if cases:
 			# 返回一个报告页面 URL，通过此url可以访问对应的数据构造页面
+			# 计算执行时间
+			time = cases.values('create_time')
+			if time:
+				sTime = time.order_by('create_time')[0]['create_time']
+				eTime = time.order_by('-create_time')[0]['create_time']
+				m,s = divmod((eTime - sTime).seconds, 60)
+				testTime = '%s分%s秒' % (m,s)
 			# 发邮件
 			myUrl = ("http://10.115.1.73:8000/auto/api_report_page?timeStamp=%s" % timeTarget)
 			err_list = cases.filter(status='danger')
@@ -919,11 +933,11 @@ def api_report(request):
 				warnNum = 0
 			passRate = round((passNum / allNum * 100),2)
 			# email发送
-			html_string0 = "<h3>UI自动化报告</h3><h4><p>用例集名称:%s | 用例总数:%s <br>| 本次测试用例数:%s | 通过:%s | 失败:%s | 测试异常:%s | 版本:%s</p><p>通过率:%s %%</p><span><a href=%s target=_blank><font color='#008080'>点击查看错误详情和截图</font></a></span></h4>" % (name, groupNum, allNum, passNum, failNum, warnNum, vver, passRate, myUrl)
+			html_string0 = "<h3>UI自动化报告</h3><h4>[用例集名称:%s]</h4><br><table border=1><tbody><tr><td>版本</td><td>%s</td><td>测试时长</td><td>%s</td></tr><tr><td>用例总数</td><td>%s</td><td>成功率</td><td>%s %%</td></tr><tr><td>本次测试用例数</td><td>%s</td><td>异常</td><td>%s</td></tr><tr><td>通过</td><td>%s</td><td>失败</td><td>%s</td></tr></tbody></table><hr><span><h4><a href=%s target=_blank><font color='DarkSalmon' size='4'>看报告请点点点点点点点点我!!!</font></a></span></h4>" % (name, vver, testTime, groupNum, passRate, allNum, warnNum, passNum, failNum, myUrl)
 			html_string1 = ""
 			html_string3 = "</table>"
 			if err_list:
-				html_string1 = "<h3 style='color:IndianRed'>错误列表</h3><table border=1 width=100%><tr style='background-color:DarkSalmon'><th>ID</th><th>品类</th><th>用例名称</th><th>状态</th><th>耗时</th><th>创建人</th></tr>\n\r"
+				html_string1 = "<h3>错误列表</h3><table border=1 width=100%><tr style='background-color:cadetblue'><th>ID</th><th>品类</th><th>用例名称</th><th>状态</th><th>耗时</th><th>创建人</th></tr>\n\r"
 				html_string2 = ""
 				build_list = []
 				for x in err_list:
@@ -989,7 +1003,6 @@ def api_report_page(request):
 				'runAt':doc['runAt'],
 				'storySize':doc['storySize'],
 				'caseTestTime':doc['caseTestTime'],
-				# 'caseTestTime':x.usedTime,
 				'info':caseList.objects.get(id=doc['id']),
 				'status':x.status,
 				'id':x.id,

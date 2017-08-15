@@ -35,6 +35,8 @@
 	word-break:break-all;
 	}
 	.nav-tabs.nav-justified>.active>a, .nav-tabs.nav-justified>.active>a:focus, .nav-tabs.nav-justified>.active>a:hover { border-bottom-color: #a94442; border-bottom-width: 3px; }</style>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="http://cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
   </head>
 
   <body class="nav-md">
@@ -81,15 +83,14 @@
 						<hr>
 						<h3>内网接口测试数据</h3>
 						<ul class="nav side-menu">
-							<li><a href="/intest/int_percent"><i class="fa fa-flag"></i> 占比趋势 </a></li>
-							<li><a><i class="fa fa-windows"></i> 测试数据
+							<!-- <li><a href="/intest/int_percent"><i class="fa fa-flag"></i> 占比趋势 </a></li> -->
+                            <li><a  href="/intest/int_report">性能详情</a></li>
+							<!-- <li><a><i class="fa fa-windows"></i> 测试数据
 								<span class="fa fa-chevron-down"></span></a>
 								<ul class="nav child_menu">
-									<li><a  href="/intest/int_table">性能详情</a></li>
-									<li><a  href="/intest/int_trace">追踪不稳定接口</a></li>
-									<li><a  href="/intest/int_err">供调试</a></li>
+									<li><a  href="/intest/int_report">性能详情</a></li>
 								</ul>
-							</li>
+							</li> -->
 						</ul>
 						<hr>
 
@@ -143,8 +144,7 @@
       </div>
     </div>
 
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="http://cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
     <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->

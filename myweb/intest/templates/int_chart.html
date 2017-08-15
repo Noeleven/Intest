@@ -9,7 +9,7 @@
 		<div id="server" style="height:500px">
 		</div>
 	</div>
-	<div class="col-lg-3 col-md-12 col-sm-12 col-sx-12">
+	<!-- <div class="col-lg-3 col-md-12 col-sm-12 col-sx-12">
 		<h3>所有在测接口首包占比</h3> <a class="btn btn-primary btn-sm" data-toggle="tooltip" data-placement="right" title="首包时间：经历过DNS解析和TCP3次握手后，从客户端开始发送请求到接收到服务器响应的第一个包的时间。包含NG的队列时间、首包的传输时间、服务端处理时间。由于NG队列和首包时间仅从客户端处无法取得，近似认为首包时间就是服务器的响应时间">首包时间 说明</a>
 		<table class="table table-hover table-condensed table-responsive">
 		<thead>
@@ -26,14 +26,14 @@
 		<TD>{{ i.five_level}}%</TD></TR>
 		{% endfor %}
 		</tbody></TABLE>
-	</div>
+	</div> -->
 </div>
 <div class="row">
 	<div class="col-lg-9 col-md-12 col-sm-12 col-sx-12">
 		<div id="total" style="height:500px">
 		</div>
 	</div>
-	<div class="col-lg-3 col-md-12 col-sm-12 col-sx-12">
+	<!-- <div class="col-lg-3 col-md-12 col-sm-12 col-sx-12">
 		<h3>总耗时趋势</h3>
 		<table class="table table-hover table-condensed table-responsive">
 		<thead>
@@ -50,12 +50,12 @@
 		<TD>{{ i.five_level}}%</TD></TR>
 		{% endfor %}
 		</tbody></TABLE>
-	</div>
+	</div> -->
 </div>
 <script>
         // 基于准备好的dom，初始化echarts图表
-        var myChart = echarts.init(document.getElementById('server')); 
-        var myChart1 = echarts.init(document.getElementById('total')); 
+        var myChart = echarts.init(document.getElementById('server'));
+        var myChart1 = echarts.init(document.getElementById('total'));
         var option = {
 			title : {
 				text: '占比趋势--所有在测接口首包时间',
@@ -323,9 +323,9 @@
 				},
 			]
 		};
-		
-        // 为echarts对象加载数据 
-        myChart.setOption(option);    
-		myChart1.setOption(option1); 
+
+        // 为echarts对象加载数据
+        myChart.setOption(option);
+		myChart1.setOption(option1);
 </script>
 {% endblock %}

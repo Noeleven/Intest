@@ -99,55 +99,6 @@ def doRate():
 	p.save()
 
 
-# 计算按照首批测试数据的优化趋势
-# todo:Sdata 换Ddata
-# def doRunData():
-	# # 确认首批数据接口，选取开始，现在，中间一个时间内都有的接口列表
-	# orig_method_head= Sdata.objects.filter(timestamp__range=(datetime.datetime(2016, 9, 21, 00, 00),datetime.datetime(2016, 9, 28, 23, 00))).values('method_version').distinct().order_by('method_version')
-	# orig_method_body= Sdata.objects.filter(timestamp__range=(datetime.datetime(2016, 10, 21, 00, 00),datetime.datetime(2016, 10, 28, 23, 00))).values('method_version').distinct().order_by('method_version')
-	# orig_method_leg= Sdata.objects.filter(timestamp__range=(datetime.datetime(2016, 11, 21, 00, 00),datetime.datetime(2016, 11, 28, 23, 00))).values('method_version').distinct().order_by('method_version')
-	# orig_method_h = [x['method_version'] for x in orig_method_head]
-	# orig_method_b = [x['method_version'] for x in orig_method_body]
-	# orig_method_l = [x['method_version'] for x in orig_method_leg]
-	# orig_method_list = list(set(orig_method_h) & set(orig_method_b) & set(orig_method_l))
-	# print(len(orig_method_list))
-
-	# date_from = time_des()[0]
-	# date_to = time_des()[1]
-	# des = time_des()[2]
-	# print(date_to.strftime("%Y-%m-%d"))
-	# range_list = Ddata.objects.filter(timestamp__range=(date_from, date_to))
-
-	# if range_list:
-		# pass
-	# else:
-		# sys.exit(0)
-
-	# limit = []
-	# # 按照时间周期将数据占比存入到各个时间点
-	# n = 0
-	# for method in orig_method_list:
-		# my_list = range_list.filter(method_version=method)
-		# # 算该接口的平均首包
-		# try:
-			# limit_avg = sum([x['server_time'] for x in my_list.values('server_time')]) / len(my_list)
-			# n += 1
-			# limit.append(limit_avg)
-		# except:
-			# print("no data")
-	# print(n)
-	# # Rate.objects.filter(des=des).delete()
-	# limit_len = len(limit)
-	# p = Rate(des=des)
-	# p.type = 'l'
-	# p.ms = round((len([x for x in limit if x<1]) *100 / limit_len), 2)
-	# p.os = round((len([x for x in limit if 1<=x<2 ]) *100  / limit_len), 2)
-	# p.ts = round((len([x for x in limit if 2<=x<3])  *100 / limit_len), 2)
-	# p.tts = round((len([x for x in limit if 3<=x<4]) *100  / limit_len), 2)
-	# p.fs = round((len([x for x in limit if 4<=x<5])  *100 / limit_len), 2)
-	# p.ffs = round((len([x for x in limit if x>5]) *100  / limit_len), 2)
-	# p.save()
-
 
 # 归纳Sdata到周数据，每周更新一次
 def doWdata():

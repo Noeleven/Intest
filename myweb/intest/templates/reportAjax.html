@@ -1,0 +1,122 @@
+{% load staticfiles %}
+<div class="container">
+
+	<div class="panel panel-default">
+		<!-- Default panel contents -->
+		<div class="panel-heading">{{ show.metdod_version }} {{show.name}}</div>
+		<div class="panel-body">
+			<dl class="dl-horizontal">
+				<dt>RequestTime</dt>
+				<dd>{{show.requesTime|date:"Y-m-d H:i"}}</dd>
+			</dl>
+			<dl class="dl-horizontal">
+				<dt>Metdod</dt>
+				<dd>{{show.metdod}}</dd>
+			</dl>
+			<dl class="dl-horizontal" style='word-break:break-all;'>
+				<dt>RequestURL</dt>
+				<dd><p style='word-break:break-all;word-wrap:break-word'>{{show.url}}</p></dd>
+			</dl>
+		</div>
+
+		<div class="row">
+			<!-- Table -->
+			<div class="col-md-2">
+				<table class="table">
+					<tdead>
+						<tr>
+							<th>Key</th>
+							<th>Value</th>
+						</tr>
+					</tdead>
+					<tbody>
+						<tr>
+							<td>DNS/s</td>
+							<td>{{show.dnsTime}}</td>
+						</tr>
+						<tr>
+							<td>Connect/s</td>
+							<td>{{show.conneTime}}</td>
+						</tr>
+						<tr>
+							<td>SSL/s</td>
+
+							<td>{{show.sslTime}}</td>
+						</tr>
+						<tr>
+							<td>Service/s</td>
+							<td>{{show.serverTime}}</td>
+						</tr>
+						<tr>
+							<td>Download/s</td>
+							<td>{{show.downloadTime}}</td>
+						</tr>
+						<tr>
+							<td>Total/s</td>
+							<td>{{show.total_time}}</td>
+						</tr>
+						<tr>
+							<td>KB/s</td>
+							<td>{{show.speed}}</td>
+						</tr>
+						<tr>
+							<td>KB</td><td>{{show.size}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+
+			<!-- response -->
+			<div class="col-md-10">
+				<div class="panel-heading">Response</div>
+				<div class="panel-body">
+					{% if show.type == 'json' %}
+						<pre id='result' style='word-break:break-all;word-wrap:break-word;width:850px'>{{respon}}</pre>
+					{% elif show.type == 'image' %}
+						<img src="{% static respon.url %}">
+					{% else %}
+						<pre style='word-break:break-all;word-wrap:break-word;'>{{respon}}</pre>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+</div>
+<style>
+    pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
+    .string { color: green; word-break: break-all; word-wrap: break-word;}
+    .number { color: darkorange; }
+    .boolean { color: blue; }
+    .null { color: magenta; }
+    .key { color: red; }
+</style>
+<script>
+	function syntaxHighlight(json) {
+		if (typeof json != 'string') {
+			json = JSON.stringify(json, undefined, 2);
+		}
+		json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(match) {
+			var cls = 'number';
+			if (/^"/.test(match)) {
+				if (/:$/.test(match)) {
+					cls = 'key';
+				} else {
+					cls = 'string';
+				}
+			} else if (/true|false/.test(match)) {
+				cls = 'boolean';
+			} else if (/null/.test(match)) {
+				cls = 'null';
+			}
+			return '<span class="' + cls + '">' + match + '</span>';
+		});
+	}
+</script>
+<script>
+	var res = {{ respon |safe}}
+	$('#result').html(syntaxHighlight(res));
+</script>

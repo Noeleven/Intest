@@ -6,11 +6,17 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myweb.settings')
 django.setup()
 from django.http import HttpResponse
 from intest.models import *
+import configparser
 
 '''
 消灭线上下的单，添加的游玩人等
 '''
-lvses = ['96d84d8c-eafd-4a2b-a0ee-77532a78f044','7bef8d03-99d4-4b88-871a-5025340ed3f5']
+
+cf = configparser.ConfigParser()
+cf.read("/rd/pystudy/conf")
+new = cf.get('header', 'lvse')
+header = cf.get('header', 'key') + ':' + cf.get('header', 'sign')
+lvses = [x for x in cf.get('header', 'lvses').split(',')]
 addressNo = []
 
 # 返回页面内容
@@ -25,7 +31,8 @@ def do_curl(uurl):
 		c.setopt(pycurl.SSL_VERIFYHOST, 0)
 	c.setopt(pycurl.CONNECTTIMEOUT, 20) #链接超时
 	c.setopt(pycurl.CUSTOMREQUEST, 'GET') #get or post
-	c.setopt(pycurl.HTTPHEADER,['signal:ab4494b2-f532-4f99-b57e-7ca121a137ca'])
+	# c.setopt(pycurl.HTTPHEADER,['signal:ab4494b2-f532-4f99-b57e-7ca121a137ca'])
+	c.setopt(pycurl.HTTPHEADER,[header])
 	c.setopt(pycurl.USERAGENT, "Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.23 Mobile Safari/537.36 NetType/WIFI Language/zh_CN")
 	c.setopt(pycurl.VERBOSE,0)
 	c.setopt(pycurl.URL, uurl)
@@ -41,7 +48,7 @@ def cancel_order():
 	# 遍历lvsession
 	for lv in lvses:
 		orderNo = []
-		getOrderAdd = "http://m.lvmama.com/api/router/rest.do?method=api.com.order.getOrderList&page=1&pageSize=20&queryType=UNPAY&version=2.0.0&lvversionCode=74&lvversion=7.9.2&firstChannel=ANDROID&formate=json&secondChannel=LVMM&lvsessionid=" + lv
+		getOrderAdd = "http://m.lvmama.com/api/router/rest.do?method=api.com.order.getOrderList&page=1&pageSize=30&queryType=UNPAY&version=2.0.0&lvversionCode=74&lvversion=7.9.2&firstChannel=ANDROID&formate=json&secondChannel=LVMM&lvsessionid=" + lv
 		cancelOrderAdd = 'http://m.lvmama.com/api/router/rest.do?method=api.com.order.cancellOrder&version=1.0.0&firstChannel=ANDROID&osVersion=6.0.1&lvversionCode=65&lvversion=7.7.3&lvsessionid=' + lv
 		# 取orderId
 		try:

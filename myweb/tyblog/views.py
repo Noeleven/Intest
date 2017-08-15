@@ -104,19 +104,22 @@ def ty_Overview(request):
 	show_list.reverse()
 	show_t_label = [x.des for x in show_list] # 时间标签，适用于错误，交互，响应
 	# 崩溃率
-	crash_version_a = crashes.objects.all().filter(plantform='android').values('name').order_by('-name').distinct()[:5] #android前5个版本
-	crash_version_ios = crashes.objects.all().filter(plantform='ios').values('name').order_by('-name').distinct()[:5] #ios前5个版本
-	crash_v_a = [x['name'] for x in crash_version_a]
-	crash_v_ios = [x['name'] for x in crash_version_ios]
+	version_a = [x['name'] for x in crashes.objects.all().filter(plantform='android').values('name').distinct()]
+	version_a.sort(key=lambda x:tuple(int(v) for v in x.split('.'))) #android前5个版本
+	crash_version_a = version_a[-5:]
+	version_ios = [x['name'] for x in crashes.objects.all().filter(plantform='ios').values('name').distinct()]
+	version_ios.sort(key=lambda x:tuple(int(v) for v in x.split('.')))
+	crash_version_ios = version_ios[-5:]
+
+	crash_v_a = [x for x in crash_version_a]
+	crash_v_ios = [x for x in crash_version_ios]
 	#取最近12周标签
 	crash_time = crashes.objects.all().values('des').order_by('-des').distinct()[:12]
 	crash_t_list = [x['des'] for x in crash_time]
 	crash_t_list.reverse()
 	# 开始过滤
-	other_list = ['alog.umeng.com', 'loc.map.baidu.com',
-		'm.api.baifengdian.com', 'api.weibo.com', 'pingma.qq.com', 'api.share.mob.com','data.de.coremetrics.com',
-		'api.share.mob.com:80', 'libs.cn.coremetrics.com', 'tmscdn.cn.coremetrics.com', 'scs.openspeech.cn',
-		'data.openspeech.cn', 'hm.baidu.com']
+	other_list = ['alog.umeng.com', 'loc.map.baidu.com','data.de.coremetrics.com','v.admaster.com.cn','beacon.tingyun.com','api.geetest.com',
+		'uop.umeng.com','api.map.baidu.com']
 	crash_show_a = {}
 	crash_show_ios = {}
 	for x in crash_v_a:
@@ -153,9 +156,7 @@ def ty_Overview(request):
 				datas.append(value[0].value)
 			else:
 				datas.append('0')
-		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com', 'pics.lvjs.com.cn',
-						# 'iguide.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com'
-						]
+		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'api3g.lvmama.com', 'pics.lvjs.com.cn', 'zt1.lvmama.com']
 		if x['name'] in self_list:
 			err_show_a_self[x['name']] = datas
 		elif x['name'] in other_list:
@@ -168,9 +169,7 @@ def ty_Overview(request):
 				datas.append(value[0].value)
 			else:
 				datas.append('0')
-		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'api3g.lvmama.com', 'pics.lvjs.com.cn',
-						# 'iguide.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com'
-						]
+		self_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'api3g.lvmama.com', 'pics.lvjs.com.cn', 'zt1.lvmama.com']
 
 		if x['name'] in self_list:
 			err_show_ios_self[x['name']] = datas
@@ -225,7 +224,7 @@ def ty_Overview(request):
 			if value:
 				datas.append(value[0].value)
 			else:
-				datas.append('0')
+				pass
 		view_show_a[x['name']] = datas
 	for x in view_sub_ios:
 		datas=[]
@@ -234,26 +233,9 @@ def ty_Overview(request):
 			if value:
 				datas.append(value[0].value)
 			else:
-				datas.append('0')
+				pass
 		view_show_ios[x['name']] = datas
-	return render_to_response('ty_overview.html', {'show_list': show_list,
-																	'show_t_label': show_t_label,
-																	'crash_v_a': crash_v_a,
-																	'crash_v_ios': crash_v_ios,
-																	'crash_t_list': crash_t_list,
-																	'crash_show_a': crash_show_a,
-																	'crash_show_ios': crash_show_ios,
-																	'err_show_a_self': err_show_a_self,
-																	'err_show_a_other': err_show_a_other,
-																	'err_show_ios_self': err_show_ios_self,
-																	'err_show_ios_other': err_show_ios_other,
-																	'res_show_a_self': res_show_a_self,
-																	'res_show_a_other': res_show_a_other,
-																	'res_show_ios_self': res_show_ios_self,
-																	'res_show_ios_other': res_show_ios_other,
-																	'view_show_a': view_show_a,
-																	'view_show_ios': view_show_ios,
-																	})
+	return render_to_response('ty_overview.html', locals())
 
 
 # 版本分

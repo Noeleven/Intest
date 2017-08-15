@@ -418,11 +418,9 @@ def do_db():
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'], ) for x in b]
 			host_list = ['pic.lvmama.com', 'api3g2.lvmama.com', 'm.lvmama.com', 'rhino.lvmama.com', 'pics.lvjs.com.cn',
-				'iguide.lvmama.com', 'api3g.lvmama.com', 'login.lvmama.com', 'www.lvmama.com', 'zt1.lvmama.com',
-				'loc.map.baidu.com', 'sapi.map.baidu.com', 'scs.openspeech.cn', 'data.openspeech.cn',
-				'alog.umeng.com', 'data.de.coremetrics.com',
-				'api.share.mob.com', 'pingma.qq.com', 'hm.baidu.com',
-				'api.weibo.com',]
+				'iguide.lvmama.com', 'api3g.lvmama.com', 'login.lvmama.com', 'zt1.lvmama.com', 'alog.umeng.com',
+				 'loc.map.baidu.com','data.de.coremetrics.com','v.admaster.com.cn','beacon.tingyun.com','api.geetest.com',
+				 'uop.umeng.com','api.map.baidu.com']
 			for x in newb:
 				for y in host_list:
 					if y == x['name']:
@@ -437,9 +435,9 @@ def do_db():
 			b = json.loads(f.read())
 			newb = [dict(name=x['name'], value=x['value'], ) for x in b]
 			host_list = ['V5IndextFragment2', 'GuessLikeFragment', 'ImageGalleryActivity', 'V7BaseSearchFragment',
-				'TicketDetailFootBranchesFragment', 'HolidayAbroadListFragment', 'HolidayNearByListFragment2',
-				'TicketDetailActivity', 'CommentListFragment', 'SplashActivity700', 'WelcomeActivity',
-				'MainActivity', 'V5IndextFragment', 'LvmmWebIndexFragment', 'WebViewIndexActivity',
+				'HolidayAbroadListFragment', 'HolidayNearByListFragment2',
+				'TicketDetailActivity', 'CommentListFragment', 'WelcomeActivity',
+				'V5IndextFragment', 'LvmmWebIndexFragment',
 				'LVNavigationController#loading','StartUpViewController#loading','LVMMTabBarController#loading',
 				'IndexSearchViewController#loading','GrouponDetailViewController#loading','FocusWebViewController#loading',
 				'RouteDetailViewController#loading','RouteSearchListViewController#loading','LVRouteCalendarCollectionController#loading',

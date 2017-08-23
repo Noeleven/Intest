@@ -6,7 +6,39 @@
         <div class="panel panel-black">
             <div class="panel-heading"> 构建报告 </div>
             <div class="panel-body">
-                <span class='label label-success'><i class="fa fa-apple xwcms"></i></span>
+                <ul class="nav nav-tabs" role="tablist">
+                  <li role="presentation" class="active"><a href="#ad" aria-controls="ad" role="tab" data-toggle="tab">Android 测试机</a></li>
+                  <li role="presentation"><a href="#ios" aria-controls="ios" role="tab" data-toggle="tab">iOS 测试机</a></li>
+                  <li role="presentation"><a href="#mm" aria-controls="mm" role="tab" data-toggle="tab">M站 测试机</a></li>
+                </ul>
+                <div class="tab-content">
+                  <div role="tabpanel" class="tab-pane fade in active" id="ad">
+                    <br>
+                        {% for x in device_list %}
+                            {% if x.platformName == 'Android'%}
+                            <a type='submit' name='{{x.platformName}}' class="bb btn btn-success btn-sm getCases">{{ x.deviceName }}#{{ x.appVersion }}</a>
+                            {%endif%}
+                        {% endfor %}
+                  </div>
+                  <div role="tabpanel" class="tab-pane fade" id="ios">
+                      <br>
+                      {% for x in device_list %}
+                          {% if x.platformName == 'iOS'%}
+                          <a type='submit' name='{{x.platformName}}' class="bb btn btn-success btn-sm getCases">{{ x.deviceName }}#{{ x.appVersion }}</a>
+                          {%endif%}
+                      {% endfor %}
+                  </div>
+                  <div role="tabpanel" class="tab-pane fade" id="mm">
+                      <br>
+                      {% for x in device_list %}
+                          {% if x.platformName == 'M'%}
+                          <a type='submit' name='{{x.platformName}}' class="bb btn btn-success btn-sm getCases">{{ x.deviceName }}#{{ x.appVersion }}</a>
+                          {%endif%}
+                      {% endfor %}
+                  </div>
+                </div>
+
+                <!-- <span class='label label-success'><i class="fa fa-apple xwcms"></i></span>
                 {% for x in iosdev %}
                 <button class='bb btn btn-sm btn-default'>{{ x.deviceName }}</button>
                 {% endfor %}<br>
@@ -17,7 +49,7 @@
                 <span class='label label-success'><i class="fa fa-chrome xwcms"></i></span>
                 {% for x in mdev %}
                 <button class='bb btn btn-sm btn-default'>{{ x.deviceName }}</button>
-                {% endfor %}
+                {% endfor %} -->
                 <div id='contents'></div>
             </div>
         </div>
@@ -31,6 +63,9 @@
         				<tr>
         					<th data-field="用例集" data-sortable="true">
         						用例集名称
+        					</th>
+        					<th data-field="版本" data-sortable="true">
+        						版本
         					</th>
         					<th data-field="报告链接" data-sortable="true">
         						报告
@@ -50,6 +85,7 @@
         			{% for x in groupReports %}
         				<tr>
                             <td>{{ x.name }}</td>
+                            <td>{{ x.Version }}</td>
                             <td><a href='{{ x.url }}' target="_blank">查看报告</a></td>
             				<td>{{ x.createTime |date:"Y-m-d H:i:s"}}</td>
                             <td>{% if x.flag == '1'%}自动{% else %}手工{% endif%}</td>
@@ -66,7 +102,8 @@
 
 <script>
     $('.bb').click(function() {
-        var device = $(this).text()
+        // var device = $(this).text()
+        var device = $(this).html().split('#')[0]
         console.log(device)
         $.get("{% url 'test_ajax' %}", {
             'device': device,

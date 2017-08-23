@@ -42,14 +42,6 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="secondType">第二品类</label>
-                            <select multiple class="form-control input-sm" id="secondType" placeholder="第二品类">
-                                {% for x in second_type_list %}
-                                <option>{{ x }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
                             <label for="owner">所属人</label>
                             <select multiple class="form-control input-sm" id="owner" placeholder="所属人">
                                 {% for x in user_list %}
@@ -82,7 +74,7 @@
                   <br>
                   {% for x in device_list %}
                       {% if x.platformName == 'Android'%}
-                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">安卓#{{ x.deviceName }}#{{ x.appVersion }}</a>
+                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">AD#{{ x.deviceName }}#{{ x.appVersion }}</a>
                       {%endif%}
                   {% endfor %}
               </div>
@@ -102,18 +94,9 @@
                       {%endif%}
                   {% endfor %}
               </div>
-              <!-- <div role="tabpanel" class="tab-pane fade" id="jj">
-                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.2.70:8080/jenkins/" target="_blank"><i class="fa fa-android xwcms"></i> AD796 Jenkins</a>
-                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.1.223:8080" target="_blank"><i class="fa fa-android xwcms"></i> AD796 Jenkins 2*</a>
-                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.1.241:8080" target="_blank"><i class="fa fa-android xwcms"></i> AD796 Jenkins 3*</a>
-                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.2.170:8080" target="_blank"><i class="fa fa-android xwcms"></i> AD796 Jenkins 5*</a>
-                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.2.123:8080" target="_blank"><i class="fa fa-android xwcms"></i> AD796 Jenkins 6*</a>
-                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.1.193:8080" target="_blank"><i class="fa fa-apple xwcms"></i> iOS Jenkins</a>
-                  <a type="button" class="btn btn-default btn-sm" href="http://10.113.2.70:8080/jenkins/" target="_blank"><i class="fa fa-chrome xwcms"></i> M Jenkins</a>
-              </div> -->
             </div><hr>
             <div class="btn-group btn-group-sm pull-right">
-                <a href='/auto/new_add' type='button' class='btn btn-success'><span class="glyphicon glyphicon-plus xwcms"></span> 新增用例</a>
+                <a href='/auto/new_add' type='button' class='btn btn-primary'><span class="glyphicon glyphicon-plus xwcms"></span> 新增用例</a>
                 <button type="submit" class="btn btn-primary" id="makeGroup"><span class="glyphicon glyphicon-plus xwcms" aria-hidden="true"></span> 添加到用例集</button>
                 <button type="submit" class="btn btn-warning" id="exCases"><span class="glyphicon glyphicon-flag xwcms" aria-hidden="true"></span> 置为过期</button>
                 <button type="submit" class="btn btn-danger" id="delCases"><span class="glyphicon glyphicon-remove xwcms" aria-hidden="true"></span> 批量删除</button>
@@ -165,7 +148,8 @@
             </div>
 
             <br>
-        <div id="my_table"></div></div>
+            <div id="my_table"></div>
+        </div>
 	</div>
 </div>
 <script>
@@ -345,12 +329,11 @@
         if ($("#caseType").val()){caseType = $("#caseType").val();}else{caseType = null};
         if ($("#plantform").val()){plantform = $("#plantform").val();}else{plantform = null};
         if ($("#version").val()){version = $("#version").val();}else{version = null};
-        if ($("#secondType").val()){secondType = $("#secondType").val();}else{secondType = null};
         if ($("#owner").val()){owner = $("#owner").val();}else{owner = null};
         if ($("#note").val()){note = $("#note").val().split("+");}else{note = null};
-        // console.log(caseId,caseName,caseType,plantform,version,secondType,owner,note)
+        // console.log(caseId,caseName,caseType,plantform,version,owner,note)
 
-        $.get("{% url 'search_result' %}",{'caseId':caseId,'caseName':caseName,'caseType':caseType,'plantform':plantform,'version':version,'secondType':secondType,'owner':owner,'note':note}, function(ret){
+        $.get("{% url 'search_result' %}",{'caseId':caseId,'caseName':caseName,'caseType':caseType,'plantform':plantform,'version':version,'owner':owner,'note':note}, function(ret){
             $("#my_table").html(ret)
         })
       });

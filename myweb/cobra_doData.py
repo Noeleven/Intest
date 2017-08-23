@@ -149,7 +149,7 @@ def save_datas(values, rpms, ress, channelNum, proNum):
 
 if __name__ == '__main__':
 	# define day_index num range
-	for x in range(550,561):
+	for x in range(580,595):
 		start = get_dates(x)
 		values = start[0]
 		rpms = start[1]

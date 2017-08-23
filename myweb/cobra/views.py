@@ -40,20 +40,23 @@ def cobra_chart(request):
 	time_label = [ x['create_time'] for x in range_list.values('create_time').distinct().order_by('create_time')]
 	for x in time_label:
 		label = x.strftime("%Y-%m-%d")
-		all_list = [x.res for x in range_list.filter(create_time=x) if x.res > 0]
+		all_list = [x.res for x in range_list.filter(create_time=x) if x.res]
 		total = len(all_list)
-		rate = {}
-		rate[label] = {
-			'ms':round(len([x for x in all_list if x < 1]) * 100 / total, 2),
-			'os':round(len([x for x in all_list if 0.999 < x < 2]) * 100 / total, 2),
-			'ts':round(len([x for x in all_list if 2 <= x < 3]) * 100 / total, 2),
-			'tts':round(len([x for x in all_list if 3 <= x < 4]) * 100 / total, 2),
-			'fs':round(len([x for x in all_list if 4 <= x < 5]) * 100 / total, 2),
-			'ffs':round(len([x for x in all_list if x >= 5]) * 100 / total, 2),
-			'num':total,
-			'count':round(sum([x.rpm for x in range_list.filter(create_time=x) if x.rpm]), 0),
-			}
-		show_data.append(rate)
+		if total == 0:
+			pass
+		else:
+			rate = {}
+			rate[label] = {
+				'ms':round(len([x for x in all_list if x < 1]) * 100 / total, 2),
+				'os':round(len([x for x in all_list if 0.999 < x < 2]) * 100 / total, 2),
+				'ts':round(len([x for x in all_list if 2 <= x < 3]) * 100 / total, 2),
+				'tts':round(len([x for x in all_list if 3 <= x < 4]) * 100 / total, 2),
+				'fs':round(len([x for x in all_list if 4 <= x < 5]) * 100 / total, 2),
+				'ffs':round(len([x for x in all_list if x >= 5]) * 100 / total, 2),
+				'num':total,
+				'count':round(sum([x.rpm for x in range_list.filter(create_time=x) if x.rpm]), 0),
+				}
+			show_data.append(rate)
 		# 统计channeldata
 		cdata = {}
 		cdata[label] = {
@@ -104,13 +107,16 @@ def cobra_datas(request):
 			'type' : source.type,
 			'rpm' : round(sum([x for x in rpm_src if x > 0])),
 			}
-		res_src = [x['res'] for x in range_list.filter(method_id=x).values('res') if x['res']]
-		res = [x for x in res_src if x > 0]
-		try:
-			my_dict['res'] = round(sum(res) / len(res), 2)
-		except:
-			my_dict['res'] = ''
-		show_data.append(my_dict)
+		if my_dict['rpm'] <= 0:
+			continue
+		else:
+			res_src = [x['res'] for x in range_list.filter(method_id=x).values('res') if x['res']]
+			res = [x for x in res_src if x > 0]
+			try:
+				my_dict['res'] = round(sum(res) / len(res), 2)
+			except:
+				my_dict['res'] = ''
+			show_data.append(my_dict)
 	return render(request, 'cobra_datas.html', {'show_data':show_data})
 
 @login_required
@@ -131,7 +137,7 @@ def cobra_trace(request):
 		res_list = [x.res for x in range_list.filter(method_id=method) if x.res]
 		judge_res = [x for x in res_list if x >= 1]
 		if judge_res:
-			show_res = [{'create_time' : x.create_time.strftime("%Y-%m-%d"), 'res' : float(x.res), 'rpm' : int(x.rpm)} for x in range_list.filter(method_id=method).order_by('create_time') if x.res > 0]
+			show_res = [{'create_time' : x.create_time.strftime("%Y-%m-%d"), 'res' : float(x.res), 'rpm' : int(x.rpm)} for x in range_list.filter(method_id=method).order_by('create_time') if x.res]
 			try:
 				source = Method.objects.get(id=method)
 			except:
@@ -182,9 +188,9 @@ def single(request):
 	# 确定接口范围
 	show_list = []
 	# 过滤接口，检测响应时间有没有>= 1的，如果有就保留，去掉都是毫毛级的稳定接口
-	res_list = [x.res for x in range_list if x.res >=0]
+	res_list = [x.res for x in range_list if x.res]
 	if res_list:
-		show_res = [{'create_time' : x.create_time.strftime("%Y-%m-%d"), 'res' : float(x.res), 'rpm' : int(x.rpm)} for x in range_list.order_by('create_time') if x.res > 0]
+		show_res = [{'create_time' : x.create_time.strftime("%Y-%m-%d"), 'res' : float(x.res), 'rpm' : int(x.rpm)} for x in range_list.order_by('create_time') if x.res]
 		source = Method.objects.get(id=intID)
 		my_dict = {
 			'method':source.method,

@@ -31,3 +31,8 @@ class Channel(models.Model):
 	channel = models.CharField(max_length=50, default='NONE')
 	count = models.IntegerField()
 	day = models.DateField(auto_now=False)
+
+class DayIndex(models.Model):
+	index = models.CharField(max_length=50, default='')
+	status = models.CharField(max_length=1, default='0')
+	day = models.DateField(auto_now=False, blank=True)

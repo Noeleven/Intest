@@ -610,6 +610,7 @@ def do_mail():
 if __name__ == '__main__':
 	urls = get_urls() #拼接URL
 	get_data(urls) #通过听云获取数据
+	# 进度条
 	for x in range(120):
 		time.sleep(1)
 		if (x % 10) == 0:
@@ -619,4 +620,4 @@ if __name__ == '__main__':
 	do_db() # 存储数据库
 	do_rates() # 计算接口占比
 	do_rr()
-	do_mail()
+	# do_mail()

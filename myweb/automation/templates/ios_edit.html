@@ -31,12 +31,14 @@
                                 </select>
                             </div>
                         </div>
+
+                        <!-- 标签 -->
                         <div class="form-group">
-                            <label for="second_Type" class="col-sm-2 control-label">第二分类 <strong class="text-danger">*</strong> </label>
-                            <div class="col-sm-10 form-inline">
-                                <select class="form-control input-sm" name='second_Type'>
-                                    {% for x in second_type_list %}
-                                    <option {% if x.second_Type == json_dict.second_Type_id %}selected{% endif %}>{{ x.second_Type }}</option>
+                            <label for="caseTag" class="col-sm-2 control-label">标签 <strong class="text-danger">*</strong> </label>
+                            <div class="col-sm-10">
+                                <select class="form-control input-sm selectMulti" name='caseTag' multiple multiple="multiple" style='width:100%'>
+                                    {% for x in case_tag %}
+                                    <option>{{ x.tagName }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -46,9 +48,7 @@
                             <label for="version" class="col-sm-2 control-label">版本 <strong class="text-danger">*</strong> </label>
                             <div class="col-sm-10">
                                 <select class="form-control input-sm" name='version' readonly>
-                                    {% for x in versionList %}
-                                    <option {% if x == json_dict.version %}selected{% endif %}>{{ x }}</option>
-                                    {% endfor %}
+                                    <option selected>{{ version }}</option>
                                 </select>
                             </div>
                         </div>
@@ -56,11 +56,9 @@
                         <div class="form-group">
                             <label for="plantform" class="col-sm-2 control-label">平台 <strong class="text-danger">*</strong> </label>
                             <div class="col-sm-10">
-                                {% for x in plant %}
                                 <label class="radio-inline">
-                                  <input type="radio" name="plantform" {% if x == json_dict.plantform %}checked="True"{% endif %} value="{{ x }}">{{ x }}
+                                  <input type="radio" name="platform" checked="True" value="{{ myPlantform }}" readonly> {{ myPlantform }}
                                 </label>
-                                {% endfor %}
                             </div>
                         </div>
                         <!-- 状态 -->
@@ -72,6 +70,9 @@
                                 </label>
                                 <label class="radio-inline">
                                   <input type="radio" name="canUse" id="inlineRadio2" value="nouse" {% if json_dict.in_use == '0' %}checked="True"{% endif %}> 弃用
+                                </label>
+                                <label class="radio-inline">
+                                  <input type="radio" name="canUse" id="inlineRadio3" value="nouse" {% if json_dict.in_use == '2' %}checked="True"{% endif %}> 过期
                                 </label>
                             </div>
                         </div>
@@ -351,6 +352,7 @@
         }
         flushID()
     }
+
     function toDown(obj) {
         var objParentTR = $(obj).parent().parent();
         var nextTR = objParentTR.next();
@@ -378,4 +380,9 @@
             }
         }
     }
+</script>
+
+<script>
+    var loadTag = {{myTag|safe}}
+    $(".selectMulti").select2().val(loadTag).trigger("change");
 </script>

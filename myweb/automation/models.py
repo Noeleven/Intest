@@ -4,6 +4,7 @@ import datetime
 
 
 # Create your models here.
+
 class caseType(models.Model):
     type_name = models.CharField(blank=True, max_length=100)
     type_field = models.CharField(blank=True, max_length=100)
@@ -11,13 +12,6 @@ class caseType(models.Model):
 
     def __str__(self):
         return self.type_field
-
-class secondType(models.Model):
-    second_Type = models.CharField(max_length=100, default='测试')
-    modify_time = models.DateTimeField(blank=True, auto_now=True)
-
-    def __str__(self):
-        return self.second_Type
 
 class deviceList(models.Model):
     deviceName = models.CharField(max_length=100)
@@ -55,7 +49,7 @@ class myConfig(models.Model):
 class caseList(models.Model):
     caseName = models.CharField(max_length=300)
     type_field = models.ForeignKey(caseType)
-    second_Type = models.ForeignKey(secondType)
+    case_tag = models.CharField(max_length=300, blank=True)
     plantform = models.CharField(max_length=100)
     version = models.CharField(max_length=100)
     case = models.TextField()
@@ -120,11 +114,21 @@ class caseGroup(models.Model):
     caseID = models.TextField()
     versionStr = models.ForeignKey(caseVersion, default=8)
     des = models.TextField()
+    platform = models.CharField(max_length=10, default='')
     TYPE_CHOICE = (('0', '禁用'), ('1', '启用'))
     status = models.CharField(max_length=2,
         choices=TYPE_CHOICE,
         default='1')
     modify_time = models.DateTimeField(auto_now=True)
+
+class caseTag(models.Model):
+    tagName = models.CharField(blank=True, max_length=100)
+    type_field = models.ForeignKey(caseType)
+
+    def __str__(self):
+        return self.tagName
+
+# ListAdmin
 
 class caseTypeAdmin(admin.ModelAdmin):
     list_display = ('type_name', 'type_field', 'modify_time')
@@ -154,11 +158,6 @@ class caseVersionAdmin(admin.ModelAdmin):
     list_per_page = 30
     search_fields = ['versionStr', 'des']
 
-class secondTypeAdmin(admin.ModelAdmin):
-    list_display = ('second_Type','modify_time')
-    list_per_page = 30
-    search_fields = ['second_Type','modify_time']
-
 class deviceListAdmin(admin.ModelAdmin):
     list_display = ('deviceName','deviceIP','job_name','appVersion','platformVersion')
     list_per_page = 30
@@ -169,12 +168,16 @@ class reportsListAdmin(admin.ModelAdmin):
     list_per_page = 30
     search_fields = ['timeStamp','buildNUM','status','deviceName__deviceName','create_time']
 
+class caseTagAdmin(admin.ModelAdmin):
+    list_display = ('tagName', 'type_field')
+    list_per_page = 30
+    search_fields = ['tagName', 'type_field']
 
 admin.site.register(caseType, caseTypeAdmin)
 admin.site.register(caseList, caseListAdmin)
 admin.site.register(controlList, controlListAdmin)
 admin.site.register(caseUser, caseUserAdmin)
 admin.site.register(caseVersion, caseVersionAdmin)
-admin.site.register(secondType, secondTypeAdmin)
 admin.site.register(deviceList, deviceListAdmin)
 admin.site.register(reportsList, reportsListAdmin)
+admin.site.register(caseTag, caseTagAdmin)

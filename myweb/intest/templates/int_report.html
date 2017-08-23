@@ -100,6 +100,7 @@
 									<th data-sortable="true" >请求时间</th>
 									<th data-sortable="true" >响应码</th>
 									<th data-sortable="true" >服务耗时/s</th>
+									<th data-sortable="true" >URL</th>
 								</tr></thead>
 								{% for v in err %}
 								<tr id='{{v.id}}'>
@@ -109,6 +110,7 @@
 									<td>{{ v.requesTime |date:"Y-m-d H:i"}}</td>
 									<td>{{ v.httpCode }}</td>
 									<td>{{ v.serverTime }}</td>
+									<td><button class="btn btn-default" title="请求url" data-toggle="popover" data-placement="left" data-content="{{v.url}}">展示/隐藏请求URL</button></td>
 								</tr>
 								{% endfor %}
 								</table>

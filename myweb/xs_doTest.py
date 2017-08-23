@@ -27,9 +27,7 @@ header = cf.get('header', 'key') + ':' + cf.get('header', 'sign')
 # get urls
 def getUrls():
 	sourceLists = Ints.objects.filter(inuse=1)
-	# sourceLists = Ints.objects.filter(method_version='api.com.route.order.showContract&version=2.0.0')
 	urls = []
-	# new = "7bef8d03-99d4-4b88-871a-5025340ed3f5"
 	for x in sourceLists:
 		tmp = {
 			'method_version':x.method_version,

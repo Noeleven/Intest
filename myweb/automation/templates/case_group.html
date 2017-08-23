@@ -5,14 +5,11 @@
         <div class="panel-heading"> 用例集 </div>
 		<div class="panel-body">
             <div class="btn-group btn-group-sm">
-                <a type='submit' class="btn btn-sm btn-default getCases">构建#AD</a>
-                <!-- <a type='submit' class="btn btn-sm btn-default getCases">用例集构建#IOS</a> -->
-                <a type='submit' class="btn btn-sm btn-default getCases">构建#M</a>
+                <!-- <a type='submit' class="btn btn-sm btn-default getCases">构建#AD</a> -->
+                <a type='submit' class="btn btn-sm btn-danger getCases">构建</a>
                 <a href="/auto/test_list" type='button' class='btn btn-default btn-sm' target="_blank"><i class="fa fa-bullhorn xwcms"></i> 测试报告</a>
-            </div><br><br>
-            <span class='label label-danger'>警告</span><br>
-            <span class='label label-danger'>1、一个用例集里不要出现不同版本的用例;</span><br>
-            <span class='label label-danger'>2、同时勾选构建，不要选不同平台.比如安卓和M站不能同时勾选构建</span>
+            </div>
+            <span class='label label-warning pull-right'>警告 : 一个用例集里不要出现不同版本的用例;</span>
             <hr>
             AD每日自动构建用例集ID：<span class='label label-success'>{{Aid}}</span>
             M站每日自动构建用例集ID：<span class='label label-primary'>{{Mid}}</span>
@@ -25,7 +22,6 @@
                     {% endfor %}
                 </p>
                 <p id='del_butt'>
-                    <button type="button" class="btn btn-danger" id="delSure">Just Do it!</button>
                     <button type="button" class="btn btn-default" id="cancle">Cancle</button>
                 </p>
             </div>
@@ -41,6 +37,9 @@
 					</th>
 					<th data-field="版本" data-sortable="true">
 						版本
+					</th>
+					<th data-field="平台" data-sortable="true">
+						平台
 					</th>
 					<th data-field="备注" data-sortable="true">
 						备注
@@ -60,6 +59,7 @@
                     <td>{{ x.id }}</td>
     				<td><div name="groupName">{{ x.groupName }}</div></td>
     				<td>{{ x.versionStr }}</td>
+                    <td>{{ x.platform }}</td>
     				<td class='text-danger'>{{ x.des }}</td>
     				<td>{{ x.modify_time|date:"Y-m-d H:i:s" }}</td>
     				<td><a type='button' class="btn btn-sm btn-default" href="/auto/group_edit?groupID={{ x.id }}"><span class="glyphicon glyphicon-pencil xwcms" aria-hidden="true"></span> 编辑</a>
@@ -73,29 +73,33 @@
 <script>
     $(document).ready(function(){
         $(".getCases").click(function(){
-            var valArr = new Array;
-                device = $(this).html().split('#')[1];
+            var valArr = new Array();
+            // 根据所选ID 获取用例集ID和平台，根据平台获取device
             $('input[name="btSelectItem"]:checked').each(function(i){
-                valArr[i] = $(this).parent().next().text();
+                valArr[i] = new Array();
+                valArr[i][0] = $(this).parent().next().text();
+                valArr[i][1] = $(this).parent().siblings('td:eq(3)').text();
             });
-            // var vals = valArr.join(',');//转换为逗号隔开的字符串
-            // console.log(valArr)
-            $('#delconfirm').fadeIn(1000);
-            if(valArr){
+            console.log(valArr)
+            if(valArr.length>0){
                 for (var i=0;i<valArr.length;i++){
-                    $.get("/auto/auto_config",{'vals':valArr[i],'device':device,'type':'group','isDay':''})
-                    }
+                    $.get("/auto/auto_config",
+                        {'vals':valArr[i][0],'device':valArr[i][1],'type':'group','isDay':''}
+                    )}
+                $('#delconfirm').fadeIn(2000)
                 $('#titleee').text('构建确认');
-                $("#del_mess").text('构建中');
+                $("#del_mess").text('构建中中中中中中中中');
             }else{
                 // 提示并隐藏button
+                $('#delconfirm').fadeIn(2000)
                 $('#titleee').text('构建确认');
-                $("#del_mess").text('请先选择用例');
+                $("#del_mess").text('你都没没没没没没没没没没选');
                 $('#del_butt').fadeOut(0);
             }
-            $('#delconfirm').fadeOut(1000);
+            $('#delconfirm').fadeOut(3000);
         });
     });
+
     $(document).ready(function(){
         $("#cancle").click(function(){
             $('#delconfirm').fadeOut(500)

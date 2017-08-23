@@ -3,7 +3,7 @@
     <div class="panel panel-black">
         <div class="panel-heading"> 添加用例 </div>
         <div class="panel-body">
-            <form class="form-horizontal" role="form" method='POST' action="/auto/new_save">
+            <form class="form-horizontal" role="form" method='GET' action="/auto/new_save">
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="caseName" class="col-sm-3 control-label" readonly></label>
@@ -27,21 +27,11 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="second_Type" class="col-sm-3 control-label">第二分类 <strong class="text-danger">*</strong> </label>
-                    <div class="col-sm-6 form-inline">
-                        <select class="form-control input-sm" name='second_Type'>
-                            {% for x in second_type_list %}
-                            <option>{{ x.second_Type }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="version" class="col-sm-3 control-label">版本 <strong class="text-danger">*</strong> </label>
+                    <label for="caseTag" class="col-sm-3 control-label">标签 <strong class="text-danger">*</strong> </label>
                     <div class="col-sm-6">
-                        <select class="form-control input-sm" name='version'>
-                            {% for x in versionList %}
-                            <option>{{ x }}</option>
+                        <select multiple class="form-control input-sm selectMulti" name='caseTag' multiple="multiple" placeholder='支持关键字筛选'>
+                            {% for x in case_tag %}
+                            <option value={{x.tagName}}>{{ x.tagName }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -58,6 +48,16 @@
                         <label class="radio-inline">
                           <input type="radio" name="plantform" id="M" value="M"> M
                         </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="version" class="col-sm-3 control-label">版本 <strong class="text-danger">*</strong> </label>
+                    <div class="col-sm-6">
+                        <select class="form-control input-sm" name='version'>
+                            {% for x in versionList %}
+                            <option>{{ x }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
                 <div class="form-group">
@@ -117,4 +117,5 @@
         }
     });
 </script>
+
 {% endblock content %}

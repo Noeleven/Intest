@@ -6,7 +6,7 @@ from django.contrib import admin
 # Create your models here.
 #数据录入表method+version,name,http,get,args,insertime
 class Ints(models.Model):
-	name = models.CharField(max_length=100, default='接口描述')
+	name = models.CharField(max_length=100, default='接口描述',blank=True)
 	method_version = models.CharField(max_length=100, default='api.com.xxx&version=1.0.0')
 	ishttp_choice = (
 		('HTTP', 'HTTP'),
@@ -46,6 +46,7 @@ class Ints(models.Model):
 	type = models.CharField(max_length=10, choices=type_choice, default="其他")
 	params = models.TextField(default="完整URL或请求参数，参数以&相连")
 	inwhere = models.TextField(default="该接口的出现页面位置")
+	rpm = models.IntegerField(blank=True, null=True)
 	inuse_choice = (
 		('0', '弃用'),
 		('1', '在用'),
@@ -135,7 +136,7 @@ class Errs(models.Model):
 
 
 class IntsAdmin(admin.ModelAdmin):
-    list_display = ('name', 'method_version', 'ishttp', 'isget', 'type', 'inwhere', 'inuse', 'timestamp')
+    list_display = ('name', 'method_version', 'ishttp', 'isget', 'type', 'rpm', 'inwhere', 'inuse', 'timestamp')
     list_per_page = 30
     search_fields = ['name', 'method_version', 'type', 'inuse']
 

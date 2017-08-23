@@ -25,7 +25,8 @@
 	<div class="row" style="padding:20px">
 		<div class='col-md-3'>
 			<!-- 整体结果 -->
-			<h3>自动化测试报告{{Amessage}} {{groupName}}</h3>
+			<h3>自动化测试报告{{Amessage}}</h3>
+            <h4>用例集名称：{{groupName}}</h4>
 			<table class="table table-bordered">
 				<thead></thead>
 				<tbody>
@@ -71,6 +72,9 @@
                 {% if no_list %}
                 <li role="presentation"><a href="#Nolist" aria-controls="Nolist" role="tab" data-toggle="tab">没跑的 {{no_list | length}}</a></li>
                 {% endif %}
+                {% if delList %}
+                <li role="presentation"><a href="#delList" aria-controls="delList" role="tab" data-toggle="tab">废弃的 {{delList | length}}</a></li>
+                {% endif %}
 			</ul>
 			<div class="tab-content">
 				<div role="tabpanel" class="tab-pane active" id="Succ">
@@ -96,6 +100,9 @@
 								<th data-field="步骤">
 									步骤
 								</th>
+                                <th data-field="备注">
+									备注
+								</th>
 								<th data-field="测试时长" data-sortable="true">
 									测试时长
 								</th>
@@ -111,6 +118,7 @@
 							<td>{{ x.info.plantform }}</td>
 							<td>{{ x.info.owner }}</td>
 							<td>{{ x.runAt }}/{{x.storySize}}</td>
+							<td>{{ x.info.des }}</td>
 							<td>{{ x.caseTestTime }}</td>
 						</tr>
 						{% endfor %}
@@ -142,6 +150,9 @@
 								<th data-field="步骤">
 									步骤
 								</th>
+								<th data-field="备注">
+									备注
+								</th>
 								<th data-field="测试时长" data-sortable="true">
 									测试时长
 								</th>
@@ -157,6 +168,7 @@
 							<td>{{ x.info.plantform }}</td>
 							<td>{{ x.info.owner }}</td>
 							<td>{{ x.runAt }}/{{x.storySize}}</td>
+							<td>{{ x.info.des }}</td>
 							<td>{{ x.caseTestTime }}</td>
 						</tr>
 						{% endfor %}
@@ -177,6 +189,9 @@
 								<th data-field="状态" data-sortable="true">
 									状态
 								</th>
+								<th data-field="描述" data-sortable="true">
+									描述
+								</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -186,6 +201,39 @@
 							<td>{{ x.caseName }}</td>
 							<td>{{ x.owner }}</td>
                             <td>{%if x.in_use == '1'%}在用{%else%}废弃{%endif%}</td>
+                            <td>{{ x.des }}</td>
+						</tr>
+						{% endfor %}
+						</tbody>
+					</table>
+				</div>
+                <div role="tabpanel" class="tab-pane" id="delList">
+					<table id='tt2' data-toggle="table" data-show-columns="true" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-search="true"  data-height="450">
+						<thead>
+							<tr class='danger'>
+								<th data-field="ID" data-sortable="true"> ID</th>
+								<th data-field="用例名称" data-sortable="true">
+									用例名称
+								</th>
+								<th data-field="所属" data-sortable="true">
+									所属
+								</th>
+								<th data-field="状态" data-sortable="true">
+									状态
+								</th>
+								<th data-field="描述" data-sortable="true">
+									描述
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+						{% for x in delList %}
+						<tr id='{{x.id}}'>
+							<td>{{ x.id }}</td>
+							<td>{{ x.caseName }}</td>
+							<td>{{ x.owner }}</td>
+                            <td>{%if x.in_use == '1'%}在用{%else%}废弃{%endif%}</td>
+                            <td>{{ x.des }}</td>
 						</tr>
 						{% endfor %}
 						</tbody>

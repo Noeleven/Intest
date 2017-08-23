@@ -33,4 +33,5 @@ urlpatterns = [
 	url(r'^snapshot$', snapshot, name='snapshot'),	# 单条报告ajax请求
 	url(r'^stop_jenkins$', stop_jenkins, name='stop_jenkins'),	# 停止jenkins
 	url(r'^retry$', retry, name='retry'),	# 重测
+	url(r'^tag_search$', tag_search, name='tag_search'),	# 列表标签搜索
 ]

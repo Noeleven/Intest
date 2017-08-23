@@ -91,6 +91,7 @@
 		{% endblock content %}
 		</div>
 
+
         <!-- footer content -->
         <footer>
           <div class="pull-right">
@@ -143,10 +144,14 @@
 		$('.x-goto-top').click(function(){$('html,body').animate({scrollTop: '0px'}, 800);});
 	})
 	</script>
-	<script>$(function() {
-	$('[data-toggle="tooltip"]').tooltip()
-  })</script>
-  <script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1262018284'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s19.cnzz.com/z_stat.php%3Fid%3D1262018284%26show%3Dpic' type='text/javascript'%3E%3C/script%3E"));</script>
-  </body>
+	<script>
+        $(function() {
+    	    $('[data-toggle="tooltip"]').tooltip()
+        });
 
+        $(function() {
+            $("[data-toggle='popover']").popover();
+        });
+    </script>
+  </body>
 </html>

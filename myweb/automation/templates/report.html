@@ -294,7 +294,7 @@
                 ver = "{{ vver|safe }}"
                 plat = "{{ platt|safe }}"
             console.log(err_ids)
-            $.get("{% url 'retry' %}", {'ids': err_ids,'version':ver, 'plat':plat}, function(ret){
+            $.get("{% url 'retry' %}", {'ids': err_ids, 'version': ver, 'plat':plat}, function(ret){
                 alert(ret)
             })
         })

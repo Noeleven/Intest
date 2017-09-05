@@ -24,6 +24,7 @@
 	<link href="{% static 'vendors/jquery-editable-select.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/select2.min.css' %}" rel="stylesheet">
     <script src="{% static 'js/select2.min.js' %}"></script>
+
     <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script> -->
 
@@ -90,6 +91,7 @@
 						<ul class="nav side-menu">
                             <li><a href="/auto/auto_search"><i class="fa fa-search xwcms"></i> 用例查询</a></li>
                             <li><a href="/auto/auto_group"><i class="fa fa-group xwcms"></i> 用例集管理</a></li>
+                            <li><a href="/auto/test_list"><i class="fa fa-bullhorn xwcms"></i> 测试报告</a></li>
                             {% for x in nav_list %}
                                 {% if x.type == '废弃'%}
                                     <li><a href="/auto/auto_list?my_type={{x.type}}"><i class="fa fa-trash xwcms"></i> {{ x.type }} <span class="badge badge-red">{{ x.num }}</span></a></li>
@@ -99,19 +101,17 @@
                                     <li><a href="/auto/auto_list?my_type={{x.type}}"><i class="fa fa-paperclip xwcms"></i> {{ x.type }} <span class="badge badge-red">{{ x.num }}</span></a></li>
                                 {% endif %}
                             {% endfor %}
+                            <li><a href="/auto/autoReport"><i class="fa fa-hand-peace-o xwcms"></i> 一周报告</a></li>
 						</ul>
 					</div>
 				</div>
 			</div>
 		</div>
 
-        <!-- page content -->
-		<!-- <script src="{% static 'js/echarts.min.js' %}" charset="UTF-8"></script> -->
         <div id ='right_col' class="right_col" role="main">
 		{% block content %}
 		{% endblock content %}
 		</div>
-        <!-- <p id="mm">{{message}}</p> -->
       </div>
     </div>
 
@@ -192,7 +192,7 @@
             });
         });
     </script>
-    <script>
+    <!-- <script>
         $('input').bind('input propertychange', function() {
             if($(this))
             // console.log($(this).val());
@@ -205,7 +205,7 @@
                 }
             }
         });
-    </script>
+    </script> -->
     <script type="text/javascript">
         $(".selectMulti").select2();
     </script>

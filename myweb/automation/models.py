@@ -43,6 +43,7 @@ class deviceList(models.Model):
 
 class myConfig(models.Model):
     caseStr = models.TextField()
+    timeStamp = models.TextField()
     device = models.CharField(max_length=100)
     modify_time = models.DateTimeField(blank=True, auto_now=True)
 
@@ -92,14 +93,14 @@ class reportsList(models.Model):
     reportURL = models.CharField(max_length=200,blank=True)
     status = models.CharField(max_length=50,blank=True)
     deviceName = models.ForeignKey(deviceList)
-    create_time = models.DateTimeField(auto_now=True)
+    create_time = models.DateTimeField(auto_now_add=True)
 
 class testRecording(models.Model):
     Version = models.CharField(max_length=10, blank=True)
     timeStamp = models.CharField(max_length=100)
     groupId = models.CharField(max_length=100, blank=True)
     flag = models.CharField(max_length=10, blank=True)
-    createTime = models.DateField(auto_now=True)
+    createTime = models.DateField(auto_now_add=True)
 
 class allBookRecording(models.Model):
     caseName = models.CharField(max_length=300)
@@ -107,7 +108,7 @@ class allBookRecording(models.Model):
     testResultDoc = models.TextField()
     timeStamp = models.CharField(max_length=100)
     usedTime = models.CharField(max_length=100, default='0')
-    create_time = models.DateTimeField(auto_now=True)
+    create_time = models.DateTimeField(auto_now_add=True)
 
 class caseGroup(models.Model):
     groupName = models.CharField(max_length=300)

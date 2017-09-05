@@ -6,11 +6,29 @@
 		<div class="panel-body">
             <form id="my_form">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label for="caseId">用例ID</label>
                             <input type="text" class="form-control input-sm" id="caseId" placeholder="想要模糊匹配多个，请以+隔开，比如 1+2 表示所有id包含1或2的">
                         </div>
+                        <div class="form-group">
+                            <label for="plantform">平台</label>
+                            <select multiple class="form-control input-sm" id="plantform" placeholder="平台">
+                                {% for x in plant %}
+                                <option>{{ x }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="owner">所属人</label>
+                            <select multiple class="form-control input-sm" id="owner" placeholder="所属人">
+                                {% for x in user_list %}
+                                <option>{{ x }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label for="caseName">用例名称</label>
                             <input type="text" class="form-control input-sm" id="caseName" placeholder="想要模糊匹配多个，请以+隔开">
@@ -24,16 +42,6 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="plantform">平台</label>
-                            <select multiple class="form-control input-sm" id="plantform" placeholder="平台">
-                                {% for x in plant %}
-                                <option>{{ x }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
                             <label for="version">版本</label>
                             <select multiple class="form-control input-sm" id="version" placeholder="版本">
                                 {% for x in versionList %}
@@ -41,14 +49,8 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="owner">所属人</label>
-                            <select multiple class="form-control input-sm" id="owner" placeholder="所属人">
-                                {% for x in user_list %}
-                                <option>{{ x }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                    </div>
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label for="note">备注</label>
                             <input type="text" class="form-control input-sm" id="note" placeholder="想要模糊匹配多个，请以+隔开，比如 成功+通过">
@@ -56,25 +58,32 @@
                     </div>
                 </div>
                 <hr>
-                <p class="text-block text-primary">搜索使用说明：Ctrl + 鼠标点击可以多选，选中的在Ctrl + 鼠标点击可取消选中，什么都不选搜全部用例</p>
                 <div class="btn-group btn-group-sm">
                     <button type="button" class="btn btn-primary" id="Search"><span class="glyphicon glyphicon-search"></span> Search</a>
                     <button type="button" class="btn btn-default" id="Reset"><span class="glyphicon glyphicon-refresh"></span> Reset</button>
                 </div>
+                <p class="text-block text-primary">Ctrl + 鼠标点击可以 多选/取消选中; 什么都不选搜全部用例</p>
             </form>
             <hr / >
+            <div class="btn-group btn-group-sm">
+                <button class='btn btn-sm btn-default' disabled>设备状态</button>
+                <button class='btn btn-sm btn-success' disabled>空闲</button>
+                <button class='btn btn-sm btn-warning' disabled>办理中</button>
+                <button class='btn btn-sm btn-danger' disabled>排队中</button>
+            </div>
+            <br><br>
             <ul class="nav nav-tabs" role="tablist">
               <li role="presentation" class="active"><a href="#ad" aria-controls="ad" role="tab" data-toggle="tab">Android 测试机</a></li>
               <li role="presentation"><a href="#ios" aria-controls="ios" role="tab" data-toggle="tab">iOS 测试机</a></li>
               <li role="presentation"><a href="#mm" aria-controls="mm" role="tab" data-toggle="tab">M站 测试机</a></li>
-              <!-- <li role="presentation"><a href="#jj" aria-controls="jj" role="tab" data-toggle="tab">Jenkins</a></li> -->
             </ul>
             <div class="tab-content">
               <div role="tabpanel" class="tab-pane fade in active" id="ad">
                   <br>
                   {% for x in device_list %}
-                      {% if x.platformName == 'Android'%}
-                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">AD#{{ x.deviceName }}#{{ x.appVersion }}</a>
+                    {% if x.platformName == 'Android'%}
+                      <a type='submit' name='{{x.platformName}}' class='btn btn-sm {% if x.queue %}btn-danger{% elif x.status %}btn-warning{% elif x.broken %}btn-default{% else %}btn-success
+                      {% endif %} getCases' {% if x.broken %}disabled="disabled"{% endif %}>{{ x.deviceName }}#{{ x.appVersion }}</a>
                       {%endif%}
                   {% endfor %}
               </div>
@@ -82,7 +91,8 @@
                   <br>
                   {% for x in device_list %}
                       {% if x.platformName == 'iOS'%}
-                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">iOS#{{ x.deviceName }}#{{ x.appVersion }}</a>
+                      <a type='submit' name='{{x.platformName}}' class='btn btn-sm {% if x.queue %}btn-danger{% elif x.status %}btn-warning{% elif x.broken %}btn-default{% else %}btn-success
+                      {% endif %} getCases' {% if x.broken %}disabled="disabled"{% endif %}>{{ x.deviceName }}#{{ x.appVersion }}</a>
                       {%endif%}
                   {% endfor %}
               </div>
@@ -90,7 +100,8 @@
                   <br>
                   {% for x in device_list %}
                       {% if x.platformName == 'M'%}
-                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">M站#{{ x.deviceName }}#{{ x.appVersion }}</a>
+                      <a type='submit' name='{{x.platformName}}' class='btn btn-sm {% if x.queue %}btn-danger{% elif x.status %}btn-warning{% elif x.broken %}btn-default{% else %}btn-success
+                      {% endif %} getCases' {% if x.broken %}disabled="disabled"{% endif %}>{{ x.deviceName }}#{{ x.appVersion }}</a>
                       {%endif%}
                   {% endfor %}
               </div>
@@ -158,7 +169,7 @@
         $(".getCases").click(function(){
             var valArr = new Array;
                 plantArr = new Array;
-                device = $(this).html().split('#')[1];
+                device = $(this).html().split('#')[0];
                 plat = $(this).attr('name');
             $('input[name="btSelectItem"]:checked').each(function(i){
                 valArr[i] = $(this).parent().next().text();
@@ -178,10 +189,11 @@
             console.log(device, vals, plantArr, plat, pass)
             if(vals){
                 if(pass=='pass'){
-                    $.get("/auto/auto_config",{'vals':vals,'device':device,'type':'single','isDay':''})
-                    $('#titleee').text('构建确认');
-                    $("#del_mess").text('构建中');
-                    $('#delconfirm').fadeOut(2000);
+                    $.get("/auto/auto_config",{'vals':vals,'device':device,'type':'single'},function(ret){
+                        $('#titleee').text('构建确认');
+                        $('#del_mess').html(ret)
+                        $('#del_butt').fadeOut(0);
+                    })
                 }else{
                     $('#titleee').text('构建确认');
                     $("#del_mess").text('所选用例的平台和当前构建设备不匹配，iOS用例就选iOS构建，不要混用');

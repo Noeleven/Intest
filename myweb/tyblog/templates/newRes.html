@@ -1,0 +1,285 @@
+{% extends "ty_base.html" %}
+{% block content %}
+<h3>概览图表</h3>
+<div class="panel panel-primary">
+	<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> APP响应时间 </div>
+</div>
+<div class="row">
+	<div class="col-md-6 col-sm-6 col-sx-6">
+		<div id="area0" style="height:500px">
+		</div>
+	</div>
+	<div class="col-md-6 col-sm-6 col-xs-6">
+		 <div id="area1" style="height:500px">
+		</div>
+	</div>
+</div>
+<hr>
+<div class="row">
+	<div class="col-md-6 col-sm-6 col-sx-6">
+		<div id="area2" style="height:500px">
+		</div>
+	</div>
+	<div class="col-md-6 col-sm-6 col-xs-6">
+		 <div id="area3" style="height:500px">
+		</div>
+	</div>
+</div>
+
+<script>
+	var myChart0 = echarts.init(document.getElementById('area0'));
+	var myChart1 = echarts.init(document.getElementById('area1'));
+	var myChart2 = echarts.init(document.getElementById('area2'));
+	var myChart3 = echarts.init(document.getElementById('area3'));
+
+    var option0 = {
+		title : {
+			text: 'Android自身服务 响应时间走势 | 行业平均0.65秒',
+			subtext: ''
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom',
+			data:{{nameList|safe}}
+		},
+		dataZoom: [
+            {
+                type: 'slider',
+                show: false,
+                start: 40,
+                end: 100,
+                handleSize: 8
+            },
+            {
+                type: 'inside',
+                start: 40,
+                end: 100
+            },
+        ],
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : {{dateList|safe}}
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+				axisLabel : {
+					formatter: '{value} 秒'
+				}
+			}
+		],
+		series : [
+			{% for x in result %}
+			{% if x.type == 'ADself' %}
+				{
+					name:'{{x.name}}',
+					type:'line',
+					smooth:true,
+					// itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:{{x.value|safe}},
+					markLine: {
+		                data: [
+		                    {type: 'average', name: '平均值'}
+		                ]
+		            }
+				},
+			{% endif %}
+			{% endfor %}
+			]
+		};
+
+	var option1 = {
+		title : {
+			text: 'Android第三方服务 响应时间走势 | 行业平均0.65秒',
+			subtext: ''
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		grid:{
+			right:'40%'
+		},
+		legend: {
+			type: 'scroll',
+			orient: 'vertical',
+			left:'70%',
+    		top: 10,
+			data:{{nameList|safe}}
+		},
+		dataZoom: [
+            {
+                type: 'slider',
+                show: false,
+                start: 40,
+                end: 100,
+                handleSize: 8
+            },
+            {
+                type: 'inside',
+                start: 40,
+                end: 100
+            },
+        ],
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : {{dateList|safe}}
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+				axisLabel : {
+					formatter: '{value} 秒'
+				}
+			}
+		],
+		series : [
+			{% for x in result %}
+			{% if x.type == 'ADthird' %}
+				{
+					name:'{{x.name}}',
+					type:'line',
+					smooth:true,
+					data:{{x.value|safe}},
+				},
+			{% endif %}
+			{% endfor %}
+			]
+		};
+
+	var option2 = {
+		title : {
+			text: 'iOS自身服务 响应时间走势 | 行业平均0.65秒',
+			subtext: ''
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'bottom',
+			data:{{nameList|safe}}
+		},
+		dataZoom: [
+            {
+                type: 'slider',
+                show: false,
+                start: 40,
+                end: 100,
+                handleSize: 8
+            },
+            {
+                type: 'inside',
+                start: 40,
+                end: 100
+            },
+        ],
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : {{dateList|safe}}
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+				axisLabel : {
+					formatter: '{value} 秒'
+				}
+			}
+		],
+		series : [
+			{% for x in result %}
+			{% if x.type == 'IOSself' %}
+				{
+					name:'{{x.name}}',
+					type:'line',
+					smooth:true,
+					// itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:{{x.value|safe}},
+					markLine: {
+		                data: [
+		                    {type: 'average', name: '平均值'}
+		                ]
+		            }
+				},
+			{% endif %}
+			{% endfor %}
+			]
+		};
+
+	var option3 = {
+		title : {
+			text: 'iOS第三方服务 响应时间走势 | 行业平均0.65秒',
+			subtext: ''
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		grid:{
+			right:'40%'
+		},
+		legend: {
+			type: 'scroll',
+			orient: 'vertical',
+			left:'70%',
+    		top: 10,
+			data:{{nameList|safe}}
+		},
+		dataZoom: [
+            {
+                type: 'slider',
+                show: false,
+                start: 40,
+                end: 100,
+                handleSize: 8
+            },
+            {
+                type: 'inside',
+                start: 40,
+                end: 100
+            },
+        ],
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : {{dateList|safe}}
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+				axisLabel : {
+					formatter: '{value} 秒'
+				}
+			}
+		],
+		series : [
+			{% for x in result %}
+			{% if x.type == 'IOSthird' %}
+				{
+					name:'{{x.name}}',
+					type:'line',
+					smooth:true,
+					// itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:{{x.value|safe}},
+				},
+			{% endif %}
+			{% endfor %}
+			]
+		};
+
+	myChart0.setOption(option0);
+	myChart1.setOption(option1);
+	myChart2.setOption(option2);
+	myChart3.setOption(option3);
+</script>
+{% endblock content %}

@@ -78,14 +78,19 @@
             $('input[name="btSelectItem"]:checked').each(function(i){
                 valArr[i] = new Array();
                 valArr[i][0] = $(this).parent().next().text();
-                valArr[i][1] = $(this).parent().siblings('td:eq(3)').text();
+                // valArr[i][1] = $(this).parent().siblings('td:eq(3)').text();
             });
             console.log(valArr)
             if(valArr.length>0){
                 for (var i=0;i<valArr.length;i++){
                     $.get("/auto/auto_config",
-                        {'vals':valArr[i][0],'device':valArr[i][1],'type':'group','isDay':''}
-                    )}
+                        // {'vals':valArr[i][0],'device':valArr[i][1],'type':'group','isDay':''}
+                        {'vals':valArr[i][0],'type':'group','isDay':''},function(ret){
+                            $('#titleee').text('构建确认');
+                            $('#del_mess').html(ret)
+                            $('#del_butt').fadeOut(0);
+                        })
+                    }
                 $('#delconfirm').fadeIn(2000)
                 $('#titleee').text('构建确认');
                 $("#del_mess").text('构建中中中中中中中中');

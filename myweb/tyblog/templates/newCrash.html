@@ -1,0 +1,147 @@
+{% extends "ty_base.html" %}
+{% block content %}
+<h3>概览图表</h3>
+<div class="panel panel-primary">
+	<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> APP崩溃率 </div>
+</div>
+<div class="row">
+	<div class="col-md-12 col-sm-12 col-sx-12">
+		<div id="area0" style="height:500px">
+		</div>
+	</div>
+</div>
+	<hr>
+<div class="row">
+	<div class="col-md-12 col-sm-12 col-xs-12">
+		 <div id="area1" style="height:500px">
+		</div>
+	</div>
+</div>
+
+<script>
+	var myChart0 = echarts.init(document.getElementById('area0'));
+	var myChart1 = echarts.init(document.getElementById('area1'));
+
+    var option0 = {
+		title : {
+			text: 'Android崩溃率走势 | 行业平均0.685‰',
+			subtext: ''
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'top',
+			data:{{ADver|safe}}
+		},
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : {{dateList|safe}}
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+				axisLabel : {
+					formatter: '{value} ‰'
+				}
+			}
+		],
+		dataZoom: [
+            {
+                type: 'slider',
+                show: true,
+                start: 40,
+                end: 100,
+                handleSize: 8
+            },
+            {
+                type: 'inside',
+                start: 40,
+                end: 100
+            },
+        ],
+		series : [
+			{% for x in result %}
+				{
+					name:'{{x.name}}',
+					type:'line',
+					smooth:true,
+					// itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:{{x.value|safe}},
+					markLine: {
+		                data: [
+		                    {type: 'average', name: '平均值'}
+		                ]
+		            }
+				},
+			{% endfor %}
+			]
+		};
+
+	var option1 = {
+		title : {
+			text: 'iOS崩溃率走势 | 行业平均0.685‰',
+			subtext: ''
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			y: 'top',
+			data:{{ADver|safe}}
+		},
+		dataZoom: [
+            {
+                type: 'slider',
+                show: true,
+                start: 40,
+                end: 100,
+                handleSize: 8
+            },
+            {
+                type: 'inside',
+                start: 40,
+                end: 100
+            },
+        ],
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : {{dateList|safe}}
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+				axisLabel : {
+					formatter: '{value} ‰'
+				}
+			}
+		],
+		series : [
+			{% for x in result %}
+				{
+					name:'{{x.name}}',
+					type:'line',
+					smooth:true,
+					// itemStyle: {normal: {areaStyle: {type: 'default'}}},
+					data:{{x.iOSvalue|safe}},
+					markLine: {
+		                data: [
+		                    {type: 'average', name: '平均值'}
+		                ]
+		            }
+				},
+			{% endfor %}
+			]
+		};
+
+
+	myChart0.setOption(option0);
+	myChart1.setOption(option1);
+</script>
+{% endblock content %}

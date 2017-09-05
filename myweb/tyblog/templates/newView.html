@@ -1,0 +1,155 @@
+{% extends "ty_base.html" %}
+{% block content %}
+<h3>概览图表</h3>
+<div class="panel panel-primary">
+	<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> APP错误率 </div>
+</div>
+<div class="row">
+	<div class="col-md-12 col-sm-6 col-sx-6">
+		<div id="area0" style="height:600px">
+		</div>
+	</div>
+</div>
+<hr>
+<div class="row">
+	<div class="col-md-12 col-sm-6 col-sx-6">
+		<div id="area1" style="height:600px">
+		</div>
+	</div>
+</div>
+
+<script>
+	var myChart0 = echarts.init(document.getElementById('area0'));
+	var myChart1 = echarts.init(document.getElementById('area1'));
+
+    var option0 = {
+		title : {
+			text: 'Android 交互时间',
+			subtext: ''
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		legend: {
+			type: 'scroll',
+			orient: 'vertical',
+			left:'70%',
+    		top: 10,
+	        data:{{legend|safe}}
+	    },
+		grid:{
+			right:'40%'
+		},
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : {{dateList|safe}}
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+				axisLabel : {
+					formatter: '{value} 秒'
+				}
+			}
+		],
+		dataZoom: [
+            {
+                type: 'slider',
+                show: false,
+                start: 40,
+                end: 100,
+                handleSize: 8
+            },
+            {
+                type: 'inside',
+                start: 40,
+                end: 100
+            },
+        ],
+		series : [
+			{% for x in result %}
+			{% if x.type == 'AD' %}
+				{
+					name:'{{x.name}}',
+					type:'line',
+					smooth:true,
+					radius : '55%',
+            		center: ['0%', '50%'],
+					data:{{x.value|safe}},
+				},
+			{% endif %}
+			{% endfor %}
+			]
+		};
+
+	var option1 = {
+		title : {
+			text: 'iOS 交互时间',
+			subtext: ''
+		},
+		tooltip : {
+			trigger: 'axis'
+		},
+		grid:{
+			right:'40%'
+		},
+		legend: {
+			type: 'scroll',
+			orient: 'vertical',
+			left:'70%',
+    		top: 10,
+	        data:{{legend|safe}}
+	    },
+		dataZoom: [
+            {
+                type: 'slider',
+                show: false,
+                start: 40,
+                end: 100,
+                handleSize: 8
+            },
+            {
+                type: 'inside',
+                start: 40,
+                end: 100
+            },
+        ],
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : false,
+				data : {{dateList|safe}}
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+				axisLabel : {
+					formatter: '{value} 秒'
+				}
+			}
+		],
+		series : [
+			{% for x in result %}
+			{% if x.type == 'IOS' %}
+				{
+					name:'{{x.name}}',
+					type:'line',
+					smooth:true,
+					data:{{x.value|safe}},
+					radius : '55%',
+            		center: ['0%', '50%'],
+				},
+			{% endif %}
+			{% endfor %}
+			]
+		};
+
+
+	myChart0.setOption(option0);
+	myChart1.setOption(option1);
+</script>
+{% endblock content %}

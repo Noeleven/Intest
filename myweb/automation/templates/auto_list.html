@@ -12,18 +12,20 @@
             </ul>
             <div class="tab-content">
               <div role="tabpanel" class="tab-pane fade in active" id="ad">
-                <br>
-                    {% for x in device_list %}
-                        {% if x.platformName == 'Android'%}
-                        <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">AD#{{ x.deviceName }}#{{ x.appVersion }}</a>
-                        {%endif%}
-                    {% endfor %}
+                  <br>
+                  {% for x in device_list %}
+                    {% if x.platformName == 'Android'%}
+                      <a type='submit' name='{{x.platformName}}' class='btn btn-sm {% if x.queue %}btn-danger{% elif x.status %}btn-warning{% elif x.broken %}btn-default{% else %}btn-success
+                      {% endif %} getCases' {% if x.broken %}disabled="disabled"{% endif %}>{{ x.deviceName }}#{{ x.appVersion }}</a>
+                      {%endif%}
+                  {% endfor %}
               </div>
               <div role="tabpanel" class="tab-pane fade" id="ios">
                   <br>
                   {% for x in device_list %}
                       {% if x.platformName == 'iOS'%}
-                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">iOS#{{ x.deviceName }}#{{ x.appVersion }}</a>
+                      <a type='submit' name='{{x.platformName}}' class='btn btn-sm {% if x.queue %}btn-danger{% elif x.status %}btn-warning{% elif x.broken %}btn-default{% else %}btn-success
+                      {% endif %} getCases' {% if x.broken %}disabled="disabled"{% endif %}>{{ x.deviceName }}#{{ x.appVersion }}</a>
                       {%endif%}
                   {% endfor %}
               </div>
@@ -31,11 +33,12 @@
                   <br>
                   {% for x in device_list %}
                       {% if x.platformName == 'M'%}
-                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">M站#{{ x.deviceName }}#{{ x.appVersion }}</a>
+                      <a type='submit' name='{{x.platformName}}' class='btn btn-sm {% if x.queue %}btn-danger{% elif x.status %}btn-warning{% elif x.broken %}btn-default{% else %}btn-success
+                      {% endif %} getCases' {% if x.broken %}disabled="disabled"{% endif %}>{{ x.deviceName }}#{{ x.appVersion }}</a>
                       {%endif%}
                   {% endfor %}
               </div>
-            </div>
+            </div><hr>
             <hr>
             {% if tag_list %}
             <div class="btn-group btn-group-sm col-md-6">
@@ -134,7 +137,7 @@
         $(".getCases").click(function(){
             var valArr = new Array;
                 plantArr = new Array;
-                device = $(this).html().split('#')[1];
+                device = $(this).html().split('#')[0];
                 plat = $(this).attr('name');
             $('input[name="btSelectItem"]:checked').each(function(i){
                 valArr[i] = $(this).parent().next().text();
@@ -150,13 +153,14 @@
                     break;
                 }
             }
-            console.log(device, vals, plantArr, plat)
+            // console.log(device, vals, plantArr, plat)
             if(vals){
                 if(pass=='pass'){
-                    $.get("/auto/auto_config",{'vals':vals,'device':device,'type':'single','isDay':''})
-                    $('#titleee').text('构建确认');
-                    $("#del_mess").text('构建中');
-                    $('#delconfirm').fadeOut(2000);
+                    $.get("/auto/auto_config",{'vals':vals,'device':device,'type':'single'},function(ret){
+                        $('#titleee').text('构建确认');
+                        $('#del_mess').html(ret)
+                        $('#del_butt').fadeOut(0);
+                    })
                 }else{
                     $('#titleee').text('构建确认');
                     $("#del_mess").text('所选用例的平台和当前构建设备不匹配，iOS用例就选iOS构建，不要混用');

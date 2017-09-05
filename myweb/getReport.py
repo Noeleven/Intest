@@ -14,8 +14,8 @@ from automation.models import *
 today = datetime.datetime.now()
 timeStamp = testRecording.objects.filter(flag='1').filter(createTime=today).values('timeStamp', 'Version','groupId').distinct()
 for x in timeStamp:
-	name = caseGroup.objects.get(id=json.loads(x['groupId'])[0]).groupName
+	name = caseGroup.objects.get(id=x['groupId']).groupName
 	url = ('http://127.0.0.1:8000/auto/api_report?timeStamp=%s&ver=%s&name=%s' %
 		(x['timeStamp'], x['Version'], name))
-	print(name)
+	
 	r = requests.get(url)

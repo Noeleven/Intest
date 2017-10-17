@@ -1,0 +1,379 @@
+{% extends "auto_base.html" %}
+{% block content %}
+<div class="row">
+    <div class="panel panel-black">
+        <div class="panel-heading">
+            {% if group %}
+            用例集：{{group.groupName}}
+            {% elif myType == 'trash' %}
+            废弃
+            {% else%}
+            过期
+            {% endif %}
+        </div>
+		<div class="panel-body">
+            <div id="getMyDevice">
+                {% if group %}
+                <!-- 设备列表 -->
+                <div class="btn-group btn-group-sm">
+                    <button class='btn btn-sm btn-success' disabled>空闲</button>
+                    <button class='btn btn-sm btn-warning' disabled>办理中</button>
+                    <button class='btn btn-sm btn-danger' disabled>排队中</button>
+                </div>
+                <br><br>
+                <li class="list-group-item list-group-item-warning"> 设备状态更新中...
+                </li>
+                <ul class="nav nav-tabs" role="tablist">
+                  <li role="presentation" class="active"><a href="#ad" aria-controls="ad" role="tab" data-toggle="tab">Android 测试机</a></li>
+                  <li role="presentation"><a href="#ios" aria-controls="ios" role="tab" data-toggle="tab">iOS 测试机</a></li>
+                  <li role="presentation"><a href="#mm" aria-controls="mm" role="tab" data-toggle="tab">M站 测试机</a></li>
+                </ul>
+                <div class="tab-content">
+                  <div role="tabpanel" class="tab-pane fade in active" id="ad">
+                      <br>
+                      {% for x in device_list %}
+                        {% if x.platformName == 'Android'%}
+                          <a type='submit' name='{{x.platformName}}' class='btn btn-sm {% if x.queue %}btn-danger{% elif x.status %}btn-warning{% elif x.broken %}btn-default{% else %}btn-success
+                          {% endif %} getCases' {% if x.broken %}disabled="disabled"{% endif %}>{{ x.deviceName }}#{{ x.appVersion }}</a>
+                          {%endif%}
+                      {% endfor %}
+                  </div>
+                  <div role="tabpanel" class="tab-pane fade" id="ios">
+                      <br>
+                      {% for x in device_list %}
+                          {% if x.platformName == 'iOS'%}
+                          <a type='submit' name='{{x.platformName}}' class='btn btn-sm {% if x.queue %}btn-danger{% elif x.status %}btn-warning{% elif x.broken %}btn-default{% else %}btn-success
+                          {% endif %} getCases' {% if x.broken %}disabled="disabled"{% endif %}>{{ x.deviceName }}#{{ x.appVersion }}</a>
+                          {%endif%}
+                      {% endfor %}
+                  </div>
+                  <div role="tabpanel" class="tab-pane fade" id="mm">
+                      <br>
+                      {% for x in device_list %}
+                          {% if x.platformName == 'M'%}
+                          <a type='submit' name='{{x.platformName}}' class='btn btn-sm {% if x.queue %}btn-danger{% elif x.status %}btn-warning{% elif x.broken %}btn-default{% else %}btn-success
+                          {% endif %} getCases' {% if x.broken %}disabled="disabled"{% endif %}>{{ x.deviceName }}#{{ x.appVersion }}</a>
+                          {%endif%}
+                      {% endfor %}
+                  </div>
+                </div><hr>
+                {% endif %}
+            </div>
+            <hr>
+            <!-- {% if tag_list %}
+            <div class="row">
+                <div class="btn-group btn-group-sm col-md-6">
+                    <p><b>[标签筛选]</b></p>
+                    {% for x in tag_list %}
+                    <button id='{{my_type}}_{{x.tagName}}' type='button' class='btn btn-default tagger'>{{x.tagName}}</button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %} -->
+
+            {% if userGroupList %}
+            <div class="row">
+                <div class="btn-group btn-group-sm col-md-6">
+                    <p><b>[小组筛选]</b></p>
+                    {% for x in userGroupList %}
+                    <button id='{{x.id}}' type='button' class='btn btn-default tagger'>{{x.groupName}}</button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="btn-group btn-group-sm pull-right">
+                {% if group %}
+                <a href='/auto/addCase?groupId={{group.id}}' type='button' class='btn btn-primary'><span class="glyphicon glyphicon-plus xwcms"></span> 新增用例 → 当前用例集</a>
+                <button type="submit" class="btn btn-default" id="getGroup"><span class="glyphicon glyphicon-rocket xwcms getCases" aria-hidden="true"></span> 构建当前用例集</button>
+                <button type="submit" class="btn btn-warning" id="exCases"><span class="glyphicon glyphicon-flag xwcms" aria-hidden="true"></span> 置为过期</button>
+                {% endif %}
+                <button type="submit" class="btn btn-danger" id="delCases"><span class="glyphicon glyphicon-remove xwcms" aria-hidden="true"></span> 批量删除</button>
+            </div>
+
+            <div id='delconfirm' class="alert alert-default alert-dismissible fade in" role="alert" style="display:none">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
+                <h4 id='titleee'>操作确认</h4><br>
+                <li id='del_mess' class="list-group-item list-group-item-danger">
+                    {% for x in delcase %}
+                    {{ x }}
+                    {% endfor %}
+                </li>
+                <p id='del_butt'>
+                    <button type="button" class="btn btn-danger" id="delSure">Just Do it!</button>
+                    <button type="button" class="btn btn-default" id="cancle">Cancle</button>
+                </p>
+            </div>
+
+		</div>
+
+        <div id="page_down">
+            <table id="tableList" data-toggle="table" data-striped="true" data-show-columns="true" data-row-style="rowStyle" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-pagination="true" data-search="true" data-sort-name='修改时间' data-sort-order='desc' data-show-export='true'>
+    			<thead>
+    				<tr>
+                        <th data-field="state" data-checkbox="true"></th>
+                        <th data-field="ID" class="col-xs-1"> ID</th>
+    					<th data-field="用例名称" data-sortable="true" class="col-xs-2">
+    						用例名称
+    					</th>
+    					<th data-field="品类" data-sortable="true" class="col-xs-1">
+    						品类
+    					</th>
+    					<th data-field="版本" data-sortable="true" class="col-xs-1">
+    					    版本
+    					</th>
+    					<th data-field="平台" data-sortable="true" class="col-xs-1">
+    					    平台
+    					</th>
+                        <th data-field="所属" data-sortable="true" class="col-xs-1">
+    						所属
+    					</th>
+    					<th data-field="备注" data-sortable="true" class="col-xs-1">
+    						备注
+    					</th>
+    					<th data-field="状态" data-sortable="true" class="col-xs-1">
+    						状态
+    					</th>
+    					<th data-field="用例集" data-sortable="true" class="col-xs-1">
+    						用例集
+    					</th>
+    					<th data-field="修改时间" data-sortable="true" class="col-xs-2">
+    						修改时间
+    					</th>
+                        <th data-field="操作" data-sortable="true" class="col-xs-2">
+    						操作
+    					</th>
+    				</tr>
+    			</thead>
+    			<tbody id="list">
+    			{% for x in show_list %}
+    				<tr>
+                        <td></td>
+                        <td>{{ x.id }}</td>
+        				<td><div name="caseName">{{ x.caseName }}</div></td>
+        				<td>{{x.type_field.type_name}}</td>
+        				<td>{{ x.version }}</td>
+        				<td>{{ x.plantform }}</td>
+        				<td>{{ x.owner }}</td>
+        				<td>{{ x.des }}</td>
+        				<td>{% if x.in_use == '1' %}<span class='label label-success'>在用</span>{% elif x.in_use == '2'%}<span class='label label-warning'>过期</span>{% else %}<span class='label label-danger'>废弃</span>{% endif %}</td>
+
+                        <td>{% if x.caseGroup %}
+                                {% for y in x.caseGroup %}
+                                <span class="label label-primary">{{y}}</span>
+                                {%endfor%}
+                            {% else %}
+                                <span class="label label-danger">无</span>
+                            {% endif %}
+                        </td>
+
+        				<td>{{ x.modify_time|date:"Y-m-d H:i:s" }}</td>
+        				<td><a type='button' class="btn btn-sm btn-default" href="/auto/caseConfirm/{{ x.id }}/" target="_blank"><span class="glyphicon glyphicon-pencil xwcms" aria-hidden="true"></span> 编辑</a>
+                            <button type="submit" class="btn btn-default btn-sm" data-index="{{ x.id }}" data-toggle="modal" data-target="#copyModal"><span class="glyphicon glyphicon-camera xwcms" aria-hidden="true"></span> 复制</button>
+                        </td>
+                    </tr>
+    			{% endfor %}
+    			</tbody>
+    		</table>
+        </div>
+
+	</div>
+</div>
+<script>
+    // single build
+    $(document).ready(function(){
+        $(".getCases").click(function(){
+            var valArr = new Array;
+                plantArr = new Array;
+                verArr = new Array;
+                device = $(this).html().split('#')[0];  // 所选设备
+                plat = $(this).attr('name');    // 所选设备平台
+                ver = $(this).html().split('#')[1];    // 所选设备版本
+
+            $('input[name="btSelectItem"]:checked').each(function(i){
+                valArr[i] = $(this).parent().next().text(); // 所选用例的id
+                plantArr[i] = $(this).parent().next().next().next().next().next().text();   // 所选用例的平台
+                verArr[i] = $(this).parent().next().next().next().next().text();   // 所选用例的版本
+            });
+
+            var vals = valArr.join(',');    //转换为逗号隔开的字符串
+
+            $('#delconfirm').fadeIn(1000);
+            // 遍历检查所选是否合规
+            for(var i=0;i<plantArr.length;i++){
+                if(plantArr[i]!=plat){
+                    var pass = 'noplat';
+                    break;
+                }else if(verArr[i]!=ver){
+                    var pass = 'nover';
+                    break;
+                }else{
+                    var pass = 'pass';
+                }
+            }
+            // console.log(device, vals, plantArr, plat)
+            if(vals){
+                if(pass=='pass'){
+                    $.get("/auto/auto_config",
+                        {'vals':vals,'device':device,'type':'single','timeStamp':'','isDay':''},
+                        function(ret){
+                            $('#titleee').text('构建确认');
+                            $('#del_mess').html(ret)
+                            $('#del_butt').fadeOut(0);
+                    })
+                }else if(pass=='nover'){
+                    $('#titleee').text('构建确认');
+                    $("#del_mess").text('错误！所选用例版本 与 所选设备版本不一致！');
+                    $('#del_butt').fadeOut(0);
+                }else{
+                    $('#titleee').text('构建确认');
+                    $("#del_mess").text('错误！所选用例平台 与 所选设备平台不一致！');
+                    $('#del_butt').fadeOut(0);
+                }
+            }else{
+                // 提示并隐藏button
+                $('#titleee').text('构建确认');
+                $("#del_mess").text('错误！请先选择用例！');
+                $('#del_butt').fadeOut(0);
+            }
+        });
+    });
+    // group build
+    $(document).ready(function(){
+        $("#getGroup").click(function(){
+            var vals = {{ group.id|safe }}
+
+            $.get("/auto/auto_config", {'vals':vals,'type':'group','timeStamp':'','isDay':'','device':''}, function(ret){
+                $('#titleee').text('Ready To Build ...');
+                $('#del_mess').html(ret)
+                $('#del_butt').fadeOut(0);
+            })
+            $('#delconfirm').fadeIn(2000)
+            $("#del_mess").text('Building, Wait For A Minite To Check The Report');
+            // $('#delconfirm').fadeOut(3000);
+        });
+    });
+
+    // delete
+    $(document).ready(function(){
+        $("#delCases").click(function(){
+            var valArr = new Array;
+                valArr1 = new Array;
+            $('input[name="btSelectItem"]:checked').each(function(i){
+                valArr[i] = $(this).parent().next().text();
+                valArr1[i] = $(this).parent().next().next().text();
+            });
+            var vals = valArr.join(','); // 转换为逗号隔开的字符串
+            var vals1 = valArr1.join('<br/>');
+            $('#delconfirm').fadeIn(1000);
+            if(vals){
+                // 提示要删除的用例，并显示button
+                message = '删除:<br/>' + vals1;
+                $("#del_mess").html(message);
+                $('#del_butt').fadeIn(500);
+                $("#delSure").click(function(){
+                    $.get("/auto/auto_del",{'id':vals}, function(data,status){
+                        if (status == 'success' && data == 'success') {
+                            $("#del_mess").text('删除成功');
+                        //提交失败的操作
+                        } else {
+                            $("#del_mess").text('已删除或删除失败，请联系管理员');
+                        };
+                    window.location.reload();
+                    // $('#delconfirm').fadeOut(3000);
+                    });
+                })
+            }else{
+                // 提示并隐藏button
+                $("#del_mess").text('请先选择用例');
+                $('#del_butt').fadeOut(0);
+                $('#delconfirm').fadeOut(1000);
+            }
+        });
+    });
+    // change to ex
+    $(document).ready(function(){
+        $("#exCases").click(function(){
+            var valArr = new Array;
+                valArr1 = new Array;
+            $('input[name="btSelectItem"]:checked').each(function(i){
+                valArr[i] = $(this).parent().next().text();
+                valArr1[i] = $(this).parent().next().next().text();
+            });
+            var vals = valArr.join(','); // 转换为逗号隔开的字符串
+            var vals1 = valArr1.join('<br/>');
+            $('#delconfirm').fadeIn(1000);
+            if(vals){
+                // 提示要删除的用例，并显示button
+                message = '<h3>置为过期:</h3><br/>' + vals1;
+                $("#del_mess").html(message);
+                $('#del_butt').fadeIn(500);
+                $("#delSure").click(function(){
+                    $.get("/auto/auto_ex",{'id':vals}, function(data,status){
+                        if (status == 'success' && data == 'success') {
+                            $("#del_mess").text('重置成功');
+                        //提交失败的操作
+                        } else {
+                            $("#del_mess").text('重置失败');
+                        };
+                    window.location.reload();
+                    });
+                })
+            }else{
+                // 提示并隐藏button
+                $("#del_mess").text('请先选择用例');
+                $('#del_butt').fadeOut(0);
+                $('#delconfirm').fadeOut(1000);
+            }
+        });
+    });
+    // cancle
+    $(document).ready(function(){
+        $("#cancle").click(function(){
+            $('#delconfirm').fadeOut(500)
+        });
+    });
+
+    $(document).ready(function(){
+        // 处理跨域
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+        });
+        // post请求
+        $(".tagger").click(function(){
+            var memGroupId = $(this).attr('id')
+            $.post("/auto/tagSearch",{'memGroupId':memGroupId,'show_list_id':{{show_list_id|safe}}}, function(ret){
+                $('#page_down').html(ret)
+            })
+        });
+    });
+</script>
+<script>
+    // change status color
+    var $table = $('#tableList');
+
+    $(function () {
+        $table.on('click-row.bs.table', function (e, row, $element) {
+                $($element).toggleClass('success');
+        });
+    });
+</script>
+<script>
+	$('#tableList').bootstrapTable('destroy').bootstrapTable({
+        showExport: true,//显示导出按钮
+        exportDataType: "basic",//导出类型
+        toolbarAlign: 'right',//toolbar位置
+    });
+</script>
+{% if group  %}
+<script>
+    function getDeviceStatus() {
+      $.get("/auto/getDeviceStatus", function(ret){
+        $("#getMyDevice").html(ret)
+      });
+    };
+
+    getDeviceStatus();
+</script>
+{% endif %}
+{% endblock content %}

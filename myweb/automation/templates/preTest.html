@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> 测试报告 </title>
+	{% load staticfiles %}
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="{% static 'dist/css/bootstrap.min.css' %}">
+	<!-- <link href="{% static 'css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet" media="screen"> -->
+	<link href="{% static 'css/bootstrap-table.min.css' %}" rel="stylesheet">
+	<!--[if lt IE 9]>
+	<script src="assets/js/ie8-responsive-file-warning.js"></script>
+	<![endif]-->
+
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+
+<body>
+	<div class="row" style="padding:20px">
+		<div class='col-md-3'>
+			<!-- 整体结果 -->
+			<h3>自动化测试报告{{Amessage}}</h3>
+            <h4>用例集名称：{{groupName}}</h4>
+			<table class="table table-bordered">
+				<thead></thead>
+				<tbody>
+					<tr>
+						<td>测试总数</td>
+						<td>{{ allNum }}</td>
+						<td>测试开始时间</td>
+						<td>{{ sTime|date:"Y-m-d H:i:s" }}</td>
+
+					</tr>
+					<tr>
+						<td><span class="label label-success">通过</span></td>
+						<td>{{ passNum }}</td>
+						<td>测试结束时间</td>
+						<td>{{ eTime|date:"Y-m-d H:i:s" }}</td>
+
+					</tr>
+					<tr>
+						<td><span class="label label-danger">失败</span></td>
+						<td>{{ failNum }}</td>
+						<td>测试总时长</td>
+						<td>{{ testTime }}</td>
+					</tr>
+                    <tr>
+                        <td>通过率</td>
+						<td>{{ passRate }}%</td>
+                        <td>测试平台</td>
+						<td>{{ plat }}</td>
+                    </tr>
+                    <tr>
+                        <td>版本号</td>
+						<td>{{ version }}</td>
+                    </tr>
+				</tbody>
+			</table>
+            <div id='progre'></div>
+            <h3>测试进度</h3>
+            <div class="progress">
+              <div id='proBar' class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow={{num}} aria-valuemin="0" aria-valuemax="100" style="width: {{num}}%">
+                <span id='proText'>{{num}}% Complete</span>
+              </div>
+            </div>
+		</div>
+        <div class='col-md-9'>
+			<!-- 结果表格 和 展示区域 -->
+			<ul class="nav nav-tabs" role="tablist">
+				<li role="presentation" class="active"><a href="#Succ" aria-controls="Succ" role="tab" data-toggle="tab">成功 {{passNum}}</a></li>
+				<li role="presentation"><a href="#Err" aria-controls="Err" role="tab" data-toggle="tab">失败 {{failNum}}</a></li>
+
+                {% if no_list %}
+                <li role="presentation"><a href="#Nolist" aria-controls="Nolist" role="tab" data-toggle="tab">没跑的 {{no_list | length}}</a></li>
+                {% endif %}
+                {% if delList %}
+                <li role="presentation"><a href="#delList" aria-controls="delList" role="tab" data-toggle="tab">废弃的 {{delList | length}}</a></li>
+                {% endif %}
+			</ul>
+			<div class="tab-content">
+				<div role="tabpanel" class="tab-pane active" id="Succ">
+					<table id='tt' data-toggle="table" data-show-columns="true" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-search="true"  data-height="450">
+						<thead>
+							<tr class='success'>
+								<th data-field="ID" data-sortable="true"> ID</th>
+								<th data-field="用例名称" data-sortable="true">
+									用例名称
+								</th>
+								<th data-field="品类" data-sortable="true">
+									品类
+								</th>
+								<th data-field="版本" data-sortable="true">
+									版本
+								</th>
+								<th data-field="平台" data-sortable="true">
+									平台
+								</th>
+								<th data-field="所属" data-sortable="true">
+									所属
+								</th>
+								<th data-field="步骤">
+									步骤
+								</th>
+                                <th data-field="备注">
+									备注
+								</th>
+								<th data-field="测试时长" data-sortable="true">
+									测试时长
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+						{% for x in pass_list %}
+						<tr id='{{x.id}}'>
+							<td>{{ x.info.id }}</td>
+							<td>{{ x.info.caseName }}</td>
+							<td>{{ x.info.type_field.type_name }}</td>
+							<td>{{ x.info.version }}</td>
+							<td>{{ x.info.plantform }}</td>
+							<td>{{ x.info.owner }}</td>
+							<td>{{ x.runAt }}/{{x.storySize}}</td>
+							<td>{{ x.info.des }}</td>
+							<td>{{ x.caseTestTime }}</td>
+						</tr>
+						{% endfor %}
+						</tbody>
+					</table>
+				</div>
+				<div role="tabpanel" class="tab-pane" id="Err">
+                    <br>
+                    <button type='submit' id='retry' class='btn btn-success btn-sm'>重测失败和没跑的用例</button>
+					<table id='tt1' data-toggle="table" data-show-columns="true" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-search="true"  data-height="450">
+						<thead>
+							<tr class='danger'>
+								<th data-field="ID" data-sortable="true"> ID</th>
+								<th data-field="用例名称" data-sortable="true">
+									用例名称
+								</th>
+								<th data-field="品类" data-sortable="true">
+									品类
+								</th>
+								<th data-field="版本" data-sortable="true">
+									版本
+								</th>
+								<th data-field="平台" data-sortable="true">
+									平台
+								</th>
+								<th data-field="所属" data-sortable="true">
+									所属
+								</th>
+								<th data-field="步骤">
+									步骤
+								</th>
+								<th data-field="备注">
+									备注
+								</th>
+								<th data-field="测试时长" data-sortable="true">
+									测试时长
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+						{% for x in err_list %}
+						<tr id='{{x.id}}'>
+							<td>{{ x.info.id }}</td>
+							<td>{{ x.info.caseName }}</td>
+							<td>{{ x.info.type_field.type_name }}</td>
+							<td>{{ x.info.version }}</td>
+							<td>{{ x.info.plantform }}</td>
+							<td>{{ x.info.owner }}</td>
+							<td>{{ x.runAt }}/{{x.storySize}}</td>
+							<td>{{ x.info.des }}</td>
+							<td>{{ x.caseTestTime }}</td>
+						</tr>
+						{% endfor %}
+						</tbody>
+					</table>
+				</div>
+                <div role="tabpanel" class="tab-pane" id="Nolist">
+					<table id='tt2' data-toggle="table" data-show-columns="true" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-search="true"  data-height="450">
+						<thead>
+							<tr class='danger'>
+								<th data-field="ID" data-sortable="true"> ID</th>
+								<th data-field="用例名称" data-sortable="true">
+									用例名称
+								</th>
+								<th data-field="所属" data-sortable="true">
+									所属
+								</th>
+								<th data-field="状态" data-sortable="true">
+									状态
+								</th>
+								<th data-field="描述" data-sortable="true">
+									描述
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+						{% for x in no_list %}
+						<tr id='{{x.id}}'>
+							<td>{{ x.id }}</td>
+							<td>{{ x.caseName }}</td>
+							<td>{{ x.owner }}</td>
+                            <td>{%if x.in_use == '1'%}在用{%else%}废弃{%endif%}</td>
+                            <td>{{ x.des }}</td>
+						</tr>
+						{% endfor %}
+						</tbody>
+					</table>
+				</div>
+                <div role="tabpanel" class="tab-pane" id="delList">
+					<table id='tt2' data-toggle="table" data-show-columns="true" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-search="true"  data-height="450">
+						<thead>
+							<tr class='danger'>
+								<th data-field="ID" data-sortable="true"> ID</th>
+								<th data-field="用例名称" data-sortable="true">
+									用例名称
+								</th>
+								<th data-field="所属" data-sortable="true">
+									所属
+								</th>
+								<th data-field="状态" data-sortable="true">
+									状态
+								</th>
+								<th data-field="描述" data-sortable="true">
+									描述
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+						{% for x in delList %}
+						<tr id='{{x.id}}'>
+							<td>{{ x.id }}</td>
+							<td>{{ x.caseName }}</td>
+							<td>{{ x.owner }}</td>
+                            <td>{%if x.in_use == '1'%}在用{%else%}废弃{%endif%}</td>
+                            <td>{{ x.des }}</td>
+						</tr>
+						{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+            <br>
+		</div>
+        <hr>
+		<div class='col-md-12'>
+			<br>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">用例执行过程</h3>
+				</div>
+				<div id='contents' class="panel-body">
+					<div class="alert alert-info" role="alert">点用例 看详情.</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+    <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+	<script src="{% static 'dist/js/bootstrap.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap-table.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap-table-zh-CN.min.js' %}"></script>
+	<script>
+		var $table = $('#tt');
+		$(function () {
+			$table.on('click-row.bs.table', function (e, row, $element) {
+				$($element).toggleClass('success');
+				var id = $($element).attr("id");
+				// console.log($($element).attr("id"));
+				$.get("{% url 'snapshot' %}", {
+		            'id': id,
+		        }, function(ret) {
+		            $("#contents").html(ret);
+		        })
+			});
+		});
+		var $table1 = $('#tt1');
+		$(function () {
+			$table1.on('click-row.bs.table', function (e, row, $element) {
+				$($element).toggleClass('danger');
+				var id = $($element).attr("id");
+				// console.log($($element).attr("id"));
+				$.get("{% url 'snapshot' %}", {
+		            'id': id,
+		        }, function(ret) {
+		            $("#contents").html(ret);
+		        })
+			});
+		});
+	</script>
+    <script>
+        $('#retry').click(function(){
+            var err_ids = "{{ err_ids|safe }}"
+                ver = "{{ vver|safe }}"
+                plat = "{{ platt|safe }}"
+            console.log(err_ids)
+            $.get("{% url 'retry' %}", {'ids': err_ids, 'version': ver, 'plat':plat}, function(ret){
+                alert(ret)
+            })
+        })
+    </script>
+    <script>
+        //1. 获取时间戳
+        var ref = "";
+            tt = '{{timeTarget|safe}}'
+        //2. 定时刷新调用的方法
+        function getProgress() {
+            $.getJSON("/auto/testProgress",{'tt':tt}, function(data){
+                $("#proBar").attr('aria-valuenow',data.count)
+                $("#proBar").attr('style','width: ' + data.count + '%')
+                $("#proText").text(data.count + '% Complete')
+                if(data.count>100){
+                    clearInterval(ref);
+                }
+            });
+        };
+        //3. 设置定时刷新
+        ref = setInterval(function(){
+            getProgress();
+        },5000);
+    </script>
+</body>
+
+</html>

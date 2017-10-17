@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title> 接口性能分析 </title>
+    <title> 性能报告 </title>
 	{% load staticfiles %}
     <!-- Bootstrap -->
 	<link rel="shortcut icon" href="{% static 'favicon.ico'%}">
@@ -27,14 +27,14 @@
 	  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
 	  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 	<![endif]-->
-	<style>.x-goto-top{opacity:.9;z-index:999999;position:fixed;bottom:113px;right:1%;margin-left:40px;width:38px;height:38px;border-radius:3px;cursor:pointer;background-color:#f5f5f5;border:1px solid #0593d3}.x-goto-top:hover{background-color:#fafafa;border-color:#0482ba}.x-goto-top:hover div.x-arrow{border-bottom-color:#0482ba}.x-goto-top:hover div.x-stick{background-color:#0482ba}.x-goto-top div.x-arrow{position:absolute;left:10px;top:-1px;width:0;height:0;border:9px solid transparent;border-bottom-color:#0593d3}.x-goto-top div.x-stick{position:absolute;left:15px;top:15px;width:8px;height:14px;display:block;border-radius:1px;background-color:#0593d3}
-	</style>
 	<style>
-	.tooltip-inner {
-    text-align:left;
-	word-break:break-all;
-	}
-	.nav-tabs.nav-justified>.active>a, .nav-tabs.nav-justified>.active>a:focus, .nav-tabs.nav-justified>.active>a:hover { border-bottom-color: #a94442; border-bottom-width: 3px; }</style>
+        .x-goto-top{opacity:.9;z-index:999999;position:fixed;bottom:113px;right:1%;margin-left:40px;width:38px;height:38px;border-radius:3px;cursor:pointer;background-color:#f5f5f5;border:1px solid #0593d3}.x-goto-top:hover{background-color:#fafafa;border-color:#0482ba}.x-goto-top:hover div.x-arrow{border-bottom-color:#0482ba}.x-goto-top:hover div.x-stick{background-color:#0482ba}.x-goto-top div.x-arrow{position:absolute;left:10px;top:-1px;width:0;height:0;border:9px solid transparent;border-bottom-color:#0593d3}.x-goto-top div.x-stick{position:absolute;left:15px;top:15px;width:8px;height:14px;display:block;border-radius:1px;background-color:#0593d3}
+    	.tooltip-inner {
+        text-align:left;
+    	word-break:break-all;
+    	}
+    	.nav-tabs.nav-justified>.active>a, .nav-tabs.nav-justified>.active>a:focus, .nav-tabs.nav-justified>.active>a:hover { border-bottom-color: #a94442; border-bottom-width: 3px; }
+    </style>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="http://cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
   </head>
@@ -46,17 +46,21 @@
 			<div class="left_col scroll-view">
 
 				<div class="navbar nav_title" style="border: 0;">
-					<a class="site_title">接口性能分析</a>
+					<a class="site_title">性能报告</a>
 				</div>
 
 				<br>
 				<div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
 					<div class="menu_section">
 						<hr>
-						<h3>听云 App接口全国数据</h3>
+						<h3>From 听云</h3>
 						<ul class="nav side-menu">
-							<li><a href="/tyblog/ty_Overview"><i class="fa fa-area-chart"></i> 占比、崩溃等图表 </a></li>
-							<li><a><i class="fa fa-edit"></i> 不同服务接口
+							<!-- <li><a href="/tyblog/ty_Overview"><i class="fa fa-area-chart"></i> 占比 </a></li> -->
+                            <li><a href="/tyblog/newCrash"><i class="fa fa-area-chart"></i> 崩溃 </a></li>
+                            <li><a href="/tyblog/newErr"><i class="fa fa-bar-chart"></i> 错误 </a></li>
+                            <li><a href="/tyblog/newRes"><i class="fa fa-line-chart"></i> 响应时间 </a></li>
+                            <li><a href="/tyblog/newView"><i class="fa fa-pie-chart"></i> 交互 </a></li>
+							<!-- <li><a><i class="fa fa-edit"></i> 不同服务接口
 								<span class="fa fa-chevron-down"></span></a>
 							<ul class="nav child_menu">
 								<li><a  href="/tyblog/ty_siteApi3g2">api3g2</a></li>
@@ -77,7 +81,7 @@
 								<li><a href="/tyblog/ty_rpmAll">以 接口版本+客户端版本 区分</a></li>
 								<li><a href="/tyblog/ty_fullLists">不区分</a></li>
 							</ul>
-							</li>
+							</li> -->
 						</ul>
 
 						<hr>
@@ -127,7 +131,9 @@
         </div>
 
         <!-- page content -->
-		<script src="{% static 'js/echarts.min.js' %}" charset="UTF-8"></script>
+		<script src="{% static 'js/echarts-all-3.js' %}" charset="UTF-8"></script>
+        <!-- <script src="http://echarts.baidu.com/gallery/vendors/echarts/echarts-all-3.js?_v_=1504168215640"></script> -->
+
         <div class="right_col" role="main">
     		{% block content %}
     		{% endblock content %}

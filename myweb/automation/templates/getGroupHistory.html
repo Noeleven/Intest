@@ -1,0 +1,35 @@
+{% load staticfiles %}
+<table data-toggle="table" data-striped="true" data-show-columns="true" data-row-style="rowStyle" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-search="true">
+	<thead>
+		<tr>
+			<th data-field="操作时间" data-sortable="true" class="col-xs-1">
+				操作时间
+			</th>
+			<th data-field="IP" data-sortable="true" class="col-xs-1">
+				IP
+			</th>
+			<th data-field="历史记录" data-sortable="true" class="col-xs-10" style='width:500px'>
+				历史记录
+			</th>
+		</tr>
+	</thead>
+	<tbody id="list">
+	{% for x in result %}
+	<tr>
+		<td>{{ x.operationTime|date:"Y-m-d H:i:s" }}</td>
+		<td>{{ x.remoteIp }}</td>
+		<td><pre>{{ x.operation }}</pre></td>
+	</tr>
+	{% endfor %}
+	</tbody>
+</table>
+<script src="{% static 'js/bootstrap-table.min.js' %}"></script>
+<script src="{% static 'js/bootstrap-table-zh-CN.min.js' %}"></script>
+<script>
+	var $table = $('#tableList');
+	$(function () {
+		$table.on('click-row.bs.table', function (e, row, $element) {
+				$($element).toggleClass('success');
+		});
+	});
+</script>

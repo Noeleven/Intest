@@ -36,7 +36,7 @@ logger.addHandler(fh)
 logger.addHandler(sh)
 
 
-### TOOLS ###
+''' TOOLS '''
 # controlList对应关系处理，入参 渠道类型channel，版本号ver，增加原版本origin输入
 def many_many(request):
 	try:
@@ -105,49 +105,38 @@ def change_case(request):
 		result = json.dumps(jsonStr, ensure_ascii=False)
 		return HttpResponse(result, content_type="application/json")
 
+# 记录操作历史
+def operationSave(ip,message):
+	p = history(remoteIp=ip)
+	p.operation = message
+	p.save()
 
 # 一键停止构建
-def stop_jenkins(request):
-	server = [
-		{'url':'http://10.115.1.74:8080'},
-		{'url':'http://10.115.1.77:8080'},
-		{'url':'http://10.115.1.78:8080'},
-		{'url':'http://10.115.1.75:8080'},
-		{'url':'http://10.115.1.7:8080'},
-		]
-	job_name = 'AbortAndroidUITest'
-	for x in server:
-		server = jenkins.Jenkins(x['url'])
-		server.build_job(job_name)
-	return HttpResponseRedirect('/auto/test_list')
+def stopJenkins(request):
+	device = deviceList.objects.filter(in_use='1')
+	stopList = []
+	for x in device:
+		server = jenkins.Jenkins(x.url, username=x.username, password=x.password)
+		# 检查队列
+		queue = server.get_queue_info()
+		if queue:
+		    for y in queue:
+		        server.cancel_queue(y['id'])
+		# 取消当前构建
+		runNum = server.get_running_builds()
+		for y in runNum:
+			server.stop_build(x.job_name, y['number'])	# 有异常！
+		stopList.append(x.deviceName)
+	result = {
+		'message':'停止jenkins任务完成',
+		'deviceList':stopList
+	}
+	return HttpResponse(json.dumps(result), content_type="application/json")
 
 # 邮件格式化地址
 def _format_addr(s):
 	name, addr = parseaddr(s)
 	return formataddr((Header(name, 'utf-8').encode(), addr))
-
-# 导航
-def navList():
-	nav_list = []
-	for x in caseType.objects.values('id','type_name'):
-		tmpDict = {
-			'type':x['type_name'],
-			'num':caseList.objects.filter(type_field=x['id']).filter(in_use='1').count(),
-		}
-		nav_list.append(tmpDict)
-	# 废弃的
-	trashDict = {
-		'type':'废弃',
-		'num':caseList.objects.filter(in_use='0').count(),
-	}
-	# 过期的
-	exDict = {
-		'type':'过期',
-		'num':caseList.objects.filter(in_use='2').count(),
-	}
-	nav_list.append(trashDict)
-	nav_list.append(exDict)
-	return nav_list
 
 # 下拉内容
 def new_select_list(controlListType, plantform, version='all'):
@@ -183,7 +172,6 @@ def trans_me(aname, type, ptype, ver, road):
 		logger.info('翻译%s' % aname)
 		logger.info('err:%s' % sys.exc_info()[0])
 
-
 # 报告翻译
 def trans_report_list(x):
 	plant = caseList.objects.get(id=x['id']).plantform
@@ -207,57 +195,665 @@ def retry(request):
 	ids = request.GET['ids']
 	plat = request.GET['plat']
 	# 临时保存测试用例集
-	name = 'ReTest' + datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
+	name = 'ReTest' + str(int(time.time()))
 	tg = caseGroup(groupName=name)
 	tg.caseID = ids
 	tg.des = '失败用例重测'
 	tg.status = '1'
+	tg.platform = plat
 	tg.versionStr = caseVersion.objects.get(versionStr=request.GET['version'])
 	tg.save()
 	# 驱动测试
-	td = caseGroup.objects.get(groupName=name)
-	url = 'http://127.0.0.1:8000/auto/auto_config?vals=%s&type=group&device=%s&isDay=' % (td.id, plat)
-	print(url)
+	url = 'http://127.0.0.1:8000/auto/auto_config?vals=%s&type=group&isDay=&device=&timeStamp=' % (tg.id)
+
 	r = requests.get(url)
 	# 删除用例集
-	td.status = '0'
-	td.save()
+	tg.status = '0'
+	tg.save()
 	message = '测试已启动，请关注用例集报告'
 	return HttpResponse(message)
 
+# 自定义输出
+def myprint(mess):
+	print("[%s] %s" % (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), mess))
 
-### 各PAGE ###
-# 导航list
-def auto_list(request):
-	try:
-		my_type = request.GET['my_type']
-	except:
-		my_type='全部'
-	else:
-		if my_type == "全部":
-			show_list = caseList.objects.filter(in_use='1')
-		elif my_type == '废弃':
-			show_list = caseList.objects.filter(in_use='0')
-		elif my_type == '过期':
-			show_list = caseList.objects.filter(in_use='2')
+# 发邮件
+def do_mail(htmlStr):
+	html_string = htmlStr
+	cf = configparser.ConfigParser()
+	cf.read("/rd/pystudy/conf")
+	sender = cf.get('mail', 'username')
+	receiverlist = [x for x in cf.get('mail', 'test_receiver').split(',')]
+	subject = "[UI自动化测试报告]"
+	smtpserver = cf.get('mail','smtpserver')
+	username = cf.get('mail','username')
+	password = cf.get('mail','password')
+	msg=MIMEText(html_string,'html','utf-8')
+	msg['From'] = _format_addr("Admin <%s>" % sender)
+	msg['to'] = '%s' % ','.join([_format_addr('<%s>' % x) for x in receiverlist])
+	msg['Subject'] = Header("%s" % subject , 'utf-8').encode()
+	smtp = smtplib.SMTP()
+	smtp.connect(smtpserver)
+	smtp.ehlo()
+	# smtp.set_debuglevel(1)
+	smtp.login(username, password)
+	smtp.sendmail(msg['From'],receiverlist,msg.as_string())
+	smtp.quit()
+
+'''首页'''
+# 导航
+def navList():
+	# 废弃的
+	trashDict = caseList.objects.filter(in_use='0').count()
+	# 过期的
+	exDict = caseList.objects.filter(in_use='2').count()
+
+	cf = configparser.ConfigParser()
+	cf.read("/rd/pystudy/conf")
+	Aid = cf.get('automation', 'AgroupID')
+	Mid = cf.get('automation', 'MgroupID')
+	runId = (Aid + ',' + Mid).split(',')
+	groupShow = [x for x in caseGroup.objects.filter(status='1') if str(x.id) in runId]
+
+	nav_list = {
+		'trashDict':trashDict,
+		'exDict':exDict,
+		'groupShow':groupShow
+	}
+	return nav_list
+
+# 获取设备状态
+def getDeviceStatus(request):
+	device_list = deviceList.objects.exclude(in_use='0')
+	for x in device_list:
+		if 'qingyang' in x.deviceName:
+			pass
 		else:
 			try:
-				type_id = caseType.objects.filter(type_name=my_type)[0].id
+				server = jenkins.Jenkins(x.url, username=x.username, password=x.password, timeout=5)
+				x.status = [y for y in server.get_running_builds() if y['name'] == x.job_name]	# 执行状态
+				x.queue = [y for y in server.get_queue_info() if y['task']['name'] == x.job_name]	# 队列
 			except:
-				show_list = ''
+				print('获取设备状态出错：%s' % x.deviceName)
+				x.broken = ['1']
+
+	return render(request,'getDeviceStatus.html', locals())
+
+# 首页查询
+def autoSearch(request):
+	# 需要品类、二品类、版本、所属人、平台
+	type_all = caseType.objects.all().order_by('type_name')
+	type_list = [x for x in type_all]
+	user_list = [x['userName'] for x in caseUser.objects.filter(userStatus=1).values('userName').order_by('userName')]
+	versionList = [x['versionStr'] for x in caseVersion.objects.values('versionStr').order_by('-versionStr')]
+	plant = ['Android','iOS','M']	#plat
+	# for jenkins status
+	device_list = deviceList.objects.exclude(in_use='0')
+	nav_list = navList()
+	# for添加用例集
+	casegroup = caseGroup.objects.exclude(groupName__contains='ReTest')
+	# for memgroup
+	memGroup = userGroup.objects.all()
+	return render(request, 'autoSearch.html', locals())
+
+# 动态查询结果返回
+def searchResult(request):
+	myRequest = dict(request.GET)
+	logger.info('search:myRequest %s' % myRequest)
+	# 处理下key带[]的问题
+	myrequest = {}
+	for k,v in myRequest.items():
+		if '[]' in k:
+			k1 = k.replace('[]','')
+			myrequest[k1] = v
+	origin = caseList.objects.filter(in_use='1')
+	# 对于小组，找出组员，把名字添加到owner列表中即可
+	try:
+		if myrequest['memGroup']:
+			for x in myrequest['memGroup']:
+				groupUser = [caseUser.objects.get(id=z).userName for z in  json.loads(userGroup.objects.get(id=x).groupUser)]
+				if 'owner' in myrequest:
+					myrequest['owner'] += groupUser
+				else:
+					myrequest['owner'] = groupUser
+			del myrequest['memGroup']
+	except Exception as e:
+		logger.info('search:%s' % e)
+	# 每个key值循环取并集，最后取交集
+	# logger.info('search:myrequest %s' % myrequest)
+
+	if myrequest:
+		if_list = {}
+		# 根据条件遍历查询
+		for m,n in myrequest.items():
+			if_list[m] = []
+			for x in n:
+				if m == 'caseId':
+					if_list[m] += origin.filter(id__contains=x)
+				elif m == 'caseName':
+					if_list[m] += origin.filter(caseName__contains=x)
+				elif m == 'caseType':
+					if_list[m] += origin.filter(type_field__type_name__contains=x)
+				elif m == 'plantform':
+					if_list[m] += origin.filter(plantform__contains=x)
+				elif m == 'version':
+					if_list[m] += origin.filter(version__contains=x)
+				elif m == 'note':
+					if_list[m] += origin.filter(des__contains=x)
+				elif m == 'owner':
+					if_list[m] += origin.filter(owner__contains=x)
+				else:
+					logger.info('search:未知参数 %s' % m)
+					break
+
+		# 现在不一定每个list都有值，需要判断过滤掉没有的值，首先清空没有值的形成一个list
+		result = [y for x,y in if_list.items()]
+
+		# 遍历这个list 并求交集
+		if result:
+			try:
+				show_list = set(result[0])
+				if result[1:]:
+					for x in result[1:]:
+						show_list &= set(x)
+			except Exception as e:
+				logger.info("search:%s %s" % (x,e))
+	else:
+		show_list = origin
+
+	for x in show_list:
+		if x.groupId:
+			groupRange = json.loads(x.groupId)
+			x.caseGroup = [caseGroup.objects.get(id=y).groupName for y in groupRange]
+	return render(request,'searchResult.html', locals())
+
+'''用例管理'''
+def delFromCaseGroup(id):
+	sourceGroup = caseGroup.objects.filter(groupName__contains='[回归]')
+	myGroup = sourceGroup.filter(caseID__contains=int(id))
+	for y in myGroup:
+		oldCaseId = json.loads(y.caseID)
+		if int(id) in oldCaseId:
+			oldCaseId.remove(int(id))
+			y.caseID = json.dumps(oldCaseId)
+			y.save()
+
+# 用例列表
+def showCaseList(request):
+	# get jenkins status
+	device_list = deviceList.objects.exclude(in_use='0')
+	# 导航
+	nav_list = navList()
+	# tagGroupList = caseTag.objects.filter(type_field__type_field='other')	# 标签
+	# casegroup = caseGroup.objects.exclude(groupName__contains='ReTest')	# 添加到用例集
+	# 小组筛选
+	userGroupList = userGroup.objects.all()
+	# 检索列表
+	show_list = []
+	try:
+		group = caseGroup.objects.get(id=request.GET['groupId'])
+		if group.caseID:
+			caseIDS = json.loads(group.caseID)
+			for x in caseList.objects.filter(in_use='1'):
+				if x.id in caseIDS:
+					if x.groupId:
+						groupRange = json.loads(x.groupId)
+						x.caseGroup = [caseGroup.objects.get(id=y).groupName for y in groupRange]
+					show_list.append(x)
+
+	except:
+		myType = request.GET['type']
+		if myType == 'ex':
+			show_list = caseList.objects.filter(in_use='2')
+		else:
+			show_list = caseList.objects.filter(in_use='0')
+		# 用例集信息
+		for x in show_list:
+			if x.groupId:
+				groupRange = json.loads(x.groupId)
+				x.caseGroup = [caseGroup.objects.get(id=y).groupName for y in groupRange]
+
+	show_list_id = [x.id for x in show_list]
+	return render(request, 'showCaseList.html', locals())
+
+# 构建用例，生成配置，吊起Jenkins，存储报告，多个用例/用例集同时构建，前端循环调取，后端不处理
+def auto_config(request):
+	# 参数，用例/用例集ID，类型，设备，timeStamp，isDay
+	myid = request.GET['vals']    # 用例或集合的ID
+	mytype = request.GET['type']	# 类型
+	mydevice = request.GET['device']	# 设备
+	mytimeStamp = request.GET['timeStamp']	# timeStamp
+	myisDay = request.GET['isDay']	# isDay
+
+	# 拼用例
+	if myid:
+		if mytype == 'group':	# 用例集
+			mygroupCase = caseGroup.objects.get(id=myid)
+			cases = [caseList.objects.get(id=x) for x in json.loads(mygroupCase.caseID.replace("'",''))]
+		else:
+			cases = [caseList.objects.get(id=x) for x in myid.split(',')]
+	else:
+		cases = ''
+	# 计算用例总时长
+	totalTime = 0
+	for x in cases:
+		if x.buildTime:
+			totalTime += x.buildTime
+		else:
+			totalTime += 60
+	# 搞设备
+	if mydevice:	# 有指定
+		device = deviceList.objects.filter(deviceName=mydevice)
+	else:
+		if mytype == 'group':
+			groupVersion = mygroupCase.versionStr.versionStr
+			groupPlat = mygroupCase.platform
+			device = deviceList.objects.filter(in_use='1').filter(platformName=groupPlat).filter(appVersion=groupVersion).order_by('-deviceName')
+		else:
+			device = []
+	logger.info('用例总数%s 总时长 %s分 设备数 %s' % (len(cases), (totalTime//60), len(device)))
+	# 确认timeStamp
+	if mytimeStamp:
+		TimeTime = mytimeStamp
+	else:
+		TimeTime = str(int(time.time())) + str(random.randint(100000,999999))
+
+	if cases:
+		# 确认设备
+		if device:
+			# # 算步长 --老算法
+			# if len(device) == 1:
+			# 	mdl = len(cases)
+			# else:
+			# 	if len(cases) >= len(device):
+			# 		if (len(cases) % len(device)) == 0:
+			# 			mdl = len(cases) // len(device)
+			# 		else:
+			# 			if (len(cases) % len(device)) >= (len(device) // 2):
+			# 				mdl = len(cases) // len(device) + 1
+			# 			else:
+			# 				mdl = len(cases) // len(device)
+			# 	else:
+			# 		mdl = 1
+
+			# 时间步长
+			if len(device) == 1:
+				mtl = totalTime
 			else:
-				show_list = caseList.objects.filter(in_use='1').filter(type_field=type_id)
+				mtl = totalTime // len(device)
+
+			# 生成设备长度的列表
+			alList,smList = [],[]	# 装用例的 大表 小表
+			t,n = 0,0	# 累积计时,用例条数
+			for x in cases:
+				n += 1
+				if x.buildTime:
+					t += x.buildTime	# 时间累积
+				else:
+					t += 60	# 默认用例执行60秒
+
+				if t <= mtl:	# 小于阀值 列表继续追加 循环继续
+					smList.append(x.id)
+					if n == len(cases): # 如果是最后一条用例，也加入大表
+						alList.append(smList)
+				else:	# 超过阀值，列表生成
+					smList.append(x.id)
+					alList.append(smList)
+					t,smList = 0,[]	# 初始化
+
+			logger.info('单组时长 %s 大表 %s' % ((mtl//60), alList))
+
+			# 分配用例
+			t = 0
+			caseHome = []
+			message = '用例构建中...预计需要%s分钟<br/>' % (round(mtl/60,1))
+			for y in device:
+				if (t + 1) > len(alList):	# 当前角标超过大表长度，可以中断了
+					logger.info('中断%s' % y.deviceName)
+					break
+				else:	# 如果列表里还有
+					if y.platformName == 'iOS':
+						jsonStr = {
+							"deviceName": y.deviceName,    # 设备:ip
+							"deviceIP": y.deviceIP,
+							"appVersion": y.appVersion,  #   app版本
+							"platformVersion": y.platformVersion,    # 操作系统版本
+							"platformName": y.platformName,  # iOS
+							"webDriverAgentUrl": y.webDriverAgentUrl,  # iOS
+							"bundleId": y.bundleId,  # iOS
+							"udid": y.udid,  # iOS
+							"appPackage": y.appPackage,
+							"timeStamp": TimeTime,
+							"testCaseSQL":alList[t]
+							}
+					else:
+						jsonStr = {
+							"APPIUMSERVERSTART": y.APPIUMSERVERSTART,
+							"appiumServicePath": y.appiumServicePath,
+							"appiumServicePort": y.appiumServicePort,
+							"appVersion": y.appVersion,
+							"deviceName": y.deviceName,
+							"deviceIP":y.deviceIP,
+							"platformVersion": y.platformVersion,
+							"platformName": y.platformName,
+							"lvsessionid": y.lvsessionid,
+							"timeout": y.timeWait,
+							"adbPort": y.adbPort,
+							"appPackage": y.appPackage,
+							"appLaunchActivity": y.appLaunchActivity,
+							"timeStamp": TimeTime,
+							"testCaseSQL":alList[t]
+							}
+
+					# save myConfig
+					p = myConfig(device=y.deviceName)
+					p.timeStamp = TimeTime
+					p.caseStr = json.dumps(jsonStr, ensure_ascii=False)
+					p.save()
+
+					# 驱动jenkins
+					server = jenkins.Jenkins(y.url, username=y.username, password=y.password)
+					job_name = y.job_name
+					try:
+						server.build_job(job_name, {'deviceName':y.deviceName + '_' + TimeTime})
+					except:
+						message += '构建设备连接超时,请稍后重试'
+					else:
+						build_number = server.get_job_info(job_name)['lastBuild']['number']
+
+						# 存储构建记录 reportList
+						time_case = str(TimeTime) + '_' + ('_').join([str(x) for x in alList[t]])
+
+						pp = reportsList(timeStamp=time_case)
+						if build_number != 0:
+							pp.buildNUM = '#' + str(build_number + 1)
+							pp.status = str(server.get_build_info(job_name, build_number)['building'])
+
+						if y.platformName == 'iOS':
+							pp.reportURL = ('http://10.113.1.193:8001/%s/report.html' % (build_number + 1))
+						else:
+							pp.reportURL = ("/auto/reportDetail?timeStamp=" + "%s" % TimeTime)
+
+						pp.deviceName = deviceList.objects.get(deviceName=y.deviceName)
+						pp.save()
+
+						if mytype == 'group':
+							message = '用例构建中，点击查看报告<br/><a class="btn btn-sm btn-default" href=%s target=_blank>用例集报告</a><br/>' % (pp.reportURL)
+						else:
+							message += '<a class="btn btn-sm btn-default" href=%s target=_blank>测试报告</a><br/>' % pp.reportURL
+
+				t += 1
+
+			# 用例集构建信息存储
+			if mytype == 'group':
+				tt = testRecording(timeStamp=TimeTime)
+				tt.Version = groupVersion
+				tt.groupId = mygroupCase.id
+				if myisDay == 'yes':		# yes表示自动构建，0表示手工构建
+					tt.flag = '1'
+				else:
+					tt.flag = '0'
+				tt.status = '1'	# 构建用例添加状态 1进行中 2重测中 0取消 3完成
+				tt.save()
+				logger.info('用例集testRecording存储完毕')
+
+			logger.info(message)
+			return HttpResponse(message)
+		else:
+			message = '构建错误：没有可用设备'
+			logger.info(message)
+			return HttpResponse(message)
+	else:
+		message = '构建错误：用例集没有用例'
+		logger.info(message)
+		return HttpResponse(message)
+
+# jenkins调用接口，返回接口配置
+def auto_response(request):
+	deviceNa = request.GET['deviceName'].split('_')[0]
+	try:
+		times = request.GET['deviceName'].split('_')[1]
+		jsonStr = myConfig.objects.filter(timeStamp=times).get(device=deviceNa).caseStr
+		return HttpResponse(jsonStr, content_type="application/json")
+	except:
+		try:
+			jsonStr = myConfig.objects.filter(device=deviceNa).order_by('-modify_time')[0].caseStr
+			return HttpResponse(jsonStr, content_type="application/json")
+		except:
+			return HttpResponse('No Such Device')
+
+# 删除用例
+def auto_del(request):
+	try:
+		id = request.GET['id'].split(',')
+		for x in id:
+			myCase = caseList.objects.get(id=x)
+			myCase.in_use = '0'
+			myCase.groupId = ''	# 废弃后移除所有所在用例集标记
+			myCase.save()
+			# 废弃用例同时在用例集中删除
+			delFromCaseGroup(x)
+		data = 'success'
+	except KeyError as e:
+		data = ('ERR:删除失败，请联系管理员查看\n:%s' % e)
 	finally:
-		device_list = deviceList.objects.exclude(in_use='0')
-		nav_list = navList()
-		# tag_list = caseTag.objects.all()
-		tag_list = caseTag.objects.filter(type_field__type_name=my_type)
-		return render(request, 'auto_list.html', locals())
+		return HttpResponse(data)
+
+# 置为过期
+def auto_ex(request):
+	try:
+		id = request.GET['id'].split(',')
+		for x in id:
+			myCase = caseList.objects.get(id=x)
+			# 0是废弃 1是在用 2是过期
+			myCase.in_use = '2'
+			myCase.save()
+		data = 'success'
+	except KeyError as e:
+		data = ('操作失败\n:%s' % e)
+	finally:
+		return HttpResponse(data)
+
+# copy用例
+def auto_copy(request):
+	try:
+		id = request.GET['id']
+		a = caseList.objects.get(id=id)
+		b = copy.deepcopy(a)
+		b.id = None
+		b.des = ''
+		b.case_tag = ''
+		b.groupId = ''
+		b.save()
+		data = "复制成功，用例ID%s" % b.id
+	except KeyError as e:
+		data = '复制失败,囧'
+	finally:
+		return HttpResponse(data)
+
+# 新增用例页面
+def addCase(request):
+	# 各选项list
+	type_all = caseType.objects.all().order_by('type_name')
+	case_tag = caseTag.objects.all()
+	type_list = [x for x in type_all]
+	# 为了校验用例名
+	casenames = [x['caseName'] for x in caseList.objects.filter(in_use='1').values('caseName')]
+	# 用户list 和 版本list
+	user_list = [x['userName'] for x in caseUser.objects.filter(userStatus=1).values('userName').order_by('userName')]
+	versionList = [x['versionStr'] for x in caseVersion.objects.values('versionStr').order_by('-versionStr')]
+	plant = ['Android','iOS','M']
+	nav_list = navList()
+	try:
+		groupId = request.GET['groupId']
+		caseGroupList = caseGroup.objects.filter(id=groupId)
+	except:
+		caseGroupList = caseGroup.objects.exclude(groupName__contains='ReTest')
+
+	return render(request, 'addCase.html', locals())
+
+# 新增用例保存，预设json结构
+def saveCaseBaseInfo(request):
+	try:
+		# 取参数
+		caseName = request.GET['caseName']
+		csType = caseType.objects.get(type_name=request.GET['type']).type_field
+		caseVersion = request.GET['version']
+		casePlantform = request.GET['plantform']
+		caseStatus = request.GET['canUse']
+		caseDes = request.GET['caseDes']
+		owner = request.GET['owner']
+		caseStatus = '1' if caseStatus=='use' else '0'
+		groupId = []
+		try:
+			groupId.append(int(request.GET['groupId']))
+		except:
+			logger.debug('没有选用例集')
+		# myTag = request.GET.getlist('caseTag')
+
+		# 初始化caseJson结构
+		if casePlantform == 'iOS':
+			defaultCase = '{"jsonStory":[{"des":"", "index":1, "value":"", "action":"click", "typeText":""}], "caseType":"" ,"caseTag":""}'
+		else:
+			defaultCase = '[{"enterActivity":"","index":1,"storyDescription":"","action":[{"target":{"targetName":""},"actionCode":"click","behaviorPara":{"inputValue":""},"needWait":true}],"where":"","checkString":[{"checkType":"","elementName":"","expeted":""}]}]'
+		# 存用例
+		p = caseList(caseName=caseName)
+		p.type_field = caseType.objects.get(id=caseType.objects.filter(type_field=csType)[0].id)
+		p.plantform = casePlantform
+		p.version = caseVersion
+		p.case = defaultCase
+		p.des = caseDes
+		p.in_use = caseStatus
+		p.owner = owner
+		p.groupId = json.dumps(groupId)
+		# p.case_tag = json.dumps([caseTag.objects.get(tagName=x).id for x in myTag])
+		p.save()
+
+		# 给用例集里加id
+		try:
+			group = caseGroup.objects.get(id=groupId[0])
+			if group.caseID:
+				oldCaseId = json.loads(group.caseID)
+			else:
+				oldCaseId = []
+			oldCaseId.append(p.id)
+			group.caseID = json.dumps(oldCaseId)
+			group.save()
+		except:
+			logger.debug('没有选用例集')
+
+		return HttpResponseRedirect("/auto/caseConfirm/%s?New=yes" % p.id)
+	except TypeError as e:
+		logger.info('新建保存用例出错了 %s' % e)
+		return
+
+# 确认用例版本
+def caseConfirm(request, id):
+	case = caseList.objects.get(id=id)
+	versionList = [x['versionStr'] for x in caseVersion.objects.values('versionStr').order_by('-versionStr')]
+	plant = ['Android','iOS','M']
+	nav_list = navList()
+	try:
+		isNew = request.GET['New']
+	except:
+		isNew = 'no'
+	return render(request, 'caseConfirm.html', locals())
+
+# 新增用例action
+def editCaseStep(request):
+	id = request.GET['caseID']
+	version = request.GET['version']
+	myPlantform = request.GET['platform']
+	# 反向解析json存入表单 首先从DB获取json字符串，并解析成数据类型
+	if caseList.objects.filter(id=id).exists():
+		json_dict = caseList.objects.filter(id=id).values()[0]
+		try:
+			# 基本信息确认
+			nav_list = navList()
+			json_dict['type_field_id'] = caseType.objects.get(id=json_dict['type_field_id']).type_name	# 品类
+			# 用例集
+			caseGroupList = caseGroup.objects.exclude(groupName__contains='ReTest')
+			if json_dict['groupId']:
+				myGroup = []
+				for x in json.loads(json_dict['groupId']):
+					if caseGroup.objects.filter(id=x).exists():
+						myGroup.append(caseGroup.objects.get(id=x).id)
+					else:
+						# 顺便维护下用例
+						nowCase = caseList.objects.get(id=id)
+						oldGroup = json.loads(nowCase.groupId)
+						oldGroup.remove(x)
+						nowCase.groupId = json.dumps(oldGroup)
+						nowCase.save()
+			# 下拉列表
+			type_all = caseType.objects.all().order_by('type_name')
+			type_list = [x for x in type_all]
+			user_list = [x['userName'] for x in caseUser.objects.filter(userStatus=1).values('userName').order_by('userName')]
+			versionList = [x['versionStr'] for x in caseVersion.objects.values('versionStr').order_by('-versionStr')]
+			plant = ['Android','iOS','M']
+			# case_tag = caseTag.objects.filter(type_field__type_name=json_dict['type_field_id']) | caseTag.objects.filter(type_field__type_field='other')
+			# case_tag.distinct()
+
+			# 元素 起点 终点列表 iOS没有
+			targetname = []
+			elementname = []
+			# 是否新建的用例，用于判断是否走向自关闭页面close.html
+			isNew = request.GET['isNew']
+			# 解析caseJSON，虽然改了平台和版本，但是caseJSON还是不变的，因此翻译时需要注意区分，原有的还是caseJSON里的，下拉列表才是new的
+			if myPlantform == 'Android' or myPlantform == 'M':
+				where = []
+				enterActivity = []
+				wait_list = ['等待','不等待']
+				BgStep = json.loads(json_dict['case'])
+				for x in BgStep:
+					x['enterActivity'] = trans_me(x['enterActivity'],'where',json_dict['plantform'], json_dict['version'], 'toC')
+					x['where'] = trans_me(x['where'],'where',json_dict['plantform'], json_dict['version'], 'toC')
+					where.append(x['where'])
+					enterActivity.append(x['enterActivity'])
+					ai = ci = 1
+					for y in x['action']:
+						y['target']['targetName'] = trans_me(y['target']['targetName'],'targetName',json_dict['plantform'], json_dict['version'], 'toC')
+						targetname.append(y['target']['targetName'])
+						y['actionCode'] = trans_me(y['actionCode'],'action',json_dict['plantform'], json_dict['version'], 'toC')
+						if y['needWait'] == True:
+							y['needWait'] = '等待'
+						else:
+							y['needWait'] ='不等待'
+						y['index'] = str(x['index']) + '-' + str(ai)
+						ai += 1
+					for y in x['checkString']:
+						y['elementName'] = trans_me(y['elementName'],'targetName',json_dict['plantform'], json_dict['version'], 'toC')
+						elementname.append(y['elementName'])
+						y['index'] = str(x['index']) + '-' + str(ci)
+						ci += 1
+						y['checkType'] = trans_me(y['checkType'],'checkString',json_dict['plantform'], json_dict['version'], 'toC')
+					control_list = new_select_list('action', myPlantform, version)
+					where_list = new_select_list('where', myPlantform, version)
+					target_list = new_select_list('targetName', myPlantform, version)
+					checkType_list = new_select_list('checkString', myPlantform)
+				return render(request, 'editCaseStep.html',locals())
+			else:
+				BgStep = json.loads(json_dict['case'])['jsonStory']
+				ai = 1
+				for x in BgStep:
+					x['index'] = str(ai)
+					ai += 1
+					x['action'] = trans_me(x['action'],'action',json_dict['plantform'], json_dict['version'], 'toC')
+					targetname.append(trans_me(x['value'],'targetName',json_dict['plantform'], json_dict['version'], 'toC'))
+					control_list = new_select_list('action', myPlantform, version)
+					target_list = new_select_list('targetName', myPlantform, version)
+				return render(request, 'editCaseStepIos.html', locals())
+		except AttributeError as e:
+			logger.info("editCaseStep:%s" % e)
+	else:
+		logger.info("用例id %s 不存在" % id)
+		return HttpResponseRedirect('/auto/addCase')
 
 # 编辑保存
-def auto_edit_save(request, id):
-	my_form = dict(request.GET)
-	logger.info(my_form)
+def saveCaseStep(request):
+	id = request.POST.get('id')
+	my_form = dict(request.POST)
+	print(my_form)
 	case_obj = caseList.objects.get(id=id)
 	try:
 		caseName = my_form.get('caseName')[0]
@@ -267,7 +863,8 @@ def auto_edit_save(request, id):
 		caseStat = my_form.get('canUse')[0]
 		caseDes = my_form.get('caseDes')[0]
 		owner = my_form.get('owner')[0]
-		myTag = my_form.get('caseTag')
+		myGroup = my_form.get('groupId')
+		# myTag = my_form.get('caseTag')
 	except TypeError as e:
 		logger.info('获取用例信息出错： %s' % e)
 
@@ -279,7 +876,6 @@ def auto_edit_save(request, id):
 		caseStatus = '2'
 	else:
 		caseStatus = '3'	# 未知
-
 
 	# 统计有多少大步
 	bigstep = len(set([x.split('-')[0] for x in my_form.get('index_step')]))
@@ -331,7 +927,8 @@ def auto_edit_save(request, id):
 			json_home.append(bgElement)
 		my_case = json.dumps(json_home, ensure_ascii=False)
 	elif casePlantform == 'iOS':
-		json_home = {'jsonStory':[], 'caseType':csType, 'caseTag':myTag}
+		# json_home = {'jsonStory':[], 'caseType':csType, 'caseTag':myTag}
+		json_home = {'jsonStory':[], 'caseType':csType}
 		for bgSub in range(bigstep):
 			# 大步字典
 			myInput = my_form.get('inputValue')[bgSub] # iOS要求输入框增加\n
@@ -351,7 +948,7 @@ def auto_edit_save(request, id):
 		my_case = json.dumps(json_home, ensure_ascii=False)
 	else:
 		logger.info('编辑保存用例 平台版本：%s' % casePlantform)
-	# logger.debug(('*' * 20 + '\n' + '%s') % my_case)
+
 	# 存储DB
 	p = case_obj
 	p.case = my_case
@@ -361,552 +958,155 @@ def auto_edit_save(request, id):
 	p.version = caseVersion
 	p.owner = owner
 	p.des = caseDes
-	if myTag:
-		p.case_tag = json.dumps([caseTag.objects.get(tagName=x).id for x in myTag])
+	# if myTag:
+	# 	p.case_tag = json.dumps([caseTag.objects.get(tagName=x).id for x in myTag])
+	if myGroup:
+		p.groupId = json.dumps([int(x) for x in myGroup])
+		# 同步保存到用例集
+		for x in myGroup:
+			group = caseGroup.objects.get(id=x)
+			oldCaseID = json.loads(group.caseID)
+			if p.id not in oldCaseID:
+				oldCaseID.append(p.id)
+				group.caseID = json.dumps(oldCaseID)
+				group.save()
+	else:
+		# 用例集删除用例
+		if p.groupId:
+			oldGroupId = json.loads(p.groupId)
+			for x in oldGroupId:
+				group = caseGroup.objects.get(id=x)
+				oldCaseID = json.loads(group.caseID)
+				if p.id in oldCaseID:
+					oldCaseID.remove(p.id)
+					group.caseID = json.dumps(oldCaseID)
+					group.save()
+		# 用例删除用例集ID
+		p.groupId = json.dumps([])
 	p.in_use = caseStatus
 	p.modify_time = datetime.datetime.now()
 	p.save()
-	# 判断动作
-	return HttpResponseRedirect("/auto/auto_list?my_type=%s" % my_form.get('type')[0])
+	message = '提交成功'
 
-# 构建用例，生成配置，吊起Jenkins，存储报告
-def auto_config(request):
-	# 取参数
-	ids = request.GET['vals'].split(',')    # 获取用例或集合的ID
-	device = request.GET['device']  # 获取类型是AD、ios还是M
-	mytype = request.GET['type']	# 标识用例还是用例集
-	isDay = request.GET['isDay']	# yes表示自动构建，空表示手工构建
+	# 判断是否新建过来的
+	isNew = request.GET['isNew']
+	if isNew == 'yes':
+		try:
+			ggroupid = [x for x in myGroup]	# 用例可能存在多个用例集中，也可能没有用例集，有仅返回第一个用例集，没有返回search页面
+			return HttpResponseRedirect('/auto/showCaseList?groupId=%s' % ggroupid[0])
+		except:
+			return HttpResponseRedirect('/auto')
+	else:
+		return render(request,'close.html',locals())
 
-	# 根据ids,mytype来整理待测用例ID
+# 用例列表标签/小组
+def tagSearch(request):
+	memGroupId = request.POST['memGroupId']	# 获取小组ID
+	caseIDS = request.POST.getlist('show_list_id[]')
+
+	origin = [caseList.objects.get(id=x) for x in caseIDS]	# 获取用例
+	groupUser = [caseUser.objects.get(id=x).userName for x in json.loads(userGroup.objects.get(id=memGroupId).groupUser)]	# 小组成员name
+	result = [x for x in origin if x.owner in groupUser]
+
+	for x in result:
+		if x.groupId:
+			groupRange = json.loads(x.groupId)
+			x.caseGroup = [caseGroup.objects.get(id=y).groupName for y in groupRange]
+	return render_to_response('tagSearch.html', locals())
+
+'''### 测试报告 ###'''
+# 获取测试报告中成功和失败的函数
+def getSuccess(timeTarget):
+	allbook = allBookRecording.objects.filter(timeStamp=timeTarget)	# 获取所有用例结果
+	err_list, pass_list = [], []
 	cases = []
-	if mytype == 'group':
-		groupVersion = caseGroup.objects.get(id=ids[0]).versionStr.versionStr	# 获取用例集版本
-		groupId = ids
-		# 汇总用例集所有用例 在均分
-		casetmp = []
-		for x in ids:
-			casetmp += json.loads(caseGroup.objects.get(id=x).caseID)
+
+	if allbook:
+		all_id = allbook.values('caseID').distinct()	# 获取本次测试用例ID
+		allNum = len(all_id)	# 获取本次测试总数
+		pass_list = allbook.filter(status='success')	# 成功的记录
+		pass_id = [int(x.caseID) for x in pass_list]	# 成功的用例ID
+		err_list = allbook.filter(status='danger')	# 初始错误记录
+
+		for x in err_list:
+			if int(x.caseID) in pass_id:	# 错误id在成功的里面,剔除
+				err_list = err_list.exclude(id=x.id)
+			if err_list.filter(caseID=x.caseID).count() > 1:	# 错误列表中的重复，留一个
+				thisID = [y.id for y in err_list.filter(caseID=x.caseID)]
+				for y in thisID[1:]:
+					err_list = err_list.exclude(id=y)
 	else:
-		casetmp = [int(x) for x in ids]
-	filter_id = set(casetmp)	# 用例集去重
+		allNum = 0
 
-	# 过滤无效，终用例列表newid
-	newid = []
-	for y in filter_id:
-		if caseList.objects.filter(in_use='1').filter(id=y):
-			cases.append(caseList.objects.filter(in_use='1').filter(id=y)[0].caseName)
-			newid.append(y)
-		else:
-			continue
-	logger.debug('cases:%s caseid:%s' % (cases, newid))
+	return allNum, pass_list, err_list, allbook
 
-	# 确认设备,可用+平台+对应用例版本，用例集使用AD iOS M来标记，非用例集使用设备名来标记
-	if device == 'Android':
-		mydevice = deviceList.objects.filter(in_use='1').filter(platformName='Android').filter(appVersion=groupVersion).order_by('-deviceName')
-	elif device == 'M':
-		mydevice = deviceList.objects.filter(in_use='1').filter(platformName='M')  # M站不用带版本
-	elif device == 'iOS':
-		mydevice = deviceList.objects.filter(in_use='1').filter(platformName='iOS').filter(appVersion=groupVersion).order_by('-deviceName')
-	else:
-		mydevice = deviceList.objects.filter(deviceName=device)  # 单台
-
-	# 分发用例
-	if len(mydevice) == 0:
-		logger.info('构建用例：然而没有设备')
-	else:
-		# 分发用例-计算用例步长
-		if len(newid) >= len(mydevice):
-			if (len(newid) % len(mydevice)) == 0:
-				mdl = len(newid) // len(mydevice)
-			else:
-				if (len(newid) % len(mydevice)) >= (len(mydevice) // 2):
-					mdl = len(newid) // len(mydevice) + 1
-				else:
-					mdl = len(newid) // len(mydevice)
-		else:
-			mdl = 1
-		logger.info('dev:%s dev数量:%s 步长:%s' % (mydevice, len(mydevice) ,mdl))
-		# 分发用例-用例集所有设备用同一个标志，故循环之前
-		groupTime = 'autoTestIn' + datetime.datetime.now().strftime('%Y%m%d') + str(random.randint(10000,99999))
-		# 分发用例-分配给每台设备
-		start = end = numb = 0
-		for x in mydevice:
-			end += mdl
-			numb += 1
-			if start < len(newid):
-				# 确认存瑞myconfig的json结构，各平台不一样
-				if x.platformName == 'iOS':
-					jsonStr = {
-						"deviceName": x.deviceName,    # 设备:ip
-						"deviceIP": x.deviceIP,
-						"appVersion": x.appVersion,  #   app版本
-						"platformVersion": x.platformVersion,    # 操作系统版本
-						"platformName": x.platformName,  # iOS
-						"webDriverAgentUrl": x.webDriverAgentUrl,  # iOS
-						"bundleId": x.bundleId,  # iOS
-						"udid": x.udid,  # iOS
-						"appPackage": x.appPackage,
-						}
-				else:
-					jsonStr = {
-						"APPIUMSERVERSTART": x.APPIUMSERVERSTART,
-						"appiumServicePath": x.appiumServicePath,
-						"appiumServicePort": x.appiumServicePort,
-						"appVersion": x.appVersion,
-						"deviceName": x.deviceName,
-						"deviceIP":x.deviceIP,
-						"adbPort":x.adbPort,
-						"platformVersion": x.platformVersion,
-						"platformName": x.platformName,
-						"lvsessionid": x.lvsessionid,
-						"timeout": x.timeWait,
-						"appPackage": x.appPackage,
-						"appLaunchActivity": x.appLaunchActivity,
-						}
-
-				# 确认timestamp
-				if mytype == 'group':
-					jsonStr['timeStamp'] = groupTime
-					tt = testRecording(timeStamp=jsonStr['timeStamp'])
-					tt.Version = groupVersion
-					tt.groupId = json.dumps(groupId)
-					if isDay == 'yes':
-						tt.flag = '1'
-					else:
-						tt.flag = '0'
-					tt.save()
-				else:
-					singleTime = 'autoTestIn' + str(int(time.time())) + str(random.randint(10000,99999))
-					jsonStr['timeStamp'] = singleTime
-
-				# 具体分配用例
-				if end > len(newid):	# end + 步长 超过就不要在分了，结束
-					jsonStr["testCaseSQL"] = newid[start:]
-					logger.debug(newid[start:])
-				elif (end + mdl) > len(newid) and numb == len(mydevice):
-					jsonStr["testCaseSQL"] = newid[start:]
-				else:
-					jsonStr["testCaseSQL"] = newid[start:end]
-					logger.debug(newid[start:end])
-
-				# 判断有没有该设备，并存入config表供jenkins调用，但不需要timeStamp的ids
-				hasD = myConfig.objects.filter(device=x.deviceName)
-				if hasD:
-					hasD[0].caseStr = json.dumps(jsonStr, ensure_ascii=False)
-					hasD[0].save()
-				else:
-					p = myConfig(device=x.deviceName)
-					p.caseStr = json.dumps(jsonStr, ensure_ascii=False)
-					p.save()
-
-				# 定义存report的名称，貌似可以简化掉了
-				if end >= len(newid):
-					time_case = jsonStr['timeStamp'] + '_' + ('_').join([str(x) for x in list(newid)[start:]])
-				else:
-					time_case = jsonStr['timeStamp'] + '_' + ('_').join([str(x) for x in list(newid)[start:end]])
-
-				# 驱动jenkins
-				server = jenkins.Jenkins(x.url, username=x.username, password=x.password)
-				job_name = x.job_name
-				try:
-					server.build_job(job_name, {'deviceName':x.deviceName})  # 执行构建
-					build_number = server.get_job_info(job_name)['lastBuild']['number']
-				except:
-					build_number = 0
-					logger.info('未获取到buildNumber,置为%s' % build_number)
-				finally:
-					pp = reportsList(timeStamp=time_case)
-					if build_number != 0:
-						pp.buildNUM = '#' + str(build_number + 1)
-						pp.status = str(server.get_build_info(job_name, build_number)['building'])
-					if device == 'iOS':
-						pp.reportURL = ('http://10.113.1.193:8001/%s/report.html' % (build_number + 1))
-					else:
-						pp.reportURL = ("/auto/api_report_page?timeStamp=" + "%s" % jsonStr['timeStamp'])
-					pp.deviceName = deviceList.objects.get(deviceName=x.deviceName)
-					pp.save()
-
-				start += mdl
-
-	return HttpResponse('OK')
-
-# jenkins调用接口，返回接口配置
-def auto_response(request):
-	try:
-		deviceN = request.GET['deviceName']
-		jsonStr = myConfig.objects.get(device=deviceN).caseStr
-		return HttpResponse(jsonStr, content_type="application/json")
-	except:
-		return HttpResponse('No Such Device')
-
-# 删除用例
-def auto_del(request):
-	try:
-		id = request.GET['id'].split(',')
-		for x in id:
-			myCase = caseList.objects.get(id=x)
-			myCase.in_use = '0'
-			myCase.save()
-		data = 'success'
-	except KeyError as e:
-		data = ('ERR:删除失败，请联系管理员查看\n:%s' % e)
-	finally:
-		return HttpResponse(data)
-
-# 置为过期
-def auto_ex(request):
-	try:
-		id = request.GET['id'].split(',')
-		for x in id:
-			myCase = caseList.objects.get(id=x)
-			# 0是废弃 1是在用 2是过期
-			myCase.in_use = '2'
-			myCase.save()
-		data = 'success'
-	except KeyError as e:
-		data = ('操作失败\n:%s' % e)
-	finally:
-		return HttpResponse(data)
-
-# copy用例
-def auto_copy(request):
-	try:
-		id = request.GET['id']
-		cName = request.GET['cName']
-		if cName:
-			if caseList.objects.filter(caseName=cName):
-				data = '0' # 重复名称
-			else:
-				a = caseList.objects.get(id=id)
-				b = copy.deepcopy(a)
-				b.id = None
-				b.des = ''
-				b.caseName = cName
-				b.save()
-				data = '1' # 用例名OK
-		else:
-			data = '3' # 没输入
-	except KeyError as e:
-		data = '2'
-		logger.info('ERR:复制失败，请联系管理员查看.\n%s' % e)
-	finally:
-		return HttpResponse(data)
-
-# 新增用例页面
-def new_add(request):
-	# 各选项list
-	type_all = caseType.objects.all().order_by('type_name')
-	case_tag = caseTag.objects.all()
-	type_list = [x for x in type_all]
-	# 为了校验用例名
-	casenames = [x['caseName'] for x in caseList.objects.filter(in_use='1').values('caseName')]
-	# 用户list 和 版本list
-	user_list = [x['userName'] for x in caseUser.objects.filter(userStatus=1).values('userName').order_by('userName')]
-	versionList = [x['versionStr'] for x in caseVersion.objects.values('versionStr').order_by('-versionStr')]
-	plant = ['Android','iOS','M']
-	nav_list = navList()
-	return render(request, 'new_add.html', locals())
-
-# 新增用例保存，预设json结构
-def new_save(request):
-	try:
-		caseName = request.GET['caseName']
-		csType = caseType.objects.get(type_name=request.GET['type']).type_field
-		caseVersion = request.GET['version']
-		casePlantform = request.GET['plantform']
-		caseStatus = request.GET['canUse']
-		caseDes = request.GET['caseDes']
-		owner = request.GET['owner']
-		myTag = request.GET.getlist('caseTag')
-		print(request.GET,myTag)
-
-		caseStatus = '1' if caseStatus=='use' else '0'
-		if casePlantform == 'iOS':
-			defaultCase = '{"jsonStory":[{"des":"", "index":1, "value":"", "action":"click", "typeText":""}], "caseType":"" ,"caseTag":""}'
-		else:
-			defaultCase = '[{"enterActivity":"","index":1,"storyDescription":"","action":[{"target":{"targetName":""},"actionCode":"click","behaviorPara":{"inputValue":""},"needWait":true}],"where":"","checkString":[{"checkType":"","elementName":"","expeted":""}]}]'
-		# 存储DB
-		p = caseList(caseName=caseName)
-		p.type_field = caseType.objects.get(id=caseType.objects.filter(type_field=csType)[0].id)
-		p.plantform = casePlantform
-		p.version = caseVersion
-		p.case = defaultCase
-		p.des = caseDes
-		p.in_use = caseStatus
-		p.owner = owner
-		p.case_tag = json.dumps([caseTag.objects.get(tagName=x).id for x in myTag])
-		p.save()
-		# 获取当前用例ID
-		myID = caseList.objects.filter(plantform=casePlantform).filter(caseName=caseName).values('id')[0]['id']
-		return HttpResponseRedirect("/auto/ver_confirm/%s" % myID)
-	except TypeError as e:
-		logger.info('新建保存用例出错了 %s' % e)
-		return
-
-# 确认版本
-def ver_confirm(request, id):
-	case = caseList.objects.get(id=id)
-	versionList = [x['versionStr'] for x in caseVersion.objects.values('versionStr').order_by('-versionStr')]
-	plant = ['Android','iOS','M']
-	nav_list = navList()
-	return render(request, 'ver_confirm.html', locals())
-
-# 新增用例action
-def new_edit(request):
-	id = request.GET['caseID']
-	version = request.GET['version']
-	myPlantform = request.GET['platform']
-	# 反向解析json存入表单 首先从DB获取json字符串，并解析成数据类型
-	if caseList.objects.filter(id=id).exists():
-		json_dict = caseList.objects.filter(id=id).values()[0]
-		try:
-			# 基本信息确认
-			json_dict['type_field_id'] = caseType.objects.get(id=json_dict['type_field_id']).type_name	# 品类
-			if json_dict['case_tag']:
-				myTag = [caseTag.objects.get(id=x).tagName  for x in json.loads(json_dict['case_tag'])]	# 标签
-			# 下拉列表
-			type_all = caseType.objects.all().order_by('type_name')
-			type_list = [x for x in type_all]
-			user_list = [x['userName'] for x in caseUser.objects.filter(userStatus=1).values('userName').order_by('userName')]
-			versionList = [x['versionStr'] for x in caseVersion.objects.values('versionStr').order_by('-versionStr')]
-			plant = ['Android','iOS','M']
-			case_tag = caseTag.objects.all()
-			nav_list = navList()
-
-			# 元素 起点 终点列表 iOS没有
-			targetname = []
-			elementname = []
-
-			# 解析caseJSON，虽然改了平台和版本，但是caseJSON还是不变的，因此翻译时需要注意区分，原有的还是caseJSON里的，下拉列表才是new的
-			if myPlantform == 'Android' or myPlantform == 'M':
-				where = []
-				enterActivity = []
-				wait_list = ['等待','不等待']
-				BgStep = json.loads(json_dict['case'])
-				for x in BgStep:
-					x['enterActivity'] = trans_me(x['enterActivity'],'where',json_dict['plantform'], json_dict['version'], 'toC')
-					x['where'] = trans_me(x['where'],'where',json_dict['plantform'], json_dict['version'], 'toC')
-					where.append(x['where'])
-					enterActivity.append(x['enterActivity'])
-					ai = ci = 1
-					for y in x['action']:
-						y['target']['targetName'] = trans_me(y['target']['targetName'],'targetName',json_dict['plantform'], json_dict['version'], 'toC')
-						targetname.append(y['target']['targetName'])
-						y['actionCode'] = trans_me(y['actionCode'],'action',json_dict['plantform'], json_dict['version'], 'toC')
-						if y['needWait'] == True:
-							y['needWait'] = '等待'
-						else:
-							y['needWait'] ='不等待'
-						y['index'] = str(x['index']) + '-' + str(ai)
-						ai += 1
-					for y in x['checkString']:
-						y['elementName'] = trans_me(y['elementName'],'targetName',json_dict['plantform'], json_dict['version'], 'toC')
-						elementname.append(y['elementName'])
-						y['index'] = str(x['index']) + '-' + str(ci)
-						ci += 1
-						y['checkType'] = trans_me(y['checkType'],'checkString',json_dict['plantform'], json_dict['version'], 'toC')
-					control_list = new_select_list('action', myPlantform, version)
-					where_list = new_select_list('where', myPlantform, version)
-					target_list = new_select_list('targetName', myPlantform, version)
-					checkType_list = new_select_list('checkString', myPlantform)
-				return render(request, 'new_edit.html',locals())
-			else:
-				BgStep = json.loads(json_dict['case'])['jsonStory']
-				ai = 1
-				for x in BgStep:
-					x['index'] = str(ai)
-					ai += 1
-					x['action'] = trans_me(x['action'],'action',json_dict['plantform'], json_dict['version'], 'toC')
-					targetname.append(trans_me(x['value'],'targetName',json_dict['plantform'], json_dict['version'], 'toC'))
-					control_list = new_select_list('action', myPlantform, version)
-					target_list = new_select_list('targetName', myPlantform, version)
-				return render(request, 'ios_edit.html', locals())
-		except AttributeError as e:
-			logger.info("new_edit:%s" % e)
-	else:
-		logger.info("用例id %s 不存在" % id)
-		return HttpResponseRedirect('/auto/new_add')
-
-# 测试报告页
-def test_list(request):
-	# 右侧对应品类的用例列表
-	device_list = deviceList.objects.exclude(in_use='0')
-	# iosdev = deviceList.objects.filter(in_use='1').filter(platformName='iOS').order_by('deviceName')  #设备列表
-	# addev = deviceList.objects.exclude(in_use='0').filter(platformName='Android').order_by('deviceName')   #设备列表
-	# mdev = deviceList.objects.filter(in_use='1').filter(platformName='M').order_by('deviceName')   #设备列表
-	nav_list = navList()
-	groupReports = testRecording.objects.order_by('-createTime').values('timeStamp', 'Version', 'createTime', 'groupId', 'flag').distinct()[:20]
-	for x in groupReports:
-		x['url'] = '/auto/api_report_page?timeStamp=' + x['timeStamp']
-		x['name'] = caseGroup.objects.get(id=json.loads(x['groupId'])[0]).groupName
-		try:
-			x['createTime'] = reportsList.objects.filter(timeStamp__contains=x['timeStamp'])[0].create_time
-		except IndexError as e:
-			logger.info('test_list error:%s' % e)
-	return render(request, 'test_list.html',locals())
-
-# 首页查询
-def auto_search(request):
-	# 需要品类、二品类、版本、所属人、平台
-	type_all = caseType.objects.all().order_by('type_name')
-	type_list = [x for x in type_all]
-	user_list = [x['userName'] for x in caseUser.objects.filter(userStatus=1).values('userName').order_by('userName')]
-	versionList = [x['versionStr'] for x in caseVersion.objects.values('versionStr').order_by('-versionStr')]
-	plant = ['Android','iOS','M']
-	device_list = deviceList.objects.exclude(in_use='0')
-	nav_list = navList()
-	casegroup = caseGroup.objects.all()
-	return render(request, 'auto_search.html', locals())
-
-# 动态查询结果返回
-def search_result(request):
-	myRequest = dict(request.GET)
-	logger.info('search:myRequest %s' % myRequest)
-	# 处理下key带[]的问题
-	myrequest = {}
-	for k,v in myRequest.items():
-		if '[]' in k:
-			k1 = k.replace('[]','')
-			myrequest[k1] = v
-	# 每个key值循环取并集，最后取交集
-	logger.debug('search:myrequest %s' % myrequest)
-	origin = caseList.objects.filter(in_use='1')
-	if myrequest:
-		if_list = {}
-		# 根据条件遍历查询
-		for m,n in myrequest.items():
-			if_list[m] = []
-			for x in n:
-				if m == 'caseId':
-					if_list[m] += origin.filter(id__contains=x)
-				elif m == 'caseName':
-					if_list[m] += origin.filter(caseName__contains=x)
-				elif m == 'caseType':
-					if_list[m] += origin.filter(type_field__type_name__contains=x)
-				elif m == 'plantform':
-					if_list[m] += origin.filter(plantform__contains=x)
-				elif m == 'version':
-					if_list[m] += origin.filter(version__contains=x)
-				elif m == 'note':
-					if_list[m] += origin.filter(des__contains=x)
-				elif m == 'owner':
-					if_list[m] += origin.filter(owner__contains=x)
-				else:
-					logger.info('search:未知参数 %s' % m)
-					break
-
-		# 现在不一定每个list都有值，需要判断过滤掉没有的值，首先清空没有值的形成一个list
-		result = [y for x,y in if_list.items()]
-		# 遍历这个list 并求交集
-		if result:
-			try:
-				show_list = set(result[0])
-				if result[1:]:
-					for x in result[1:]:
-						show_list &= set(x)
-			except Exception as e:
-				logger.info("search:%s %s" % (x,e))
-	else:
-		show_list = origin
-
-	response = HttpResponse()
-	response['Content-Type'] = "text/json"
-	return render_to_response('auto_ajax.html', locals())
-
-# 发邮件
-def do_mail(htmlStr):
-	html_string = htmlStr
-	cf = configparser.ConfigParser()
-	cf.read("/rd/pystudy/conf")
-	sender = cf.get('mail', 'username')
-	receiverlist = [x for x in cf.get('mail', 'test_receiver').split(',')]
-	subject = "[UI自动化测试报告]"
-	smtpserver = cf.get('mail','smtpserver')
-	username = cf.get('mail','username')
-	password = cf.get('mail','password')
-	msg=MIMEText(html_string,'html','utf-8')
-	msg['From'] = _format_addr("Admin <%s>" % sender)
-	msg['to'] = '%s' % ','.join([_format_addr('<%s>' % x) for x in receiverlist])
-	msg['Subject'] = Header("%s" % subject , 'utf-8').encode()
-	smtp = smtplib.SMTP()
-	smtp.connect(smtpserver)
-	smtp.ehlo()
-	# smtp.set_debuglevel(1)
-	smtp.login(username, password)
-	smtp.sendmail(msg['From'],receiverlist,msg.as_string())
-	smtp.quit()
-
-def tag_search(request):
-	mixChan = request.GET['mixChan']
-	print(mixChan)
-	fChannel = caseType.objects.get(type_name=mixChan.split('_')[0])
-	sChannel = caseTag.objects.get(tagName=mixChan.split('_')[1])
-	result = caseList.objects.filter(type_field=fChannel).filter(case_tag__contains=sChannel.id)
-	return render_to_response('tag_search.html', locals())
-
-### 报表相关 ###
 # 当日报表邮件接口
-def api_report(request):
+def sendMail(request):
 	try:
 		timeTarget = request.GET['timeStamp']
 		vver = request.GET['ver']
 		name = request.GET['name']
 	except:
 		jsonStr = {
-			"code": "-1",
+			"code": "-2",
 			"message":"参数错误"
 		}
 	else:
-		cases = allBookRecording.objects.filter(timeStamp=timeTarget)
+		source = getSuccess(timeTarget)	# 获取用例成功失败列表，运行数量
+		cases = source[3]	# 所有成功失败列表
+		pass_list = source[1]	# 成功记录列表
+		err_list = source[2]	# 错误记录列表
+
 		if cases:
-			# 返回一个报告页面 URL，通过此url可以访问对应的数据构造页面
-			# 计算执行时间
+			# 计算测试时长
 			time = cases.values('create_time')
-			if time:
-				sTime = time.order_by('create_time')[0]['create_time']
-				eTime = time.order_by('-create_time')[0]['create_time']
-				m,s = divmod((eTime - sTime).seconds, 60)
-				testTime = '%s分%s秒' % (m,s)
-			# 发邮件
-			myUrl = ("http://10.115.1.73:8000/auto/api_report_page?timeStamp=%s" % timeTarget)
-			err_list = cases.filter(status='danger')
-			pass_list = cases.filter(status='success')
-			groupNum = len(json.loads(caseGroup.objects.get(groupName=name).caseID))	# 用例集总数
-			allNum = cases.count()
-			passNum = pass_list.count()
-			failNum = err_list.count()
-			if groupNum > allNum:
-				warnNum = groupNum - allNum	# 没跑的
-			else:
-				warnNum = 0
-			passRate = round((passNum / allNum * 100),2)
-			# email发送
+			sTime = time.order_by('create_time')[0]['create_time']
+			eTime = time.order_by('-create_time')[0]['create_time']
+			m,s = divmod((eTime - sTime).seconds, 60)
+			testTime = '%s分%s秒' % (m,s)
+
+			# 各项指标
+			myUrl = ("http://10.115.1.73:8000/auto/reportDetail?timeStamp=%s" % timeTarget)	# 报告URL
+			groupNum = len(json.loads(caseGroup.objects.get(groupName=name).caseID))	# 用例集用例总数
+			allNum = source[0]	# 跑了的总数
+			passNum = len(pass_list)	# 成功的数量
+			failNum = len(err_list)	# 失败的数量
+			warnNum = groupNum - allNum
+			passRate = round(((passNum / allNum) * 100), 2)	# 成功率
+
+			# email标头
 			html_string0 = "<h3>UI自动化报告</h3><h4>[用例集名称:%s]</h4><br><table border=1><tbody><tr><td>版本</td><td>%s</td><td>测试时长</td><td>%s</td></tr><tr><td>用例总数</td><td>%s</td><td>成功率</td><td>%s %%</td></tr><tr><td>本次测试用例数</td><td>%s</td><td>异常</td><td>%s</td></tr><tr><td>通过</td><td>%s</td><td>失败</td><td>%s</td></tr></tbody></table><hr><span><h4><a href=%s target=_blank><font color='DarkSalmon' size='4'>看报告请点点点点点点点点我!!!</font></a></span></h4>" % (name, vver, testTime, groupNum, passRate, allNum, warnNum, passNum, failNum, myUrl)
 			html_string1 = ""
 			html_string3 = "</table>"
+
+			# 列出错误用例
 			if err_list:
 				html_string1 = "<h3>错误列表</h3><table border=1 width=100%><tr style='background-color:cadetblue'><th>ID</th><th>品类</th><th>用例名称</th><th>状态</th><th>耗时</th><th>创建人</th></tr>\n\r"
 				html_string2 = ""
 				build_list = []
-				for x in err_list:
+
+				for x in err_list:	# 完善用例集信息
 					sou = json.loads(x.testResultDoc)
+					if x.status == 'danger':
+						status = '失败'
+					else:
+						status = '成功'
 					tmp = {
-						'id':sou['id'],
+						'id':x.caseID,
 						'type':caseList.objects.get(id=sou['id']).type_field.type_name,
 						'caseName':x.caseName,
-						'status':x.status,
+						'status':status,
 						'usedTime':x.usedTime,
 						'user':sou['owner'],
 					}
 					build_list.append(tmp)
-				build_list = sorted(build_list, key = lambda x:x['type'])
-				for x in build_list:
-					status = '通过'
-					if x['status'] == 'danger':
-						status = '失败'
-					html_string2 += ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n\r" % (x['id'], x['type'], x['caseName'], status, x['usedTime'], x['user']))
+
+				build_list = sorted(build_list, key = lambda x:x['user'])	# 根据人名排序
+				for tmp in build_list:	# 填充html
+					html_string2 += ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n\r" % (tmp['id'], tmp['type'], tmp['caseName'], tmp['status'], tmp['usedTime'], tmp['user']))
 			else:
 				html_string2 = "<p>恭喜, 全部通过</p>"
+
 			html_string = html_string0 + html_string1 + html_string2 + html_string3
 			logger.info('do html ok')
 			do_mail(html_string)
@@ -916,216 +1116,140 @@ def api_report(request):
 				"message":'发送成功'
 			}
 		else:
+			mess = '%s 没有用例报告' % timeTarget
 			jsonStr = {
-				"code": "-2",
-				"message":"没有符合条件的结果"
+				"code": "-1",
+				"message":mess
 			}
 	finally:
 		result = json.dumps(jsonStr, ensure_ascii=False)
-		logger.info(result)
 		return HttpResponse(result, content_type="application/json")
 
-# 根据url参数返回报表页面
-def api_report_page(request):
-	timeTarget = request.GET['timeStamp']
-	# check if it's group
-	try:
-		groupID = json.loads(testRecording.objects.filter(timeStamp=timeTarget)[0].groupId)[0]
-		groupName = caseGroup.objects.get(id=groupID).groupName
-	except:
-		logger.info('api_report_page: not group or record has deleted')
-	# 对应timestamp下的所有用例结果
-	rec = allBookRecording.objects.filter(timeStamp=timeTarget)
-	if rec:
-		# 计算测试时长
-		time = rec.values('create_time')
-		if time:
-			sTime = time.order_by('create_time')[0]['create_time']
-			eTime = time.order_by('-create_time')[0]['create_time']
-			if (eTime - sTime).seconds > 0:
-				m,s = divmod((eTime - sTime).seconds, 60)
-				testTime = '%s分%s秒' % (m,s)
-			else:
-				testTime = rec[0].usedTime
-		# 重构列表 仅在用没跑的
-		cases = []	# 所有用例列表
-		plats = []	# 平台列表
-		for x in rec:
-			doc = json.loads(x.testResultDoc)
-			tmp = {
-				'runAt':doc['runAt'],
-				'storySize':doc['storySize'],
-				'caseTestTime':doc['caseTestTime'],
-				'info':caseList.objects.get(id=doc['id']),
-				'status':x.status,
-				'id':x.id,
-			}
-			cases.append(tmp)
-			plats.append(doc["platformName"])
-		plat = set(plats)
-		version = set([x['info'].version for x in cases])
-		# 计算其让指标
-		pass_list = [x for x in cases if x['status'] == 'success']
-		err_list = [x for x in cases if x['status'] == 'danger']
-		# for retry err包含 失败的和未跑的
-		err_ids = [x['info'].id for x in err_list]
-		vver = [x for x in version][0]
-		platt = [x for x in plat][0]
-		# if it's group,求差集
+# 测试报告列表
+def reportList(request):
+	# 右侧对应品类的用例列表
+	device_list = deviceList.objects.exclude(in_use='0')
+	nav_list = navList()
+	groupReports = testRecording.objects.order_by('-create_time').values('timeStamp', 'Version', 'create_time', 'groupId', 'flag').distinct()[:20]
+	for x in groupReports:
+		x['url'] = '/auto/reportDetail?timeStamp=' + x['timeStamp']
 		try:
-			all_list = json.loads(caseGroup.objects.get(id=json.loads(testRecording.objects.filter(timeStamp=timeTarget)[0].groupId)[0]).caseID)
-			run_list = [x['info'].id for x in cases]
-			nono_list = [caseList.objects.get(id=x) for x in list(set(all_list).difference(set(run_list)))]
-			no_list = [x for x in nono_list if x.in_use == '1']
-			err_ids += [x.id for x in no_list]
-			delList = [x for x in nono_list if nono_list and x.in_use != '1']
+			x['name'] = caseGroup.objects.get(id=x['groupId']).groupName
+		except:
+			# x['name'] = caseGroup.objects.get(id=json.loads(x['groupId'])[0]).groupName
+			x['name'] = '未知'
+		try:
+			x['create_time'] = reportsList.objects.filter(timeStamp__contains=x['timeStamp'])[0].create_time
 		except IndexError as e:
-			all_list = rec
-			no_list = []
-			logger.info('api_report_page error:%s' % e)
-			delList = []
-		# 计算各种结果
-		allNum = len(all_list)
-		passNum = len(pass_list)
-		failNum = len(err_list)
-		passRate = round((passNum / (passNum + failNum)) * 100, 2)	# 成功率不算没跑的
-	else:
-		Amessage = '没有结果'
-	return render_to_response('report.html', locals())
+			logger.info('test_list error:%s' % e)
+	return render(request, 'reportList.html',locals())
 
-# 单条用例报告
-def snapshot(request):
-	bid = request.GET['id']
-	book = trans_report_list(json.loads(allBookRecording.objects.get(id=bid).testResultDoc))
-	return render(request, 'snapshot.html', locals())
+# 报告详情
+def reportDetail(request):
+	timeTarget = request.GET['timeStamp']
+	source = getSuccess(timeTarget)	# 获取测试结果记录 0是测试总数，1是成功列表 2是失败列表 3是所有记录
+	rec = source[3]	# 所有记录
+	if rec:
+		pass_list = source[1]	# 成功列表
+		err_list = source[2]	# 错误列表
+		allNum = source[0]	# 测试总数
+		passNum = len(pass_list)	# 成功数量
+		failNum = len(err_list)	# 失败数量
+		passRate = round(((passNum / allNum) * 100), 2)	# 成功率
 
-# 报告筛选功能
-def search_report(request):
-	myrequest = dict(request.GET)
-	timeTarget = myrequest['timeT'][0]
-	user = myrequest['user'][0]
-	Acases = allBookRecording.objects.filter(timeStamp=timeTarget).filter(testResultDoc__contains='platformName":"Android"')
-	Mcases = allBookRecording.objects.filter(timeStamp=timeTarget).filter(testResultDoc__contains='platformName":"M"')
-	Aerr_list = []
-	Apass_list = []
-	Merr_list = []
-	Mpass_list = []
-	if user:
-		for x in Acases:
-			cid = json.loads(x.testResultDoc)['id']
-			case = caseList.objects.filter(in_use='1').get(id=cid)
-			if user in case.owner:
-				if x.status == 'danger':
-					logger.info('search_report %s' % x.caseName)
-					Aerr_list.append(json.loads(x.testResultDoc))
-				else:
-					Apass_list.append(json.loads(x.testResultDoc))
-		for x in Mcases:
-			cid = json.loads(x.testResultDoc)['id']
-			case = caseList.objects.filter(in_use='1').get(id=cid)
-			if user in case.owner:
-				if x.status == 'danger':
-					logger.info('search_report %s' % x.caseName)
-					Merr_list.append(json.loads(x.testResultDoc))
-				else:
-					Mpass_list.append(json.loads(x.testResultDoc))
-	else:
-		Aerr_list = [json.loads(x['testResultDoc']) for x in Acases.filter(status='danger').values('testResultDoc')]
-		Apass_list = [json.loads(x['testResultDoc']) for x in Acases.filter(status='success').values('testResultDoc')]
-		Merr_list = [json.loads(x['testResultDoc']) for x in Mcases.filter(status='danger').values('testResultDoc')]
-		Mpass_list = [json.loads(x['testResultDoc']) for x in Mcases.filter(status='success').values('testResultDoc')]
-	Apass_list = trans_report_list(Apass_list)
-	Aerr_list = trans_report_list(Aerr_list)
-	Mpass_list = trans_report_list(Mpass_list)
-	Merr_list = trans_report_list(Merr_list)
-	return render_to_response('report_ajax.html', locals())
+		# 获取测试时长
+		myTime = rec.values('create_time')
+		sTime = myTime.order_by('create_time')[0]['create_time']	# 第一个记录时间
+		eTime = myTime.order_by('-create_time')[0]['create_time']	# 最后一个记录时间
+		if (eTime - sTime).seconds > 0:
+			m,s = divmod((eTime - sTime).seconds, 60)
+			testTime = '%s分%s秒' % (m,s)
+		else:	# 单用例只有一个记录时间，但是有运行时长
+			testTime = rec[0].usedTime
 
+		# 给列表添加报告信息，顺便获取测试的版本、平台
+		plats,vers = [],[]
+		for x in pass_list:
+			doc = json.loads(x.testResultDoc)
+			x.runAt = doc['runAt']
+			x.storySize = doc['storySize']
+			x.caseTestTime = doc['caseTestTime']
+			x.info = caseList.objects.get(id=doc['id'])
+			plats.append(doc["platformName"])
+			vers.append(x.info.version)
+		for x in err_list:
+			doc = json.loads(x.testResultDoc)
+			x.runAt = doc['runAt']
+			x.storySize = doc['storySize']
+			x.caseTestTime = doc['caseTestTime']
+			x.info = caseList.objects.get(id=doc['id'])
+			plats.append(doc["platformName"])
+			vers.append(x.info.version)
+		plat = set(plats) # 获取平台去重
+		version = set(vers)	# 获取版本去重
 
-### 用例集 ###
-# 添加用例集
-def auto_makeGroup(request):
-	try:
-		ids = [int(x) for x in request.GET['id'].split(',')]
-		# ids = request.GET['id']
-		groupName = request.GET['groupName']
-		groupVersion = request.GET['groupVersion']
-		# 判断用例集是否存在
-		if caseGroup.objects.filter(groupName=groupName).exists():
-			temp = caseGroup.objects.get(groupName=groupName)
-			origin = json.loads(temp.caseID)
-			new = list(set(origin + ids))
-			temp.caseID = json.dumps(new)
-			logger.info('%s\n %s'% (origin,new))
-			temp.save()
+		# 获取错误ID，传给手动重跑函数
+		err_ids = [int(x.caseID) for x in err_list]
+		# 获取一个平台和版本作为新用例集的参数，前提要求用例集不要存在不同版本和不同平台
+		vver = list(version)[-1]
+		platt = list(plat)[0]
+
+		# 展示没跑的、废弃的
+		if testRecording.objects.filter(timeStamp=timeTarget):
+			groupID = testRecording.objects.filter(timeStamp=timeTarget)[0].groupId	# 获取用例集ID
+			group = caseGroup.objects.get(id=groupID)	# 获取用例集obj
+			cases = pass_list | err_list	# 所有记录
+			run_list = [int(x.caseID) for x in cases]	# 所有记录的ID
+			all_list = json.loads(group.caseID.replace("'",''))	# 用例集内用例的ID
+			totalNum = len(all_list)
+			nono_list = [caseList.objects.get(id=x) for x in list(set(all_list).difference(set(run_list)))]	# 没记录的用例
+			no_list = [x for x in nono_list if x.in_use == '1']	# 没记录的用例里在用没跑的
+			delList = [x for x in nono_list if nono_list and x.in_use != '1']	# 没记录的用例里废弃/过期用例
+			err_ids += [x.id for x in no_list]	# 没跑的id也加进重跑列表
 		else:
-			temp = caseGroup(groupName=groupName)
-			temp.caseID = json.dumps(ids)
-			if groupVersion:
-				temp.versionStr = caseVersion.objects.get(versionStr=groupVersion)
+			no_list, delList = [], []
+
+	return render_to_response('reportDetail.html', locals())
+
+# 获取测试进度
+def testProgress(request):
+	tt = request.GET['tt']
+	alList = reportsList.objects.filter(timeStamp__contains=tt)	# 记录在案的测试结果
+
+	if alList:
+		# 获取所有记录在案的测试ID
+		allID = []
+		for x in alList:
+			allID += x.timeStamp.split('_')[1:]
+		distinctID = set(allID)
+		# print(distinctID)
+		# 考虑到废弃，统计实际会记录的数量
+		if distinctID:
+			trushNum = len([x for x in distinctID if caseList.objects.get(id=x).in_use != '1'])
+			allNum = len(distinctID) - trushNum
+		else:
+			allNum = len(distinctID)
+
+		# 实际记录的数量
+		nowNum = len(set([x.caseID for x in allBookRecording.objects.filter(timeStamp=tt)]))
+
+		# 对于重跑的情况 肯定会大于100
+		if nowNum == 0:
+			num = 5	# 默认给个5吧
+		else:
+			if allNum == 0:
+				num = 0
 			else:
-				temp.versionStr = caseVersion.objects.order_by('-versionStr')[0]
-			temp.save()
-		data = 'success'
-	except TypeError as e:
-		logger.info('添加用例集报错：%s' % e)
-		data = 'failed'
-	finally:
-		logger.info('添加用例集状态：%s' % data)
-		return HttpResponse(data)
+				num = round(((nowNum / allNum) * 100),2)
+				if num > 100:
+					num = 100
+	else:
+		num = 100
+	result = {'count':num}
+	return HttpResponse(json.dumps(result), content_type="application/json")
 
-# 用例集列表页
-def auto_group(request):
-	casegroup = caseGroup.objects.filter(status='1')
-	nav_list = navList()
-	cf = configparser.ConfigParser()
-	cf.read("/rd/pystudy/conf")
-	Aid = cf.get('automation', 'AgroupID')
-	Mid = cf.get('automation', 'MgroupID')
-	return render(request, 'case_group.html', locals())
-
-# 用例集编辑
-def group_edit(request):
-	groupID = request.GET.get('groupID')
-	# 需要获取group信息、所有用例名信息、当前用例集用例名信息
-	groupInfo = caseGroup.objects.get(id=groupID)
-	gourpIDS = json.loads(groupInfo.caseID)
-	allCase = caseList.objects.values('id', 'caseName', 'plantform', 'version', 'des', 'owner','in_use').order_by('caseName')
-	for x in allCase:
-		if x['id'] in gourpIDS:
-			x['sta'] = 'checked'
-		else:
-			x['sta'] = 'unchecked'
-		if x['in_use'] == '1':
-			x['in_use'] = '在用'
-		else:
-			x['in_use'] = '废弃'
-	nav_list = navList()
-	versionList = caseVersion.objects.all()
-	platform = {'Android', 'iOS', 'M'}
-	logger.debug('%s' % allCase[:10])
-	return render(request, 'group_edit.html', locals())
-
-# 用例集保存
-def group_save(request):
-	try:
-		groupId = request.POST.get('ID')
-		group = caseGroup.objects.get(id=groupId)
-		group.des = request.POST.get('des')
-		group.platform = request.POST.get('plat')
-		group.versionStr = caseVersion.objects.get(versionStr=request.POST.get('version'))
-		group.groupName = request.POST.get('groupName')
-		if request.POST.get('groupListBox'):
-			group.caseID = json.dumps([int(x.split('-')[1]) for x in request.POST.getlist('groupListBox')])
-		else:
-			group.caseID = json.dumps([])
-		group.save()
-	except TypeError as e:
-		logger.info('用例集编辑保存出错:%s e:%s' % (request.POST, e))
-	finally:
-		return HttpResponseRedirect('/auto/auto_group')
-
-# 用例报告结果
-def test_ajax(request):
+# 设备构建历史
+def getDevBuildHistory(request):
 	# 右侧对应品类的用例列表
 	dev = request.GET['device']
 	testResults = []
@@ -1154,4 +1278,445 @@ def test_ajax(request):
 			myDict['status'] = 'queue'
 		x.buildLog.append(myDict)
 	nav_list = navList()
-	return render(request, 'test_ajax.html',locals())
+	return render(request, 'getDevBuildHistory.html',locals())
+
+# 获取用例报告
+def snapshot(request):
+	bid = request.GET['id']
+	book = trans_report_list(json.loads(allBookRecording.objects.get(id=bid).testResultDoc))
+	return render(request, 'snapshot.html', locals())
+
+# 报告筛选
+def reportFilter(request):
+	myrequest = dict(request.GET)
+	timeTarget = myrequest['timeT'][0]
+	user = myrequest['user'][0]
+	Acases = allBookRecording.objects.filter(timeStamp=timeTarget).filter(testResultDoc__contains='platformName":"Android"')
+	Mcases = allBookRecording.objects.filter(timeStamp=timeTarget).filter(testResultDoc__contains='platformName":"M"')
+	Aerr_list = []
+	Apass_list = []
+	Merr_list = []
+	Mpass_list = []
+	if user:
+		for x in Acases:
+			cid = json.loads(x.testResultDoc)['id']
+			case = caseList.objects.filter(in_use='1').get(id=cid)
+			if user in case.owner:
+				if x.status == 'danger':
+					logger.info('reportFilter %s' % x.caseName)
+					Aerr_list.append(json.loads(x.testResultDoc))
+				else:
+					Apass_list.append(json.loads(x.testResultDoc))
+		for x in Mcases:
+			cid = json.loads(x.testResultDoc)['id']
+			case = caseList.objects.filter(in_use='1').get(id=cid)
+			if user in case.owner:
+				if x.status == 'danger':
+					logger.info('reportFilter %s' % x.caseName)
+					Merr_list.append(json.loads(x.testResultDoc))
+				else:
+					Mpass_list.append(json.loads(x.testResultDoc))
+	else:
+		Aerr_list = [json.loads(x['testResultDoc']) for x in Acases.filter(status='danger').values('testResultDoc')]
+		Apass_list = [json.loads(x['testResultDoc']) for x in Acases.filter(status='success').values('testResultDoc')]
+		Merr_list = [json.loads(x['testResultDoc']) for x in Mcases.filter(status='danger').values('testResultDoc')]
+		Mpass_list = [json.loads(x['testResultDoc']) for x in Mcases.filter(status='success').values('testResultDoc')]
+	Apass_list = trans_report_list(Apass_list)
+	Aerr_list = trans_report_list(Aerr_list)
+	Mpass_list = trans_report_list(Mpass_list)
+	Merr_list = trans_report_list(Merr_list)
+	return render_to_response('report_ajax.html', locals())
+
+''' 用例集 '''
+# 添加用例集
+def autoMakeGroup(request):
+	# try:
+	# 目标用例
+	ids = [int(x) for x in request.GET['id'].split(',')]
+	myPlat = caseList.objects.get(id=ids[0]).plantform
+	groupName = request.GET['groupName']
+	# 获取用例集的version，存储包含的用例
+	if caseGroup.objects.filter(groupName=groupName).exists():
+		group = caseGroup.objects.get(groupName=groupName)	# obj
+		groupVersion = group.versionStr.versionStr	# str 7.8.0
+		oldCase = json.loads(group.caseID)
+		newCase = list(set(oldCase + ids))
+		group.caseID = json.dumps(newCase)
+		group.platform = myPlat
+		group.save()
+	else:
+		group = caseGroup(groupName=groupName)	# create
+		groupVersion = request.GET['groupVersion']
+		if groupVersion:
+			group.versionStr = caseVersion.objects.get(versionStr=groupVersion)	# 外键存对象
+		else:
+			# 前端限制了版本必填，万一出现，则给个最新版本
+			group.versionStr = caseVersion.objects.order_by('-versionStr')[0]
+		group.caseID = json.dumps(ids)
+		group.platform = myPlat
+		group.save()
+
+	# create tagId, 由于同一个版本可能有多个用例集，使用version会查出多个用例集，故使用用例集name，对应在编辑用例集时，改名字时同步更改tag就好了
+	if caseTag.objects.filter(tagName=groupName).exists():
+		tagId = caseTag.objects.get(tagName=groupName).id
+	else:
+		newTag = caseTag(tagName=groupName)
+		newTag.type_field = caseType.objects.get(type_field='other')
+		newTag.save()
+		tagId = caseTag.objects.get(tagName=groupName).id
+
+	# 给所选用例增加标签id，增加用例集id
+	cases = [caseList.objects.get(id=x) for x in ids]
+	for x in cases:
+		# 检查tag，有了追加，没有新建
+		if x.case_tag:
+			oldTag = json.loads(x.case_tag)
+			if tagId not in oldTag:
+				oldTag.append(tagId)
+				x.case_tag = json.dumps(oldTag)
+		else:
+			x.case_tag = json.dumps([tagId])
+		# 检查用例集ID是否存在，没有新建
+		newGroupId = caseGroup.objects.get(groupName=groupName).id	# 前端应该控制下用例集名称不可重复
+		if x.groupId:
+			oldGroupIdList = json.loads(x.groupId)
+			if newGroupId not in oldGroupIdList:
+				oldGroupIdList.append(newGroupId)
+				x.groupId = json.dumps(oldGroupIdList)
+		else:
+			x.groupId = json.dumps([newGroupId])
+		x.save()
+
+	data = 'success'
+	# except Exception as e:
+	# 	logger.info('添加用例集报错：%s' % e)
+	# 	data = 'failed'
+
+	return HttpResponse(data)
+
+# 用例集列表页
+def groupList(request):
+	casegroup = caseGroup.objects.exclude(des='失败用例重测').filter(status='1')
+	for x in casegroup:
+		x.num = len(json.loads(x.caseID))
+	nav_list = navList()
+	cf = configparser.ConfigParser()
+	cf.read("/rd/pystudy/conf")
+	Aid = cf.get('automation', 'AgroupID')
+	Mid = cf.get('automation', 'MgroupID')
+
+	return render(request, 'groupList.html', locals())
+
+# 用例集编辑
+def groupEdit(request):
+	groupID = request.GET.get('groupID')
+	# 需要获取group信息、所有用例名信息、当前用例集用例名信息
+	groupInfo = caseGroup.objects.get(id=groupID)
+	gourpIDS = json.loads(groupInfo.caseID)
+	allCase = caseList.objects.values('id', 'caseName', 'plantform', 'version', 'des', 'owner','in_use').order_by('caseName')
+	for x in allCase:
+		if x['id'] in gourpIDS:
+			x['sta'] = 'checked'
+		else:
+			x['sta'] = 'unchecked'
+		if x['in_use'] == '1':
+			x['in_use'] = '在用'
+		else:
+			x['in_use'] = '废弃'
+	nav_list = navList()
+	versionList = caseVersion.objects.all()
+	platform = {'Android', 'iOS', 'M'}
+	logger.debug('%s' % allCase[:10])
+	return render(request, 'groupEdit.html', locals())
+
+# 用例集保存
+def groupSave(request):
+	# 用例id列表
+	if request.POST.get('groupListBox'):
+		myCaseId = [int(x.split('-')[1]) for x in request.POST.getlist('groupListBox')]
+	else:
+		myCaseId = []
+
+	# 保存用例集信息
+	groupId = int(request.POST.get('ID'))
+	group = caseGroup.objects.get(id=groupId)
+	# 获取用例集前后信息
+	oldName = group.groupName
+	oldVer = group.versionStr.versionStr
+	oldCase = group.caseID
+	oldPlat = group.platform
+	newName = request.POST.get('groupName')
+	newPlat = request.POST.get('plat')
+	newVer = request.POST.get('version')
+	newCase = myCaseId
+	# 保存其他信息
+	group.des = request.POST.get('des')
+	group.platform = newPlat
+	group.versionStr = caseVersion.objects.get(versionStr=newVer)
+	group.groupName = newName
+	group.caseID = json.dumps(myCaseId)
+	group.save()
+
+	# 检查老名字有没有，新名字有没有，都没有新建
+	if caseTag.objects.filter(tagName=newName).exists():
+		tagId = caseTag.objects.get(tagName=newName).id	# 当前用例集的tagId, 有可能用例集已经建好，没有此标签，手动加一个
+	elif caseTag.objects.filter(tagName=oldName).exists():
+		oldTag = caseTag.objects.get(tagName=oldName)
+		oldTag.tagName = newName
+		oldTag.save()
+		tagId = oldTag.id
+	else:
+		newTag = caseTag(tagName=newName)
+		newTag.type_field = caseType.objects.get(type_field='other')
+		newTag.save()
+		tagId = newTag.id
+	# 遍历包含当前用例集id、版本tag的用例，去除包含
+	todoCase = caseList.objects.filter(groupId__contains=groupId) | caseList.objects.filter(case_tag__contains=tagId)	# 合并用例组合
+	todoCase.distinct()	# 去重
+
+	for x in todoCase:
+		if x.groupId:
+			oldGroupId = json.loads(x.groupId)
+			if groupId in oldGroupId:
+				oldGroupId.remove(groupId)
+				x.groupId = json.dumps(oldGroupId)
+		if x.case_tag:
+			oldTagId = json.loads(x.case_tag)
+			if tagId in oldTagId:
+				oldTagId.remove(tagId)
+				x.case_tag = json.dumps(oldTagId)
+		x.save()
+
+	# 遍历目标用例id列表，新增用例集id，标签
+	myCase = [caseList.objects.get(id=x) for x in myCaseId]
+	for x in myCase:
+		if x.case_tag:
+			oldCaseTag = json.loads(x.case_tag)
+			if tagId not in oldCaseTag:
+				oldCaseTag.append(tagId)
+				x.case_tag = json.dumps(oldCaseTag)
+		else:
+			x.case_tag = json.dumps([tagId])
+		if x.groupId:
+			oldGroupId = json.loads(x.groupId)
+			if groupId not in oldGroupId:
+				oldGroupId.append(groupId)
+				x.groupId = json.dumps(oldGroupId)
+		else:
+			x.groupId = json.dumps([groupId])
+		x.save()
+
+	# 记录历史
+	oldMess = '用例集名称:%s | 版本:%s | 平台:%s | 用例数量:%s\n\r用例明细:%s' % (oldName,oldVer,oldPlat,len(json.loads(oldCase)),oldCase)
+	newMess = '用例集名称:%s | 版本:%s | 平台:%s | 用例数量:%s\n\r用例明细:%s' % (newName,newVer,newPlat,len(newCase),newCase)
+	if oldMess != newMess:
+		message = ''
+		message += '原:\n\r' + oldMess + '\n\r新:\n\r' + newMess
+		ip = request.META['REMOTE_ADDR']
+		operationSave(ip,message)
+
+	return HttpResponseRedirect('/auto/groupList')
+
+# 用例集操作历史
+def getGroupHistory(request):
+	# 先取一个月的数据
+	date_to = datetime.datetime.now()
+	date_from = date_to - datetime.timedelta(days=30)
+	result = history.objects.filter(operationTime__range=(date_from,date_to))
+	return render(request, 'getGroupHistory.html', locals())
+
+'''一周报表'''
+# 报告详情页
+def autoReport(request):
+	nav_list = navList()
+	# 版本用例趋势 M站只有一个用例集，永远都是一条线
+	source = caseGroup.objects.filter(status='1').filter(groupName__contains='[回归]')
+	ver = list(set([x.versionStr.versionStr for x in source]))
+	ver.sort(key=lambda x:tuple(int(v) for v in x.split('.')))
+	vers = ver[-5:]
+	now = vers[-1]
+	# APP趋势 业务覆盖
+	result = []
+	# 业务覆盖
+	area = []
+	typeLi = []
+	for v in ['Android', 'iOS', 'M']:
+		tmp = {
+			'name':v,
+			'result':[]
+			}
+		areatmp = {
+			'name':v,
+			'result':[],
+			}
+		n = 1
+		for x in vers:
+			# 确定用例集范围
+			if v == 'M':
+				backage = source.filter(platform=v)
+			else:
+				backage = source.filter(platform=v).filter(versionStr__versionStr=x)
+			if backage:
+				value = {
+					'version':x,
+					'value':len(json.loads(backage[0].caseID)),
+					}
+				# 确认业务覆盖情况
+				if n == 5:
+					cases = [caseList.objects.get(id=x) for x in json.loads(backage[0].caseID)]
+					typeList = list(set([x.type_field.type_name for x in cases]))
+					typeLi += typeList
+					for x in typeList:
+						areaValue = {
+							'type':x,
+							'value':len([z for z in cases if z.type_field.type_name == x]),
+							}
+						areatmp['result'].append(areaValue)
+			else:
+				value = {
+					'version':x,
+					'value':0,
+					}
+			tmp['result'].append(value)
+			n += 1
+
+		result.append(tmp)
+		area.append(areatmp)
+
+	# 资源分布情况
+	resource = []
+	dever = [x['appVersion'] for x in deviceList.objects.filter(in_use='1').values('appVersion').distinct()]
+	for x in dever:
+		plat = deviceList.objects.filter(in_use='1').filter(appVersion=x)[0].platformName
+		tmp = {
+			'name':plat + ' | ' + x,
+			'value':deviceList.objects.filter(in_use='1').filter(appVersion=x).count()
+		}
+		resource.append(tmp)
+
+	# M站用例趋势
+	today = datetime.datetime.now()
+	weekAgo = datetime.datetime.now() - datetime.timedelta(days=7)
+	dayList,dayNum = [],[]
+	for x in range(7):
+		da = weekAgo + datetime.timedelta(days=x)
+		daa = da.strftime("%Y-%m-%d")
+		dayList.append(daa)
+		nuu = caseList.objects.filter(plantform='M').filter(in_use='1').filter(groupId__contains='8').filter(create_time__lt=da).count() # 仅保留在用的
+		dayNum.append(nuu)
+
+	return render(request, 'autoReport.html', locals())
+
+# 获取构建次数，错误率，成功率，top5
+def getBuildTimes(request):
+	date_from = datetime.datetime.now()
+	date_to = date_from - datetime.timedelta(days=7)
+	source = allBookRecording.objects.filter(create_time__range=(date_to, date_from))
+	# 构建次数
+	num = source.values('timeStamp').distinct().count()
+	result = {'count':num}
+
+	# auto成功率 区分AD M iOS, 仅自动构建
+	timeList = [x['timeStamp'] for x in testRecording.objects.filter(flag='1').filter(create_time__range=(date_to, date_from)).values('timeStamp').distinct()]	# 近一周 自动构建的所有timeStamp
+
+	Apass, Aall, Mpass, Mall, Ipass, Iall, errList, top, errTypeRe = [], [], [], [], [], [], [], [], []
+	for x in source:
+		if x.timeStamp in timeList:	# 仅统计自动构建的各平台通过率
+			if request.GET['data'] == '1':
+				plat = json.loads(x.testResultDoc)['platformName']
+				if plat == 'Android':
+					Aall.append(x)
+					if x.status == 'success':
+						Apass.append(x)
+				elif plat == 'M':
+					Mall.append(x)
+					if x.status == 'success':
+						Mpass.append(x)
+				else:
+					Iall.append(x)
+					if x.status == 'success':
+						Ipass.append(x)
+			else:	# 错误用例统计
+				if x.status == 'danger':
+					errList.append(x.caseID)
+
+	if request.GET['data'] == '1':	# 通过率计算
+		if Apass:
+			result['Arate'] = str(round(len(Apass) * 100 / len(Aall), 2)) + '%'
+		if Mpass:
+			result['Mrate'] = str(round(len(Mpass) * 100 / len(Mall), 2)) + '%'
+		if Ipass:
+			result['Irate'] = str(round(len(Ipass) * 100 / len(Iall), 2)) + '%'
+
+		return HttpResponse(json.dumps(result), content_type="application/json")
+	else:	# TOP5 用例计算
+		finalTop = set(errList)
+		for x in finalTop:
+			tmp = {
+				'id':caseList.objects.get(id=x).id,
+				'caseName':caseList.objects.get(id=x).caseName,
+				'type':caseList.objects.get(id=x).type_field.type_name,
+				'plat':caseList.objects.get(id=x).plantform,
+				'ver':caseList.objects.get(id=x).version,
+				'times':errList.count(x),
+			}
+			top.append(tmp)
+		top.sort(key=lambda x:x['times'])
+		allFailedNum = len(errList)
+		topTable = top[-5:]
+
+		return render(request, 'autoReportAjax.html', locals())
+
+
+'''小组管理'''
+# 小组列表
+def memGroupList(request):
+	memGroup = userGroup.objects.all()
+	nav_list = navList()
+	for x in memGroup:
+		if x.groupUser:
+			x.count = len(json.loads(x.groupUser))
+		else:
+			x.count = 0
+	return render(request,'memGroupList.html',locals())
+
+# 小组编辑
+def memGroupEdit(request):
+	allMem = caseUser.objects.filter(userStatus=1)
+	nav_list = navList()
+	try:
+		groupID = request.GET['groupId']
+	except KeyError as e:
+		pass
+	else:
+		if groupID:
+			groupID = request.GET['groupId']
+			group = userGroup.objects.get(id=groupID)
+			if group.groupUser:
+				gourpIDS = json.loads(group.groupUser)
+				print(gourpIDS)
+				for x in allMem:
+					if str(x.id) in gourpIDS:
+						x.status = 'checked'
+					else:
+						x.status = 'unchecked'
+
+	return render(request,'memGroupEdit.html',locals())
+
+def memGroupSave(request):
+	try:
+		groupID = request.POST.get('groupID')
+		if groupID:
+			r = userGroup.objects.get(id=groupID)
+		else:
+			r = userGroup(groupName=request.POST.get('groupName'))
+	except:
+		r = userGroup(groupName=request.POST.get('groupName'))
+	finally:
+		r.groupName = request.POST.get('groupName')
+		r.des = request.POST.get('des')
+		if request.POST.get('groupListBox'):
+			groupUser = request.POST.getlist('groupListBox')
+			r.groupUser = json.dumps(groupUser)
+		r.save()
+	return HttpResponseRedirect('/auto/memGroupList')

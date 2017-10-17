@@ -1,0 +1,12 @@
+<h3>测试进度</h3>
+<div class="progress">
+  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow={{num}} aria-valuemin="0" aria-valuemax="100" style="width: {{num}}%">
+    <span>{{num}}% Complete</span>
+  </div>
+</div>
+{% if num == 100 %}<h5>测试完成<br>若报告不完整，请手动刷一次查看完整报告</h5>{%endif%}
+<script>
+    {% if num == 100 %}
+    clearInterval(ref);
+    {%endif%}
+</script>

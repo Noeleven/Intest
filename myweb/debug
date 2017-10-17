@@ -3,5 +3,6 @@
 runpid=`ps aux|grep runserver |awk '{print$2}'`
 
 kill $runpid
-python manage.py runserver 0.0.0.0:8000
+#nohup /root/.pyenv/versions/3.5.1/bin/python manage.py runserver 0.0.0.0:8000 >8000.log 2>&1 &
+/root/.pyenv/versions/3.5.1/bin/python manage.py runserver 0.0.0.0:8000
 

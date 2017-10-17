@@ -117,6 +117,7 @@ def stopJenkins(request):
 	stopList = []
 	for x in device:
 		server = jenkins.Jenkins(x.url, username=x.username, password=x.password)
+
 		# 检查队列
 		queue = server.get_queue_info()
 		if queue:

@@ -22,6 +22,9 @@ for x in timeStamp:
 	name = caseGroup.objects.get(id=x['groupId']).groupName
 	url = ('http://127.0.0.1:8000/auto/sendMail?timeStamp=%s&ver=%s&name=%s' %
 		(x['timeStamp'], x['Version'], name))
+	#url = ('http://127.0.0.1:8000/auto/api_report?timeStamp=%s&ver=%s&name=%s' %
+	#	(x['timeStamp'], x['Version'], name))
+	
 	r = requests.get(url)
 
 

@@ -1,0 +1,38 @@
+{% load staticfiles %}
+<table data-toggle="table" data-striped="true" data-row-style="rowStyle">
+	<h3>近一周自动构建失败用例总数{{allFailedNum}} | TOP5 失败用例</h3>
+	<thead>
+		<tr>
+			<th data-field="ID" class="col-xs-1"> ID</th>
+			<th data-field="用例名称" data-sortable="true" class="col-xs-2">
+				用例名称
+			</th>
+			<th data-field="失败次数" data-sortable="true" class="col-xs-1">
+				失败次数
+			</th>
+			<th data-field="版本" data-sortable="true" class="col-xs-1">
+				版本
+			</th>
+			<th data-field="品类" data-sortable="true" class="col-xs-1">
+				品类
+			</th>
+			<th data-field="平台" data-sortable="true" class="col-xs-1">
+				平台
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for x in topTable %}
+	<tr>
+		<td>{{ x.id }}</td>
+		<td>{{ x.caseName }}</td>
+		<td>{{ x.times }}</td>
+		<td>{{ x.ver }}</td>
+		<td>{{ x.type }}</td>
+		<td>{{ x.plat }}</td>
+	</tr>
+	{% endfor %}
+	</tbody>
+</table>
+<script src="{% static 'js/bootstrap-table.min.js' %}"></script>
+<script src="{% static 'js/bootstrap-table-zh-CN.min.js' %}"></script>

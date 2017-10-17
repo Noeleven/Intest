@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title> 用例管理 </title>
+    <title> Automatic System </title>
 	{% load staticfiles %}
     <!-- Bootstrap -->
 	<link rel="shortcut icon" href="{% static 'favicon.ico'%}">
@@ -18,12 +18,14 @@
     <!-- Custom Theme Style -->
     <link href="{% static 'vendors/custom.min.css' %}" rel="stylesheet">
 	<link href="{% static 'css/bootstrap-table.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/select2.min.css' %}" rel="stylesheet">
+	<link href="{% static 'vendors/jquery-editable-select.min.css' %}" rel="stylesheet">
+
     <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
     <!-- jquery-editable-select -->
     <script src="{% static 'vendors/jquery-editable-select.min.js' %}"></script>
-	<link href="{% static 'vendors/jquery-editable-select.min.css' %}" rel="stylesheet">
-    <link href="{% static 'css/select2.min.css' %}" rel="stylesheet">
     <script src="{% static 'js/select2.min.js' %}"></script>
+
     <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script> -->
 
@@ -69,6 +71,7 @@
             background-color: #222d32;
             border-color: #222d32;
         }
+
     </style>
   </head>
 
@@ -79,7 +82,10 @@
 			<div class="left_col scroll-view">
 
 				<div class="navbar nav_title">
-					<a  id="menu_toggle" class="site_title"><i class="fa fa-bars"></i> 自动化</a>
+					<a id="menu_toggle" class="site_title in-line">
+                        <img src="{% static 'aboutLv.png' %}" style='height:40px;width=40px;'>
+                    	<b>AMS</b>
+                    </a>
 				</div>
 
 				<br>
@@ -88,30 +94,30 @@
 						<hr>
 						<h3></h3>
 						<ul class="nav side-menu">
-                            <li><a href="/auto/auto_search"><i class="fa fa-search xwcms"></i> 用例查询</a></li>
-                            <li><a href="/auto/auto_group"><i class="fa fa-group xwcms"></i> 用例集管理</a></li>
-                            {% for x in nav_list %}
-                                {% if x.type == '废弃'%}
-                                    <li><a href="/auto/auto_list?my_type={{x.type}}"><i class="fa fa-trash xwcms"></i> {{ x.type }} <span class="badge badge-red">{{ x.num }}</span></a></li>
-                                {% elif x.type == '过期' %}
-                                    <li><a href="/auto/auto_list?my_type={{x.type}}"><i class="fa fa-flag xwcms"></i> {{ x.type }} <span class="badge badge-red">{{ x.num }}</span></a></li>
-                                {% else %}
-                                    <li><a href="/auto/auto_list?my_type={{x.type}}"><i class="fa fa-paperclip xwcms"></i> {{ x.type }} <span class="badge badge-red">{{ x.num }}</span></a></li>
-                                {% endif %}
-                            {% endfor %}
+                            <li><a href="/auto/autoSearch"><i class="fa fa-search xwcms"></i> 用例查询</a></li>
+                            <li><a><i class="fa fa-clone"></i> 每日构建用例集 <span class="fa fa-chevron-down"></span></a>
+                                <ul class="nav child_menu" style="display: none;">
+                                    {% for x in nav_list.groupShow %}
+                                    <li><a href="/auto/showCaseList?groupId={{x.id}}">{{x.groupName}}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                            <li><a href="/auto/memGroupList"><i class="fa fa-group xwcms"></i> 小组管理</a></li>
+                            <li><a href="/auto/reportList"><i class="fa fa-bullhorn xwcms"></i> 测试报告</a></li>
+                            <li><a href="/auto/groupList"><i class="fa fa-object-group xwcms"></i> 用例集管理</a></li>
+                            <li><a href="/auto/autoReport"><i class="fa fa-area-chart xwcms"></i> 一周报告</a></li>
+                            <li><a href="/auto/showCaseList?type=trash"><i class="fa fa-trash xwcms"></i> 废弃用例 <span class="badge badge-red">{{ nav_list.trashDict }}</span></a></li>
+                            <li><a href="/auto/showCaseList?type=ex"><i class="fa fa-flag xwcms"></i> 过期用例 <span class="badge badge-red">{{ nav_list.exDict }}</span></a></li>
 						</ul>
 					</div>
 				</div>
 			</div>
 		</div>
 
-        <!-- page content -->
-		<!-- <script src="{% static 'js/echarts.min.js' %}" charset="UTF-8"></script> -->
         <div id ='right_col' class="right_col" role="main">
 		{% block content %}
 		{% endblock content %}
 		</div>
-        <!-- <p id="mm">{{message}}</p> -->
       </div>
     </div>
 
@@ -123,16 +129,11 @@
                     <h4 class="modal-title"> 用例复制 </h4>
                 </div>
                 <div class="modal-body">
-                    <form>
-                        <div class="form-group">
-                            <label for="recipient-name" class="control-label">用例重命名</label>
-                            <input type="text" class="form-control" id="recipientName" required="required">
-                        </div>
-                    </form>
-                    <div id='copymess' class="alert alert-info" style="display:none"></div>
+                    <h3>Are You Sure?</h3>
+                    <div id='copymess' class="alert" style="display:none"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-success"  name="copyThis"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 提交</button>
+                    <button type="submit" class="btn btn-success" id='makeSure' name="copyThis"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 提交</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span> 返回</button>
                 </div>
             </div>
@@ -140,11 +141,15 @@
     </div>
 
 	<script src="{% static 'dist/js/bootstrap.min.js' %}"></script>
-	<script src="{% static 'js/bootstrap-table.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap-table.js' %}"></script>
 	<script src="{% static 'js/bootstrap-table-zh-CN.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap-table-export.js' %}"></script>
+    <script src="{% static 'js/tableExport.js' %}"></script>
+    <script src="{% static 'js/bootstrap-table-editable.js' %}"></script>
+    <script src="{% static 'js/bootstrap-editable.js' %}"></script>
     <!-- FastClick -->
     <script src="{% static 'vendors/fastclick.js' %}"></script>
-    <script src="{% static 'vendors/randomColor.min.js' %}"></script>
+    <!-- <script src="{% static 'vendors/randomColor.min.js' %}"></script> -->
     <!-- NProgress -->
     <script src="{% static 'vendors/nprogress.js' %}"></script>
     <!-- Custom Theme Scripts -->
@@ -167,21 +172,11 @@
     <script>
         $(document).ready(function(){
             $('#copyModal').on('show.bs.modal', function (e) {
-                // 通过data-xxx 传递参数
                 var btn = $(e.relatedTarget),
                     id = btn.data("index");
                 $(this).find('[name="copyThis"]').click(function(){
-                    cName = $('#recipientName').val();
-                    $.get("/auto/auto_copy",{'id':id,'cName':cName}, function(data,status){
-                        if (status == 'success' && data == '0') {
-                            $('#copymess').text('用例名称已存在，请重新输入');
-                        } else if (status == 'success' && data == '1') {
-                            $('#copymess').text('复制成功');
-                        } else if (status == 'success' && data == '3') {
-                            $('#copymess').text('请输入用例名称');
-                        } else {
-                            $('#copymess').text('copy请求失败，请联系管理员确认服务');
-                        };
+                    $.get("/auto/auto_copy",{'id':id}, function(data,status){
+                        $('#copymess').text(data);
                     });
                     $('#copymess').css('display','block');
                 });
@@ -192,7 +187,7 @@
             });
         });
     </script>
-    <script>
+    <!-- <script>
         $('input').bind('input propertychange', function() {
             if($(this))
             // console.log($(this).val());
@@ -205,7 +200,7 @@
                 }
             }
         });
-    </script>
+    </script> -->
     <script type="text/javascript">
         $(".selectMulti").select2();
     </script>

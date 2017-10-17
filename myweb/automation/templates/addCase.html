@@ -1,0 +1,131 @@
+{% extends "auto_base.html" %} {% block content %}
+<div class="row">
+    <div class="panel panel-black">
+        <div class="panel-heading"> 添加用例 </div>
+        <div class="panel-body">
+            <form class="form-horizontal" role="form" method='GET' action="/auto/saveCaseBaseInfo">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="caseName" class="col-sm-3 control-label" readonly></label>
+                    <div class="col-sm-6"><strong class="text-danger">带 <strong class="text-danger">*</strong> 为必填项, 用例名禁止使用特殊符号</strong></div>
+                </div>
+                <div id="helpBlock1" class="form-group">
+                    <label for="caseName" class="col-sm-3 control-label">用例名称 <strong class="text-danger">*</strong> </label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control focus input-sm" name="caseName" autofocus="autofocus" placeholder="格式建议：品类-用例名" required="required" />
+                        <span id="helpBlock2" class="help-block" style='display:none'>用例名称已存在</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="type" class="col-sm-3 control-label">品类 <strong class="text-danger">*</strong> </label>
+                    <div class="col-sm-6 form-inline">
+                        <select class="form-control input-sm" name='type'>
+                            {% for x in type_list %}
+                            <option>{{ x.type_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <!-- <div class="form-group">
+                    <label for="caseTag" class="col-sm-3 control-label">标签 <strong class="text-danger">*</strong> </label>
+                    <div class="col-sm-6">
+                        <select multiple class="form-control input-sm selectMulti" name='caseTag' multiple="multiple" placeholder='支持关键字筛选'>
+                            {% for x in case_tag %}
+                            <option value={{x.tagName}}>{{ x.tagName }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div> -->
+                <div class="form-group">
+                    <label for="plantform" class="col-sm-3 control-label">平台 <strong class="text-danger">*</strong> </label>
+                    <div class="col-sm-6">
+                        <label class="radio-inline">
+                          <input type="radio" name="plantform" id="Android" value="Android" checked="True"> Android
+                        </label>
+                        <label class="radio-inline">
+                          <input type="radio" name="plantform" id="iOS" value="iOS"> iOS
+                        </label>
+                        <label class="radio-inline">
+                          <input type="radio" name="plantform" id="M" value="M"> M
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="version" class="col-sm-3 control-label">版本 <strong class="text-danger">*</strong> </label>
+                    <div class="col-sm-6">
+                        <select class="form-control input-sm" name='version'>
+                            {% for x in versionList %}
+                            <option>{{ x }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="groupId" class="col-sm-3 control-label">用例集 <strong class="text-danger">*</strong> </label>
+                    <div class="col-sm-6">
+                        <select multiple class="form-control input-sm selectMulti" name='groupId' multiple="multiple" placeholder='支持关键字筛选'>
+                            {% for x in caseGroupList %}
+                            <option value={{x.id}} selected>{{ x.groupName }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="canUse" class="col-sm-3 control-label">用例状态 <strong class="text-danger">*</strong> </label>
+                    <div class="col-sm-6" name='use_or_not'>
+                        <label class="radio-inline">
+                          <input type="radio" name="canUse" id="inlineRadio1" value="use" checked="True"> 在用
+                        </label>
+                        <label class="radio-inline">
+                          <input type="radio" name="canUse" id="inlineRadio2" value="nouse"> 弃用
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="owner" class="col-sm-3 control-label">创建者 <strong class="text-danger">*</strong> </label>
+                    <div class="col-sm-6">
+                        <select class="form-control input-sm" name='owner'>
+                            {% for x in user_list %}
+                            <option>{{ x }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="caseDes" class="col-sm-3 control-label">备注</label>
+                    <div class="col-sm-6">
+                        <textarea type="text" class="form-control input-sm" name="caseDes" placeholder="备注说明" rows='3'/></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-3 col-sm-6">
+                        <input type="submit" class="btn btn-primary btn-sm" id="followMe" name='yes' value="继续">
+                        <a type="submit" class="btn btn-default btn-sm" href='/auto/'>返回</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    // 校验用例名
+    var casenames = {{ casenames|safe }}
+    $('input[name="caseName"]').bind('input propertychange', function() {
+        // console.log($(this).val());
+        for(arr in casenames){
+            if($(this).val() == casenames[arr]){
+                $('#helpBlock1').attr('class','form-group has-error');
+                $('#helpBlock2').css('display','block');
+                $('#followMe').attr('disabled',true);
+                break;
+            }
+            else{
+                $('#helpBlock1').attr('class','form-group');
+                $('#helpBlock2').css('display','none');
+                $('#followMe').attr('disabled',false);
+            }
+        }
+    });
+</script>
+
+{% endblock content %}

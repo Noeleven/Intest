@@ -9,6 +9,7 @@ class caseType(models.Model):
     type_name = models.CharField(blank=True, max_length=100)
     type_field = models.CharField(blank=True, max_length=100)
     modify_time = models.DateTimeField(blank=True, auto_now=True)
+    create_time = models.DateTimeField(auto_now_add=True,blank=True)
 
     def __str__(self):
         return self.type_field
@@ -38,13 +39,18 @@ class deviceList(models.Model):
     in_use = models.CharField(max_length=2,
         choices=USE_CHOICE,
         default='1')
+    modify_time = models.DateTimeField(auto_now=True,blank=True)
+    create_time = models.DateTimeField(auto_now_add=True,blank=True)
+
     def __str__(self):
         return self.deviceName
 
 class myConfig(models.Model):
     caseStr = models.TextField()
+    timeStamp = models.TextField()
     device = models.CharField(max_length=100)
-    modify_time = models.DateTimeField(blank=True, auto_now=True)
+    modify_time = models.DateTimeField(auto_now=True,blank=True)
+    create_time = models.DateTimeField(auto_now_add=True,blank=True)
 
 class caseList(models.Model):
     caseName = models.CharField(max_length=300)
@@ -58,12 +64,18 @@ class caseList(models.Model):
     in_use = models.CharField(max_length=2,
         choices=USE_CHOICE,
         default='1')
-    modify_time = models.DateTimeField(auto_now=True)
+    groupId = models.CharField(max_length=100, blank=True)
     owner = models.CharField(max_length=100)
+    buildTime = models.IntegerField(blank=True, null=True)
+    modify_time = models.DateTimeField(auto_now=True,blank=True)
+    create_time = models.DateTimeField(auto_now_add=True,blank=True)
 
 class caseVersion(models.Model):
     versionStr = models.CharField(max_length=10)
-    des = models.TextField(blank=True,)
+    des = models.TextField(blank=True)
+    modify_time = models.DateTimeField(auto_now=True,blank=True)
+    create_time = models.DateTimeField(auto_now_add=True,blank=True)
+
     def __str__(self):
         return self.versionStr
 
@@ -76,6 +88,8 @@ class controlList(models.Model):
         default='0')
     TYPE = models.CharField(max_length=100, default='action')
     versionStr = models.ManyToManyField(caseVersion)
+    modify_time = models.DateTimeField(auto_now=True,blank=True)
+    create_time = models.DateTimeField(auto_now_add=True,blank=True)
 
 class caseUser(models.Model):
     userName = models.CharField(max_length=100)
@@ -84,7 +98,12 @@ class caseUser(models.Model):
     userStatus = models.CharField(max_length=2,
         choices=TYPE_CHOICE,
         default='1')
-    des = models.TextField(blank=True,)
+    des = models.TextField(blank=True)
+    modify_time = models.DateTimeField(auto_now=True,blank=True)
+    create_time = models.DateTimeField(auto_now_add=True,blank=True)
+
+    def __str__(self):
+        return self.userName
 
 class reportsList(models.Model):
     timeStamp = models.TextField()
@@ -92,22 +111,26 @@ class reportsList(models.Model):
     reportURL = models.CharField(max_length=200,blank=True)
     status = models.CharField(max_length=50,blank=True)
     deviceName = models.ForeignKey(deviceList)
-    create_time = models.DateTimeField(auto_now=True)
+    modify_time = models.DateTimeField(auto_now=True,blank=True)
+    create_time = models.DateTimeField(auto_now_add=True,blank=True)
 
 class testRecording(models.Model):
     Version = models.CharField(max_length=10, blank=True)
     timeStamp = models.CharField(max_length=100)
     groupId = models.CharField(max_length=100, blank=True)
     flag = models.CharField(max_length=10, blank=True)
-    createTime = models.DateField(auto_now=True)
+    status = models.CharField(max_length=10, blank=True, verbose_name='用例集构建状态')
+    modify_time = models.DateTimeField(auto_now=True,blank=True)
+    create_time = models.DateField(auto_now_add=True,blank=True)
 
 class allBookRecording(models.Model):
     caseName = models.CharField(max_length=300)
+    caseID = models.CharField(max_length=300, blank=True)
     status = models.CharField(max_length=50,blank=True)
     testResultDoc = models.TextField()
     timeStamp = models.CharField(max_length=100)
     usedTime = models.CharField(max_length=100, default='0')
-    create_time = models.DateTimeField(auto_now=True)
+    create_time = models.DateTimeField(auto_now_add=True,blank=True)
 
 class caseGroup(models.Model):
     groupName = models.CharField(max_length=300)
@@ -119,14 +142,29 @@ class caseGroup(models.Model):
     status = models.CharField(max_length=2,
         choices=TYPE_CHOICE,
         default='1')
-    modify_time = models.DateTimeField(auto_now=True)
+    modify_time = models.DateTimeField(auto_now=True,blank=True)
+    create_time = models.DateTimeField(auto_now_add=True,blank=True)
 
 class caseTag(models.Model):
     tagName = models.CharField(blank=True, max_length=100)
     type_field = models.ForeignKey(caseType)
+    modify_time = models.DateTimeField(auto_now=True,blank=True)
+    create_time = models.DateTimeField(auto_now_add=True,blank=True)
 
     def __str__(self):
         return self.tagName
+
+class history(models.Model):
+    operationTime = models.DateTimeField(blank=True, default=datetime.datetime.now)
+    remoteIp = models.CharField(blank=True, max_length=100)
+    operation = models.TextField(blank=True)
+
+class userGroup(models.Model):
+    groupName = models.CharField(max_length=256, verbose_name='组名')
+    groupUser = models.TextField(blank=True, null=True, verbose_name='成员')
+    des = models.TextField(blank=True, verbose_name='描述')
+    modify_time = models.DateTimeField(auto_now=True,blank=True)
+    create_time = models.DateTimeField(auto_now_add=True,blank=True)
 
 # ListAdmin
 
@@ -159,9 +197,9 @@ class caseVersionAdmin(admin.ModelAdmin):
     search_fields = ['versionStr', 'des']
 
 class deviceListAdmin(admin.ModelAdmin):
-    list_display = ('deviceName','deviceIP','job_name','appVersion','platformVersion')
+    list_display = ('deviceName','url','job_name','appVersion','platformVersion')
     list_per_page = 30
-    search_fields = ['deviceName','deviceIP','job_name','appVersion','platformVersion']
+    search_fields = ['deviceName','url','job_name','appVersion','platformVersion']
 
 class reportsListAdmin(admin.ModelAdmin):
     list_display = ('buildNUM','status','deviceName', 'create_time','timeStamp')

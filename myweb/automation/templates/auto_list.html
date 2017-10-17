@@ -12,18 +12,20 @@
             </ul>
             <div class="tab-content">
               <div role="tabpanel" class="tab-pane fade in active" id="ad">
-                <br>
-                    {% for x in device_list %}
-                        {% if x.platformName == 'Android'%}
-                        <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">AD#{{ x.deviceName }}#{{ x.appVersion }}</a>
-                        {%endif%}
-                    {% endfor %}
+                  <br>
+                  {% for x in device_list %}
+                    {% if x.platformName == 'Android'%}
+                      <a type='submit' name='{{x.platformName}}' class='btn btn-sm {% if x.queue %}btn-danger{% elif x.status %}btn-warning{% elif x.broken %}btn-default{% else %}btn-success
+                      {% endif %} getCases' {% if x.broken %}disabled="disabled"{% endif %}>{{ x.deviceName }}#{{ x.appVersion }}</a>
+                      {%endif%}
+                  {% endfor %}
               </div>
               <div role="tabpanel" class="tab-pane fade" id="ios">
                   <br>
                   {% for x in device_list %}
                       {% if x.platformName == 'iOS'%}
-                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">iOS#{{ x.deviceName }}#{{ x.appVersion }}</a>
+                      <a type='submit' name='{{x.platformName}}' class='btn btn-sm {% if x.queue %}btn-danger{% elif x.status %}btn-warning{% elif x.broken %}btn-default{% else %}btn-success
+                      {% endif %} getCases' {% if x.broken %}disabled="disabled"{% endif %}>{{ x.deviceName }}#{{ x.appVersion }}</a>
                       {%endif%}
                   {% endfor %}
               </div>
@@ -31,11 +33,12 @@
                   <br>
                   {% for x in device_list %}
                       {% if x.platformName == 'M'%}
-                      <a type='submit' name='{{x.platformName}}' class="btn btn-success btn-sm getCases">M站#{{ x.deviceName }}#{{ x.appVersion }}</a>
+                      <a type='submit' name='{{x.platformName}}' class='btn btn-sm {% if x.queue %}btn-danger{% elif x.status %}btn-warning{% elif x.broken %}btn-default{% else %}btn-success
+                      {% endif %} getCases' {% if x.broken %}disabled="disabled"{% endif %}>{{ x.deviceName }}#{{ x.appVersion }}</a>
                       {%endif%}
                   {% endfor %}
               </div>
-            </div>
+            </div><hr>
             <hr>
             {% if tag_list %}
             <div class="btn-group btn-group-sm col-md-6">
@@ -46,11 +49,11 @@
             </div>
             {% endif %}
             <div class="btn-group btn-group-sm pull-right">
-                <a href='/auto/new_add' type='button' class='btn btn-primary'><span class="glyphicon glyphicon-plus xwcms"></span> 新增用例</a>
+                <a href='/auto/addCase' type='button' class='btn btn-primary'><span class="glyphicon glyphicon-plus xwcms"></span> 新增用例</a>
                 <button type="submit" class="btn btn-primary" id="makeGroup"><span class="glyphicon glyphicon-plus xwcms" aria-hidden="true"></span> 添加到用例集</button>
                 <button type="submit" class="btn btn-warning" id="exCases"><span class="glyphicon glyphicon-flag xwcms" aria-hidden="true"></span> 置为过期</button>
                 <button type="submit" class="btn btn-danger" id="delCases"><span class="glyphicon glyphicon-remove xwcms" aria-hidden="true"></span> 批量删除</button>
-                <a href="/auto/test_list" type='button' class='btn btn-default' target="_blank"><i class="fa fa-bullhorn xwcms"></i> 测试报告</a>
+                <a href="/auto/reportList" type='button' class='btn btn-default' target="_blank"><i class="fa fa-bullhorn xwcms"></i> 测试报告</a>
             </div>
 
             <div id='delconfirm' class="alert alert-default alert-dismissible fade in" role="alert" style="display:none">
@@ -117,7 +120,7 @@
         				<td>{{ x.des }}</td>
         				<td>{% if x.in_use == '1' %}<span class='label label-success'>在用</span>{% elif x.in_use == '2'%}<span class='label label-warning'>过期</span>{% else %}<span class='label label-danger'>废弃</span>{% endif %}</td>
         				<td>{{ x.modify_time|date:"Y-m-d H:i:s" }}</td>
-        				<td><a type='button' class="btn btn-sm btn-default" href="/auto/ver_confirm/{{ x.id }}/"><span class="glyphicon glyphicon-pencil xwcms" aria-hidden="true"></span> 编辑</a>
+        				<td><a type='button' class="btn btn-sm btn-default" href="/auto/caseConfirm/{{ x.id }}/"><span class="glyphicon glyphicon-pencil xwcms" aria-hidden="true"></span> 编辑</a>
                             <button type="submit" class="btn btn-default btn-sm" data-index="{{ x.id }}" data-toggle="modal" data-target="#copyModal"><span class="glyphicon glyphicon-camera xwcms" aria-hidden="true"></span> 复制</button>
                         </td>
                     </tr>
@@ -134,7 +137,7 @@
         $(".getCases").click(function(){
             var valArr = new Array;
                 plantArr = new Array;
-                device = $(this).html().split('#')[1];
+                device = $(this).html().split('#')[0];
                 plat = $(this).attr('name');
             $('input[name="btSelectItem"]:checked').each(function(i){
                 valArr[i] = $(this).parent().next().text();
@@ -150,13 +153,14 @@
                     break;
                 }
             }
-            console.log(device, vals, plantArr, plat)
+            // console.log(device, vals, plantArr, plat)
             if(vals){
                 if(pass=='pass'){
-                    $.get("/auto/auto_config",{'vals':vals,'device':device,'type':'single','isDay':''})
-                    $('#titleee').text('构建确认');
-                    $("#del_mess").text('构建中');
-                    $('#delconfirm').fadeOut(2000);
+                    $.get("/auto/auto_config",{'vals':vals,'device':device,'type':'single'},function(ret){
+                        $('#titleee').text('构建确认');
+                        $('#del_mess').html(ret)
+                        $('#del_butt').fadeOut(0);
+                    })
                 }else{
                     $('#titleee').text('构建确认');
                     $("#del_mess").text('所选用例的平台和当前构建设备不匹配，iOS用例就选iOS构建，不要混用');
@@ -255,7 +259,7 @@
     $(document).ready(function(){
         $(".tagger").click(function(){
             var mixChan = $(this).attr('id')
-            $.get("/auto/tag_search",{'mixChan':mixChan}, function(ret){
+            $.get("/auto/tagSearch",{'mixChan':mixChan}, function(ret){
                 $('#page_down').html(ret)
             })
         });

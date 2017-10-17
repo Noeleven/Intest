@@ -58,9 +58,6 @@ def count_All(a, b):
 	return datas
 
 # Create your views here.
-# 老听云项目
-# def tyreport(request):
-	# return render(request, 'TYreport.html')
 
 # 总导航页
 def index(request):
@@ -96,7 +93,7 @@ def logout(request):
 
 # 概览
 @login_required
-@cache_page(5)
+# @cache_page(28800)
 def ty_Overview(request):
 	# 响应占比
 	ints_rate_all = Rates.objects.all().order_by('-des')
@@ -237,102 +234,228 @@ def ty_Overview(request):
 		view_show_ios[x['name']] = datas
 	return render_to_response('ty_overview.html', locals())
 
-
-# 版本分
 @login_required
-@cache_page(300)
-def ty_Android_All(request):
-	username = request.session.get('user', '')
-	check = request.GET
-	try:
-		params = check['checkall']
-		if params == '1':
-			datas = count_All('android', 0)
-		else:
-			datas = count_All('android', 3)
-	except:
-		datas = count_All('android', 3)
+# @cache_page(28800)
+def newCrash(request):
+	dateto = datetime.datetime.now()
+	datefrom = dateto - datetime.timedelta(days=30)
+	# 数据源
+	source = newData.objects.filter(date__range=(datefrom, dateto)).filter(type='crash')
+	# 时间表
+	dateList = [x['date'].strftime("%Y-%m-%d") for x in source.values('date').distinct().order_by('date')]
 
-	return render_to_response('ty_Android_All.html', {'datas':datas,})
+	# AD崩溃率
+	ADcrash = source.filter(platform='AD')
+	iOScrash = source.filter(platform='iOS')
+	ADver = [x['name'].split('(')[0] for x in ADcrash.values('name').distinct()]
+	ADver.sort(key=lambda x:tuple(int(v) for v in x.split('.')))
+	ADver = ADver[-3:]
 
-
-@login_required
-@cache_page(300)
-def ty_IOS_All(request):
-	check = request.GET
-	try:
-		params = check['checkall']
-		if params == '1':
-			datas = count_All('ios', 0)
-		else:
-			datas = count_All('ios', 3)
-	except:
-		datas = count_All('ios', 3)
-
-	return render_to_response('ty_IOS_All.html', {'datas':datas,})
-
-
-# 主机分布
-@login_required
-@cache_page(300)
-def ty_siteApi3g2(request):
-	check = request.GET
-	try:
-		params = check['checkall']
-		if params == '1':
-			datas = RR.objects.filter(hostId='Api3g2')
-		else:
-			datas = RR.objects.filter(hostId='Api3g2').filter(response__gt=2).filter(rpm__gt=100)
-	except:
-		datas = RR.objects.filter(hostId='Api3g2').filter(response__gt=2).filter(rpm__gt=100)
-	return render_to_response('ty_siteApi3g2.html', {'datas':datas,})
-
-
-@login_required
-@cache_page(300)
-def ty_siteApi3g(request):
-	datas = RR.objects.filter(hostId='Api3g')
-	return render_to_response('ty_siteApi3g.html', {'datas':datas,})
-
-
-@login_required
-@cache_page(300)
-def ty_siteM(request):
-	datas = RR.objects.filter(hostId='siteM')
-	return render_to_response('ty_siteM.html', {'datas':datas,})
-
-
-# 汇总
-@login_required
-@cache_page(300)
-def ty_rpmAll(request):
-	src = RR.objects.values('method', 'version', 'lvversion').distinct()
-	datas = []
-	for x in src:
-		data_list = RR.objects.filter(method=x['method']).filter(version=x['version']).filter(lvversion=x['lvversion'])
-		res = round(sum([x.response for x in data_list]) / len(data_list), 2)
-		rpm = round(sum([x.rpm for x in data_list]) * 24 * 60)
-		dict = {
-					"hostId": data_list[0].hostId,
-					"method" : x['method'],
-					"version": x['version'],
-					"lvversion": x['lvversion'],
-					"des": data_list[0].des,
-					"res": res,
-					"rpm": rpm,
+	result = []
+	for x in ADver:
+		value,iOSvalue = [],[]
+		for y in dateList:
+			have = ADcrash.filter(date=y).filter(name__contains=x)
+			iOShave = iOScrash.filter(date=y).filter(name__contains=x)
+			if have:
+				value.append(str(have[0].value))
+			else:
+				value.append('')
+			if iOShave:
+				iOSvalue.append(str(iOShave[0].value))
+			else:
+				iOSvalue.append('')
+		tmp = {
+			'name':x,
+			'value':value,
+			'iOSvalue':iOSvalue
 		}
-		datas.append(dict)
-	return render_to_response('ty_rpmAll.html', {'datas':datas,})
+		result.append(tmp)
 
+	return render_to_response('newCrash.html', locals())
 
 @login_required
-@cache_page(300)
-def ty_fullLists(request):
-	datas = RR.objects.all().filter(time=time_des())
-	return render_to_response('ty_fullLists.html', {'datas':datas,})
+# @cache_page(28800)
+def newErr(request):
+	dateto = datetime.datetime.now()
+	datefrom = dateto - datetime.timedelta(days=30)
+	# 数据源
+	source = newData.objects.filter(date__range=(datefrom, dateto)).filter(type='error')
+	# 时间表
+	dateList = [x['date'].strftime("%Y-%m-%d") for x in source.values('date').distinct().order_by('date')]
+	# nameList,太多了 手工指定吧
+	nameList = source.exclude(name__contains='_').values('name','platform').distinct()
 
+	# nameList = [
+	# 	{'name': 'api3g.lvmama.com', 'platform': 'AD'},
+	# 	{'name': 'api3g.lvmama.com', 'platform': 'iOS'},
+	# 	{'name': 'm.lvmama.com', 'platform': 'AD'},
+	# 	{'name': 'm.lvmama.com', 'platform': 'iOS'},
+	# 	{'name': 'api3g2.lvmama.com', 'platform': 'AD'},
+	# 	{'name': 'api3g2.lvmama.com', 'platform': 'iOS'},
+	# 	{'name': 'static.lvmama.com', 'platform': 'AD'},
+	# 	{'name': 'static.lvmama.com', 'platform': 'iOS'},
+	# 	{'name': 'pic.lvmama.com', 'platform': 'AD'},
+	# 	{'name': 'pic.lvmama.com', 'platform': 'iOS'},
+	# 	{'name': 'api3g2.lvmama.com:443', 'platform': 'AD'},
+	# 	{'name': 'api3g2.lvmama.com:443', 'platform': 'iOS'},
+	# 	{'name': 'm.lvmama.com:443', 'platform': 'AD'},
+	# 	{'name': 'm.lvmama.com:443', 'platform': 'iOS'},
+	# 	{'name': 'loc.map.baidu.com', 'platform': 'AD'},
+	# 	{'name': 'api.map.baidu.com', 'platform': 'AD'},
+	# 	{'name': 'data.de.coremetrics.com', 'platform': 'AD'},
+	# 	{'name': 'data.de.coremetrics.com', 'platform': 'iOS'},
+	# 	{'name': 'alog.umeng.com', 'platform': 'AD'},
+	# 	{'name': 'alogs.umeng.com', 'platform': 'iOS'},
+	# 	{'name': 'v.admaster.com.cn', 'platform': 'AD'},
+	# 	{'name': 'v.admaster.com.cn', 'platform': 'iOS'},
+	# 	{'name': 'uop.umeng.com', 'platform': 'AD'},
+	# ]
 
-#关键元素
+	# result
+	result = []
+	for x in nameList:
+		if x['platform'] == 'AD':
+			if 'lvmama' in x['name']:
+				myType = 'ADself'
+			else:
+				myType = 'ADthird'
+		else:
+			if 'lvmama' in x['name']:
+				myType = 'IOSself'
+			else:
+				myType = 'IOSthird'
+
+		# 填入每天的数据
+		valueList = []
+		for y in dateList:
+			iHave = source.filter(name=x['name']).filter(platform=x['platform']).filter(date=y)
+			if iHave:
+				myValue = str(iHave[0].value)
+			else:
+				myValue = ''
+			valueList.append(myValue)
+
+		tmp = {
+			'name':x['name'],
+			'type':myType,
+			'value':valueList,
+		}
+		result.append(tmp)
+
+	return render_to_response('newErr.html', locals())
+
 @login_required
-def ty_keyElements(request):
-	return render(request, 'ty_keyElements.html')
+# @cache_page(28800)
+def newRes(request):
+	dateto = datetime.datetime.now()
+	datefrom = dateto - datetime.timedelta(days=30)
+	# 数据源
+	source = newData.objects.filter(date__range=(datefrom, dateto)).filter(type='response')
+	# 时间表
+	dateList = [x['date'].strftime("%Y-%m-%d") for x in source.values('date').distinct().order_by('date')]
+	# nameList
+	nameList = source.values('name','platform').distinct()
+	# nameList = [
+	# 	{'name': 'api3g.lvmama.com', 'platform': 'AD'},
+	# 	{'name': 'api3g.lvmama.com', 'platform': 'iOS'},
+	# 	{'name': 'm.lvmama.com', 'platform': 'AD'},
+	# 	{'name': 'm.lvmama.com', 'platform': 'iOS'},
+	# 	{'name': 'api3g2.lvmama.com', 'platform': 'AD'},
+	# 	{'name': 'api3g2.lvmama.com', 'platform': 'iOS'},
+	# 	{'name': 'static.lvmama.com', 'platform': 'AD'},
+	# 	{'name': 'static.lvmama.com', 'platform': 'iOS'},
+	# 	{'name': 'pic.lvmama.com', 'platform': 'AD'},
+	# 	{'name': 'pic.lvmama.com', 'platform': 'iOS'},
+	# 	{'name': 'api3g2.lvmama.com:443', 'platform': 'AD'},
+	# 	{'name': 'api3g2.lvmama.com:443', 'platform': 'iOS'},
+	# 	{'name': 'm.lvmama.com:443', 'platform': 'AD'},
+	# 	{'name': 'm.lvmama.com:443', 'platform': 'iOS'},
+	# 	{'name': 'loc.map.baidu.com', 'platform': 'AD'},
+	# 	{'name': 'api.map.baidu.com', 'platform': 'AD'},
+	# 	{'name': 'data.de.coremetrics.com', 'platform': 'AD'},
+	# 	{'name': 'data.de.coremetrics.com', 'platform': 'iOS'},
+	# 	{'name': 'alog.umeng.com', 'platform': 'AD'},
+	# 	{'name': 'alogs.umeng.com', 'platform': 'iOS'},
+	# 	{'name': 'v.admaster.com.cn', 'platform': 'AD'},
+	# 	{'name': 'v.admaster.com.cn', 'platform': 'iOS'},
+	# 	{'name': 'uop.umeng.com', 'platform': 'AD'},
+	# ]
+	# result
+	result = []
+	for x in nameList:
+		if x['platform'] == 'AD':
+			if 'lvmama' in x['name']:
+				myType = 'ADself'
+			else:
+				myType = 'ADthird'
+		else:
+			if 'lvmama' in x['name']:
+				myType = 'IOSself'
+			else:
+				myType = 'IOSthird'
+
+
+		# 填入每天的数据
+		valueList = []
+		for y in dateList:
+			iHave = source.filter(name=x['name']).filter(platform=x['platform']).filter(date=y)
+			if iHave:
+				myValue = str(iHave[0].value)
+			else:
+				myValue = ''
+			valueList.append(myValue)
+
+		tmp = {
+			'name':x['name'],
+			'type':myType,
+			'value':valueList,
+		}
+		result.append(tmp)
+
+	return render_to_response('newRes.html', locals())
+
+@login_required
+# @cache_page(28800)
+def newView(request):
+	dateto = datetime.datetime.now()
+	datefrom = dateto - datetime.timedelta(days=30)
+	# 数据源
+	source = newData.objects.filter(date__range=(datefrom, dateto)).filter(type='view')
+	# 时间表
+	dateList = [x['date'].strftime("%Y-%m-%d") for x in source.values('date').distinct().order_by('date')]
+	# nameList
+	nameList = source.values('name','platform').distinct()
+	legend = [x['name'] for x in nameList]
+	# result
+	result = []
+	for x in nameList:
+		if x['platform'] == 'AD':
+			myType = 'AD'
+		else:
+			myType = 'IOS'
+		# 填入每天的数据
+		valueList = []
+		for y in dateList:
+			iHave = source.filter(name=x['name']).filter(platform=x['platform']).filter(date=y)
+			if iHave:
+				myValue = str(iHave[0].value)
+			else:
+				myValue = ''
+			valueList.append(myValue)
+		# 过滤平均值小于0.5的数据，否则太多了
+		valid = [float(z) for z in valueList if z]
+		try:
+			avg = sum(valid) / len(valid)
+		except:
+			pass
+		else:
+			if avg > 0.5:
+				tmp = {
+					'name':x['name'],
+					'type':myType,
+					'value':valueList,
+				}
+				result.append(tmp)
+
+	return render_to_response('newView.html', locals())

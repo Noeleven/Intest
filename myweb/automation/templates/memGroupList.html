@@ -1,0 +1,48 @@
+{% extends "auto_base.html" %}
+{% block content %}
+<div class="row">
+    <div class="panel panel-black">
+        <div class="panel-heading"> 小组管理 </div>
+		<div class="panel-body">
+            <div class="btn-group btn-group-sm">
+                <a href='/auto/memGroupEdit' type='button' class='btn btn-primary'><span class="glyphicon glyphicon-plus xwcms"></span> 新增小组</a>
+            </div>
+		</div>
+
+        <table id="tableList" data-toggle="table" data-striped="true"  data-row-style="rowStyle" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-pagination="true" data-search="true">
+			<thead>
+				<tr>
+					<th data-field="小组名称" data-sortable="true" class="col-xs-2">
+						小组名称
+					</th>
+					<th data-field="成员数量" data-sortable="true" class="col-xs-1">
+						成员数量
+					</th>
+					<th data-field="描述" data-sortable="true" class="col-xs-2">
+					    描述
+					</th>
+                    <th data-field="修改时间" data-sortable="true" class="col-xs-1">
+						修改时间
+					</th>
+                    <th data-field="操作" data-sortable="true" class="col-xs-1">
+						操作
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+			{% for x in memGroup %}
+				<tr>
+    				<td>{{x.groupName}}</td>
+                    <td>{{x.count}}</td>
+    				<td>{{ x.des }}</td>
+    				<td>{{ x.modify_time|date:"Y-m-d H:i:s" }}</td>
+    				<td><a type='button' class="btn btn-sm btn-default" href="/auto/memGroupEdit?groupId={{x.id}}"><span class="glyphicon glyphicon-pencil xwcms" aria-hidden="true"></span> 编辑</a>
+                    </td>
+                </tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{% endblock content %}

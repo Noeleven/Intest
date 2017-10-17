@@ -12,9 +12,10 @@ from cobra.models import *
 import datetime
 import time
 
-
-# 更新线上method表到cobra_method表
-# 获取指定日期的接口表，res数据，rpm数据，存入我的库
+'''
+更新线上method表到cobra_method表
+获取指定日期的接口表，res数据，rpm数据，存入我的库
+'''
 
 def get_dates(yestoday_num):
 	cf = configparser.ConfigParser()
@@ -149,7 +150,13 @@ def save_datas(values, rpms, ress, channelNum, proNum):
 
 if __name__ == '__main__':
 	# define day_index num range
-	for x in range(580,595):
+	today = datetime.datetime.now()
+	begin = datetime.datetime(2016, 1, 1)
+	toNum =  (today - begin).days
+	print('今日index号是:%s' % toNum)
+	begin = input('请输入起始index:')
+	end = input('请输入结束index:')
+	for x in range(int(begin),int(end)):
 		start = get_dates(x)
 		values = start[0]
 		rpms = start[1]

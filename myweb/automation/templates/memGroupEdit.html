@@ -1,0 +1,65 @@
+{% extends "auto_base.html" %}
+{% load staticfiles %}
+{% block content %}
+<link href="{% static 'dist/css/bootstrap-duallistbox.min.css' %}" rel="stylesheet">
+<div class="row">
+    <div class="panel panel-black">
+        <div class="panel-heading"> 小组管理 </div>
+		<div class="panel-body">
+            <form class="form-horizontal" action='/auto/memGroupSave' method='post'>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="col-sm-2 control-label" >ID</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control input-sm" value="{{ group.id }}" name='groupID' readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">小组名</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control input-sm" value="{{ group.groupName }}" name='groupName' required>
+                    </div>
+                </div>
+
+                <div id="demoform" action="#" method="post" class="form-group">
+                    <label class="col-sm-2 control-label">组员管理 <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="左列是所有人员，右列是选中成员"></span></label>
+                    <div class="col-sm-10">
+                        <select multiple="multiple" size="20" name="groupListBox">
+                        {% for x in allMem %}
+                        <option value="{{ x.id }}" {% if x.status == 'checked' %}selected='selected'{% endif %}>{{ x.userName }}</option>
+                        {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">描述</label>
+                    <div class="col-sm-10">
+                        <textarea name='des' type="text" class="form-control input-sm">{{ group.des }}</textarea>
+                    </div>
+                </div>
+                <br>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-success">提交</button>
+                    <a type="submit" class="btn btn-default" href='/auto/memGroupList'>返回</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'dist/js/jquery.bootstrap-duallistbox.min.js' %}"></script>
+<script>
+  var demo1 = $('select[name="groupListBox"]').bootstrapDualListbox({
+      nonSelectedListLabel: 'Non-selected',
+      selectedListLabel: 'Selected',
+      preserveSelectionOnMove: 'moved',
+      moveOnSelect: false,
+    });
+  $("#demoform").submit(function() {
+    alert($('[name="groupListBox"]').val());
+    return false;
+  });
+</script>
+{% endblock content %}

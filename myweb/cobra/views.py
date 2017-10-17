@@ -69,55 +69,55 @@ def cobra_chart(request):
 	return render(request, 'cobra_chart.html', locals())
 
 @login_required
-@cache_page(10)
+# @cache_page(10)
 def cobra_datas(request):
 	if 'from_date' and 'to_date' in request.GET and request.GET['from_date'] is not '' and request.GET[
 		'to_date'] is not '':
-		y = int(request.GET['from_date'].split('-')[0])
-		m = int(request.GET['from_date'].split('-')[1])
-		d = int(request.GET['from_date'].split('-')[2])
+		foo = request.GET['from_date']
+		too = request.GET['to_date']
+		y,m,d = int(foo.split('-')[0]),int(foo.split('-')[1]),int(foo.split('-')[2])
 		date_from = datetime.datetime(y, m, d)
-		y = int(request.GET['to_date'].split('-')[0])
-		m = int(request.GET['to_date'].split('-')[1])
-		d = int(request.GET['to_date'].split('-')[2])
+		y,m,d = int(too.split('-')[0]),int(too.split('-')[1]),int(too.split('-')[2])
 		date_to = datetime.datetime(y, m, d)
-	else:
-		now = datetime.datetime.now()
-		week_ago = now - datetime.timedelta(days=30)
-		date_from = datetime.datetime(week_ago.year, week_ago.month, week_ago.day)
-		date_to = datetime.datetime(now.year, now.month, now.day)
-	range_list = Datas.objects.filter(create_time__range=(date_from, date_to))
-	# 统计时间范围内接口的平均耗时，访问量 访问量趋势图
-	method_list = [x['method_id'] for x in range_list.values('method_id').distinct().order_by('method_id')]
-	show_data = []
-	for x in method_list:
+
+		range_list = Datas.objects.filter(create_time__range=(date_from, date_to))
+
 		try:
-			source = Method.objects.get(id=x)
+			inter = request.GET['interface']
+			method_list = set([x.id for x in Method.objects.filter(method__contains=inter)])
 		except:
-			print('methodID:%s' % x)
-			continue
-		method = source.method
-		# 去空值和非正数
-		rpm_src = [x['rpm'] for x in range_list.filter(method_id=x).values('rpm') if x['rpm'] ]
-		my_dict = {
-			'id': source.id,
-			'method' : method,
-			'version': source.version,
-			'des' : source.des,
-			'type' : source.type,
-			'rpm' : round(sum([x for x in rpm_src if x > 0])),
-			}
-		if my_dict['rpm'] <= 0:
-			continue
-		else:
-			res_src = [x['res'] for x in range_list.filter(method_id=x).values('res') if x['res']]
-			res = [x for x in res_src if x > 0]
+			method_list = set([x.method_id for x in range_list])
+
+		show_data = []
+		for x in method_list:
 			try:
-				my_dict['res'] = round(sum(res) / len(res), 2)
+				source = Method.objects.get(id=x)
 			except:
-				my_dict['res'] = ''
-			show_data.append(my_dict)
-	return render(request, 'cobra_datas.html', {'show_data':show_data})
+				print('methodID %s not exist' % x)
+				continue
+			method = source.method
+			# 去空值和非正数
+			rpm_src = [x.rpm for x in range_list.filter(method_id=x) if x.rpm]
+			my_dict = {
+				'id': source.id,
+				'method' : method,
+				'version': source.version,
+				'des' : source.des,
+				'type' : source.type,
+				'rpm' : round(sum([x for x in rpm_src if x > 0])),
+				}
+			if my_dict['rpm'] <= 0:
+				continue
+			else:
+				res_src = [x.res for x in range_list.filter(method_id=x) if x.res]
+				res = [x for x in res_src if x > 0]
+				try:
+					my_dict['res'] = round(sum(res) / len(res), 2)
+				except:
+					my_dict['res'] = ''
+				show_data.append(my_dict)
+
+	return render(request, 'cobra_datas.html', locals())
 
 @login_required
 @cache_page(10)

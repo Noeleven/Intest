@@ -71,19 +71,24 @@ def cobra_chart(request):
 @login_required
 # @cache_page(10)
 def cobra_datas(request):
-	if 'from_date' and 'to_date' in request.GET and request.GET['from_date'] is not '' and request.GET[
-		'to_date'] is not '':
-		foo = request.GET['from_date']
-		too = request.GET['to_date']
-		y,m,d = int(foo.split('-')[0]),int(foo.split('-')[1]),int(foo.split('-')[2])
-		date_from = datetime.datetime(y, m, d)
-		y,m,d = int(too.split('-')[0]),int(too.split('-')[1]),int(too.split('-')[2])
-		date_to = datetime.datetime(y, m, d)
+	if request.method == 'POST':
+		print(request.POST)
+		if 'from_date' and 'to_date' in request.POST and request.POST['from_date'] is not '' and request.POST[
+			'to_date'] is not '':
+			foo = request.POST['from_date'] 
+			too = request.POST['to_date']
+			y,m,d = int(foo.split('-')[0]),int(foo.split('-')[1]),int(foo.split('-')[2])
+			date_from = datetime.datetime(y, m, d)
+			y,m,d = int(too.split('-')[0]),int(too.split('-')[1]),int(too.split('-')[2])
+			date_to = datetime.datetime(y, m, d)
+		else:
+			date_to = datetime.datetime.now()
+			date_from = date_to - datetime.timedelta(days=30)
 
 		range_list = Datas.objects.filter(create_time__range=(date_from, date_to))
 
 		try:
-			inter = request.GET['interface']
+			inter = request.POST['interface']
 			method_list = set([x.id for x in Method.objects.filter(method__contains=inter)])
 		except:
 			method_list = set([x.method_id for x in range_list])
@@ -127,11 +132,13 @@ def cobra_trace(request):
 	week_ago = now - datetime.timedelta(days=30)
 	date_from = datetime.datetime(week_ago.year, week_ago.month, week_ago.day)
 	date_to = datetime.datetime(now.year, now.month, now.day)
-	range_list = Datas.objects.filter(create_time__range=(date_from, date_to))
+	range_list = Datas.objects.filter(create_time__range=(date_from, date_to)).filter(rpm__gte=10)
 	time_label = [ x['create_time'] for x in range_list.values('create_time').distinct().order_by('create_time')]
+
 	# 确定接口范围
 	method_list = [ x['method_id'] for x in range_list.values('method_id').distinct().order_by('method_id')]
 	show_list = []
+
 	# 过滤接口，检测响应时间有没有>= 1的，如果有就保留，去掉都是毫毛级的稳定接口
 	for method in method_list:
 		res_list = [x.res for x in range_list.filter(method_id=method) if x.res]
@@ -152,6 +159,7 @@ def cobra_trace(request):
 			show_list.append(my_dict)
 		else:
 			continue
+
 	paginator = Paginator(show_list, 5)
 	page = request.GET.get('page')
 	try:

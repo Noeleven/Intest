@@ -1,5 +1,6 @@
 {% extends "auto_base.html" %}
 {% block content %}
+{% load staticfiles %}
 <div class="row">
     <div class="panel panel-black">
         <div class="panel-heading"> 用例查询 </div>
@@ -18,6 +19,7 @@
                   <li role="presentation" class="active"><a href="#ad" aria-controls="ad" role="tab" data-toggle="tab">Android 测试机</a></li>
                   <li role="presentation"><a href="#ios" aria-controls="ios" role="tab" data-toggle="tab">iOS 测试机</a></li>
                   <li role="presentation"><a href="#mm" aria-controls="mm" role="tab" data-toggle="tab">M站 测试机</a></li>
+                  <li role="presentation"><a href="#pc" aria-controls="pc" role="tab" data-toggle="tab">PC 测试机</a></li>
                 </ul>
                 <div class="tab-content">
                   <div role="tabpanel" class="tab-pane fade in active" id="ad">
@@ -47,6 +49,15 @@
                           {%endif%}
                       {% endfor %}
                   </div>
+                  <div role="tabpanel" class="tab-pane fade" id="pc">
+                      <br>
+                      {% for x in device_list %}
+                          {% if x.platformName == 'PC'%}
+                          <a type='submit' name='{{x.platformName}}' class='btn btn-sm {% if x.queue %}btn-danger{% elif x.status %}btn-warning{% elif x.broken %}btn-default{% else %}btn-success
+                          {% endif %} getCases' {% if x.broken %}disabled="disabled"{% endif %}>{{ x.deviceName }}#{{ x.appVersion }}</a>
+                          {%endif%}
+                      {% endfor %}
+                  </div>
                 </div>
             </div>
             <hr>
@@ -61,7 +72,7 @@
                         <div class="form-group">
                             <label for="plantform">平台</label>
                             <select multiple class="form-control input-sm" id="plantform" placeholder="平台">
-                                {% for x in plant %}
+                                {% for x in platform %}
                                 <option>{{ x }}</option>
                                 {% endfor %}
                             </select>
@@ -70,7 +81,7 @@
                             <label for="owner">所属人</label>
                             <select multiple class="form-control input-sm" id="owner" placeholder="所属人">
                                 {% for x in user_list %}
-                                <option>{{ x }}</option>
+                                <option>{{ x.userName }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -83,7 +94,7 @@
                         <div class="form-group">
                             <label for="caseType">用例品类</label>
                             <select multiple class="form-control input-sm" id="caseType" placeholder="用例品类">
-                                {% for x in type_list %}
+                                {% for x in type_all %}
                                 <option>{{ x.type_name }}</option>
                                 {% endfor %}
                             </select>
@@ -92,7 +103,7 @@
                             <label for="version">版本</label>
                             <select multiple class="form-control input-sm" id="version" placeholder="版本">
                                 {% for x in versionList %}
-                                <option>{{ x }}</option>
+                                <option>{{ x.versionStr }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -119,12 +130,6 @@
                 <p class="text-block text-primary">Ctrl + 鼠标点击可以 多选/取消选中; 什么都不选搜全部用例</p>
             </form>
             <hr>
-            <!-- 按钮组 -->
-            <div class="btn-group btn-group-sm pull-right">
-                <button type="submit" class="btn btn-primary" id="makeGroup"><span class="glyphicon glyphicon-plus xwcms" aria-hidden="true"></span> 添加到用例集</button>
-                <button type="submit" class="btn btn-warning" id="exCases"><span class="glyphicon glyphicon-flag xwcms" aria-hidden="true"></span> 置为过期</button>
-                <button type="submit" class="btn btn-danger" id="delCases"><span class="glyphicon glyphicon-remove xwcms" aria-hidden="true"></span> 批量删除</button>
-            </div>
             <!-- 删除确认 -->
             <div id='delconfirm' class="alert alert-default alert-dismissible fade in" role="alert" style="display:none">
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
@@ -159,7 +164,7 @@
                                 <select class="editable-select-m form-control input-sm" id="groupVersion" required>
                                     <option></option>
                                     {% for x in versionList %}
-                                    <option>{{x}}</option>
+                                    <option>{{x.versionStr}}</option>
                                     {% endfor %}
                                 </select>
                                 <span class="help-block">如果 选择了 新建用例集 请选择对应版本号</span>
@@ -180,192 +185,8 @@
 	</div>
 </div>
 <script>
-    // jenkins json data
-    $(document).ready(function(){
-        $(".getCases").click(function(){
-            var valArr = new Array;
-                plantArr = new Array;
-                verArr = new Array;
-                device = $(this).html().split('#')[0];  // 所选设备
-                plat = $(this).attr('name');    // 所选设备平台
-                ver = $(this).html().split('#')[1];    // 所选设备版本
-
-            $('input[name="btSelectItem"]:checked').each(function(i){
-                valArr[i] = $(this).parent().next().text(); // 所选用例的id
-                plantArr[i] = $(this).parent().next().next().next().next().next().text();   // 所选用例的平台
-                verArr[i] = $(this).parent().next().next().next().next().text();   // 所选用例的版本
-            });
-
-            var vals = valArr.join(',');    //转换为逗号隔开的字符串
-
-            $('#delconfirm').fadeIn(1000);
-            // 遍历检查所选是否合规
-            for(var i=0;i<plantArr.length;i++){
-                if(plantArr[i]!=plat){
-                    var pass = 'noplat';
-                    break;
-                }else if(verArr[i]!=ver){
-                    var pass = 'nover';
-                    break;
-                }else{
-                    var pass = 'pass';
-                }
-            }
-            // console.log(device, vals, plantArr, plat)
-            if(vals){
-                if(pass=='pass'){
-                    $.get("/auto/auto_config",
-                        {'vals':vals,'device':device,'type':'single','timeStamp':'','isDay':''},
-                        function(ret){
-                            $('#titleee').text('构建确认');
-                            $('#del_mess').html(ret)
-                            $('#del_butt').fadeOut(0);
-                    })
-                }else if(pass=='nover'){
-                    $('#titleee').text('构建确认');
-                    $("#del_mess").text('错误！所选用例版本 与 所选设备版本不一致！');
-                    $('#del_butt').fadeOut(0);
-                }else{
-                    $('#titleee').text('构建确认');
-                    $("#del_mess").text('错误！所选用例平台 与 所选设备平台不一致！');
-                    $('#del_butt').fadeOut(0);
-                }
-            }else{
-                // 提示并隐藏button
-                $('#titleee').text('构建确认');
-                $("#del_mess").text('错误！请先选择用例！');
-                $('#del_butt').fadeOut(0);
-            }
-        });
-    });
-
-    $(document).ready(function(){
-        $("#delCases").click(function(){
-            var valArr = new Array;
-                valArr1 = new Array;
-            $('input[name="btSelectItem"]:checked').each(function(i){
-                valArr[i] = $(this).parent().next().text();
-                valArr1[i] = $(this).parent().next().next().text();
-            });
-            var vals = valArr.join(','); // 转换为逗号隔开的字符串
-            var vals1 = valArr1.join('<br/>');
-            $('#delconfirm').fadeIn(1000);
-            if(vals){
-                // 提示要删除的用例，并显示button
-                message = '删除:<br/>' + vals1;
-                $("#del_mess").html(message);
-                $('#del_butt').fadeIn(500);
-                $("#delSure").click(function(){
-                    $.get("/auto/auto_del",{'id':vals}, function(data,status){
-                        if (status == 'success' && data == 'success') {
-                            $("#del_mess").text('删除成功');
-                        //提交失败的操作
-                        } else {
-                            $("#del_mess").text('已删除或删除失败，请联系管理员');
-                        };
-                    window.location.reload();
-                    // $('#delconfirm').fadeOut(3000);
-                    });
-                })
-            }else{
-                // 提示并隐藏button
-                $("#del_mess").text('请先选择用例');
-                $('#del_butt').fadeOut(0);
-                $('#delconfirm').fadeOut(1000);
-            }
-        });
-    });
-
-    $(document).ready(function(){
-        $("#exCases").click(function(){
-            var valArr = new Array;
-                valArr1 = new Array;
-            $('input[name="btSelectItem"]:checked').each(function(i){
-                valArr[i] = $(this).parent().next().text();
-                valArr1[i] = $(this).parent().next().next().text();
-            });
-            var vals = valArr.join(','); // 转换为逗号隔开的字符串
-            var vals1 = valArr1.join('<br/>');
-            $('#delconfirm').fadeIn(1000);
-            if(vals){
-                // 提示要删除的用例，并显示button
-                message = '<h3>置为过期:</h3><br/>' + vals1;
-                $("#del_mess").html(message);
-                $('#del_butt').fadeIn(500);
-                $("#delSure").click(function(){
-                    $.get("/auto/auto_ex",{'id':vals}, function(data,status){
-                        if (status == 'success' && data == 'success') {
-                            $("#del_mess").text('重置成功');
-                        //提交失败的操作
-                        } else {
-                            $("#del_mess").text('重置失败');
-                        };
-                    window.location.reload();
-                    });
-                })
-            }else{
-                // 提示并隐藏button
-                $("#del_mess").text('请先选择用例');
-                $('#del_butt').fadeOut(0);
-                $('#delconfirm').fadeOut(1000);
-            }
-        });
-    });
-
-    $(document).ready(function(){
-        $("#cancle").click(function(){
-            $('#delconfirm').fadeOut(500)
-        });
-    });
-
-    $(document).ready(function(){
-        $("#makeGroup").click(function(){
-            var valArr = new Array;
-            $('input[name="btSelectItem"]:checked').each(function(i){
-                valArr[i] = $(this).parent().next().text();
-            });
-            var vals = valArr.join(','); // 转换为逗号隔开的字符串
-            if(vals){
-                $('#make_mess').text('');
-                $('#makeconfirm').fadeIn(0);
-                $('.editable-select-m').editableSelect({ filter: true });
-                $('#make_butt').fadeIn(500);
-                $("#makeSure").click(function(){
-                    var groupName = $('#gourpName').val()
-                        groupVersion = $('#groupVersion').val()
-
-                    if(groupName == '' || groupVersion == ''){
-                        alert('用例集名称和版本不能为空')
-                    }else{
-                        $.get("/auto/autoMakeGroup",{'id':vals,'groupName':groupName,'groupVersion':groupVersion}, function(data,status){
-                            if (status == 'success' && data == 'success') {
-                                $("#make_mess").text('成功');
-                            //提交失败的操作
-                            } else {
-                                $("#make_mess").text('失败，请联系管理员');
-                            };
-                        });
-                        console.log(vals, groupName)
-                    }
-                    $('#makeconfirm').fadeOut(2000);
-                });
-            }else{
-                $("#make_mess").text('请先选择用例');
-                $('#makeconfirm').fadeIn(0);
-                $('#makeconfirm').fadeOut(2000);
-            }
-        });
-    });
-
-    $(document).ready(function(){
-        $("#makecancle").click(function(){
-            $('#makeconfirm').fadeOut(500)
-        });
-    });
-</script>
-<script>
-    $(document).ready(function(){
-      $("#Search").click(function(){
+    // 搜索
+    $("#Search").click(function(){
         if ($("#caseId").val()){caseId = $("#caseId").val().split("+");}else{caseId = null};
         if ($("#caseName").val()){caseName = $("#caseName").val().split("+");}else{caseName = null};
         if ($("#caseType").val()){caseType = $("#caseType").val();}else{caseType = null};
@@ -378,22 +199,11 @@
         $.get("{% url 'searchResult' %}",{'caseId':caseId,'caseName':caseName,'caseType':caseType,'plantform':plantform,'version':version,'owner':owner,'note':note,'memGroup':memGroup}, function(ret){
             $("#my_table").html(ret)
         })
-      });
     });
-
-    $(document).ready(function(){
-      $("#Reset").click(function(){
-          $('#my_form')[0].reset()
-      });
+    // form reset
+    $("#Reset").click(function(){
+        $('#my_form')[0].reset()
     });
 </script>
-<script>
-    function getDeviceStatus() {
-      $.get("/auto/getDeviceStatus", function(ret){
-        $("#getMyDevice").html(ret)
-      });
-    };
-
-    getDeviceStatus();
-</script>
+<script src="{% static 'js/getDeviceStatus.js' %}"></script>
 {% endblock content %}

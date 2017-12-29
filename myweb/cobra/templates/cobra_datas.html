@@ -5,11 +5,12 @@
 <ul class="nav nav-pills nav-justified" role="tablist">
 	<li role="presentation" class="active"><a href="#autoint" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-tasks"></span> 接口(以平均总耗时排序)<span class="badge"> {{ show_data|length }}</span></a></li>
 </ul><br>
-<form role="form" method="get" class='form-inline'>
+<form role="form" method="post" class='form-inline'>
+	{% csrf_token %}
 	<div class="form-group">
 		<label for="dtp_input2">选择时间</label>
 		<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
-			<input name="from_date" size="16"  class="form-control input-sm" type="text" value="" readonly>
+			<input name="from_date" size="16"  class="form-control input-sm" type="text" value="{{date_from|date:"Y-m-d"}}" readonly>
 			<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
 		</div>
 		<input type="hidden" id="dtp_input2" value="" />
@@ -17,7 +18,7 @@
 	<div class="form-group">
 		<label for="dtp_input2" class='sr-only'>结束时间</label>
 		<div class="input-group date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
-			<input name="to_date" size="16"  class="form-control input-sm" type="text" value="" readonly>
+			<input name="to_date" size="16"  class="form-control input-sm" type="text" value="{{date_to|date:"Y-m-d"}}" readonly>
 			<span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
 		</div>
 		<input type="hidden" id="dtp_input2" value="" />
@@ -25,12 +26,13 @@
 	<div class="form-group">
 		<label for="dtp_input2"> 可选接口 </label>
 		<div class="input-group">
-			<input name="interface" size="30"  class="form-control input-sm" type="text">
+			<input name="interface" size="30"  class="form-control input-sm" type="text" value="{{inter}}">
 		</div>
 	</div>
 	<div class="form-group">
 		<div class="input-group"><button class="form-control btn btn-success btn-sm" type="submit"><span class="glyphicon glyphicon-search"></span> 查询</button></div>
 	</div>
+	<p class='text-primary text-help'>默认查询最近一个月</p>
 </form>
 <div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="autoint"><br />
@@ -74,5 +76,4 @@
 		</table>
 	</div>
 </div>
-
 {% endblock %}

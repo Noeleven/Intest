@@ -8,7 +8,7 @@
     <title> 测试报告 </title>
 	{% load staticfiles %}
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="{% static 'dist/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
 	<!-- <link href="{% static 'css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet" media="screen"> -->
 	<link href="{% static 'css/bootstrap-table.min.css' %}" rel="stylesheet">
 	<!--[if lt IE 9]>
@@ -263,8 +263,8 @@
 		</div>
 	</div>
 
-    <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
-	<script src="{% static 'dist/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
 	<script src="{% static 'js/bootstrap-table.min.js' %}"></script>
 	<script src="{% static 'js/bootstrap-table-zh-CN.min.js' %}"></script>
 	<script>
@@ -316,11 +316,11 @@
         //2. 定时刷新调用的方法
         function getProgress() {
             $.getJSON("/auto/testProgress",{'tt':tt}, function(data){
-                $("#proBar").attr('aria-valuenow',data.count)
-                $("#proBar").attr('style','width: ' + data.count + '%')
-                $("#proText").text(data.count + '% Complete')
-                console.log(data.count)
-                if(data.count==100){
+                $("#proBar").attr('aria-valuenow',data.progress)
+                $("#proBar").attr('style','width: ' + data.progress + '%')
+                $("#proText").text(data.progress + '% Complete')
+                console.log(data.progress)
+                if(data.progress==100){
                     clearInterval(ref);
                 }
             });

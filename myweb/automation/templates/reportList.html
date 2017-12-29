@@ -45,26 +45,26 @@
         <div class="panel panel-black">
             <div class="panel-heading"> 用例集报告 <a type='button' class='btn btn-sm btn-warning' href="/auto/stopJenkins" target=_blank>停止所有测试</a></div>
             <div class="panel-body">
-                <table data-toggle="table" data-striped="true" data-show-columns="true" data-row-style="rowStyle" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-pagination="true" data-search="true" data-sort-name='测试时间' data-sort-order='desc'>
+                <table data-toggle="table" data-striped="true" data-show-columns="true" data-row-style="rowStyle" style="word-break:break-all;"  data-click-to-select="true" data-query-params="queryParams" data-pagination="true" data-search="true" data-sort-name='启动时间' data-sort-order='desc'>
         			<thead>
         				<tr>
         					<th data-field="用例集" data-sortable="true">
-        						用例集名称
+        						用例集
         					</th>
         					<th data-field="版本" data-sortable="true">
         						版本
         					</th>
-        					<th data-field="报告链接" data-sortable="true">
+        					<th data-field="报告" data-sortable="true">
         						报告
         					</th>
-        					<th data-field="测试时间" data-sortable="true">
+        					<th data-field="启动时间" data-sortable="true">
         					    启动时间
         					</th>
-                            <th data-field="类型" data-sortable="true">
-        					    类型
+                            <th data-field="构建方式" data-sortable="true">
+        					    构建方式
         					</th>
         					<th>
-        					    操作
+        					    发邮件
         					</th>
         				</tr>
         			</thead>
@@ -73,7 +73,7 @@
         				<tr>
                             <td>{{ x.name }}</td>
                             <td>{{ x.Version }}</td>
-                            <td><a href='{{ x.url }}' target="_blank">查看报告</a></td>
+                            <td><a href='{{ x.url }}' target="_blank">查看</a></td>
             				<td>{{ x.create_time |date:"Y-m-d H:i:s"}}</td>
                             <td>{% if x.flag == '1'%}自动{% else %}手工{% endif%}</td>
                             <td><a href='/auto/sendMail?timeStamp={{x.timeStamp}}&ver={{x.Version}}&name={{x.name}}' target=_blank class='btn btn-default btn-sm'><i class="fa fa-envelope"></i> toLvtu</a></td>
@@ -86,18 +86,16 @@
     </div>
 
 </div>
-
+{% include "baseTable.html" %}
 <script>
     $('.bb').click(function() {
-        // var device = $(this).text()
         var device = $(this).html().split('#')[0]
-        console.log(device)
+        // console.log(device)
         $.get("{% url 'getDevBuildHistory' %}", {
             'device': device,
         }, function(ret) {
             $("#contents").html(ret)
         })
     })
-
 </script>
 {% endblock content %}

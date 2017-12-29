@@ -191,6 +191,10 @@
 		function runningFormatter(value, row, index) {
 			return index;
 		}
+		
+		$.ajaxSetup({
+			data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+		});
 	</script>
 
 	<script>
@@ -202,5 +206,6 @@
             $("[data-toggle='popover']").popover();
         });
     </script>
+	
   </body>
 </html>

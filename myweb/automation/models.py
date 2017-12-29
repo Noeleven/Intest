@@ -6,13 +6,14 @@ import datetime
 # Create your models here.
 
 class caseType(models.Model):
+    """版本"""
     type_name = models.CharField(blank=True, max_length=100)
-    type_field = models.CharField(blank=True, max_length=100)
-    modify_time = models.DateTimeField(blank=True, auto_now=True)
-    create_time = models.DateTimeField(auto_now_add=True,blank=True)
+    # type_field = models.CharField(blank=True, max_length=100)
+    # modify_time = models.DateTimeField(blank=True, auto_now=True)
+    # create_time = models.DateTimeField(auto_now_add=True,blank=True)
 
-    def __str__(self):
-        return self.type_field
+    def __int__(self):
+        return self.id
 
 class deviceList(models.Model):
     deviceName = models.CharField(max_length=100)
@@ -49,13 +50,12 @@ class myConfig(models.Model):
     caseStr = models.TextField()
     timeStamp = models.TextField()
     device = models.CharField(max_length=100)
-    modify_time = models.DateTimeField(auto_now=True,blank=True)
     create_time = models.DateTimeField(auto_now_add=True,blank=True)
 
 class caseList(models.Model):
     caseName = models.CharField(max_length=300)
     type_field = models.ForeignKey(caseType)
-    case_tag = models.CharField(max_length=300, blank=True)
+    # case_tag = models.CharField(max_length=300, blank=True)
     plantform = models.CharField(max_length=100)
     version = models.CharField(max_length=100)
     case = models.TextField()
@@ -169,9 +169,9 @@ class userGroup(models.Model):
 # ListAdmin
 
 class caseTypeAdmin(admin.ModelAdmin):
-    list_display = ('type_name', 'type_field', 'modify_time')
+    list_display = ('type_name',)
     list_per_page = 30
-    search_fields = ['type_name', 'type_field', 'modify_time']
+    search_fields = ['type_name',]
 
 class caseListAdmin(admin.ModelAdmin):
     list_display = ('caseName', 'type_field', 'plantform', 'version', 'owner', 'des', 'in_use', 'modify_time')

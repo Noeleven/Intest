@@ -76,7 +76,7 @@ if checkRange:
                 tg.versionStr = caseVersion.objects.get(versionStr=vers)
                 tg.save()
 
-                url = 'http://127.0.0.1:8000/auto/auto_config?vals=%s&device=&type=group&isDay=&timeStamp=%s' % (tg.id, x.timeStamp)
+                url = 'http://127.0.0.1:8000/auto/auto_config?vals=%s&type=group&timeStamp=%s' % (tg.id, x.timeStamp)
                 r = requests.get(url)
                 x.status = '2'  # 标记用例集状态为重测中
                 x.save()

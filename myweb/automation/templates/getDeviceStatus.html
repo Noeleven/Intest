@@ -76,11 +76,11 @@
                 // console.log(device, vals, plantArr, plat)
                 if(vals){
                     if(pass=='pass'){
-                        $.get("/auto/auto_config",
-                            {'vals':vals,'device':device,'type':'single','timeStamp':'','isDay':''},
-                            function(ret){
+                        $.getJSON("/auto/auto_config",
+                            {'vals':vals,'device':device},
+                            function(data){
                                 $('#titleee').text('构建确认');
-                                $('#del_mess').html(ret)
+                                $('#del_mess').html(data.message)
                                 $('#del_butt').fadeOut(0);
                         })
                     }else if(pass=='nover'){

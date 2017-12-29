@@ -108,6 +108,8 @@ DATABASES = {
 		'NAME': 'intest',
 		'USER': 'root',
 		'PASSWORD': 'lvmama',
+        'TEST_CHARSET': 'utf8',
+        'TEST_COLLATION': 'utf8_general_ci',
     }
 }
 
@@ -167,3 +169,4 @@ SIMPLEMDE_OPTIONS = {
         'enabled': True
     }
 }
+FIXTURE_DIRS = (os.path.join('/rd/pystudy/Intest/myweb', 'automation/fixtures/'),)

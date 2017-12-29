@@ -25,22 +25,25 @@ def cancelOrder():
 	for x in lvses:
 		orderNo = []
 		# getOrder = "https://m.lvmama.com/api/router/rest.do?method=api.com.order.getOrderList&page=1&pageSize=30&queryType=UNPAY&version=2.0.0&lvversion=7.10.1&firstChannel=ANDROID&formate=json&secondChannel=LVMM&lvsessionid=" + x
-		getOrder = "https://m.lvmama.com/api/router/rest.do?method=api.com.order.getOrderList&page=1&pageSize=30&queryType=WAIT_APPROVE&version=1.0.0&lvsessionid=" + x
-		getOrder1 = "https://m.lvmama.com/api/router/rest.do?method=api.com.order.getOrderList&page=1&pageSize=30&queryType=WAIT_PAY&version=1.0.0&lvsessionid=" + x
+		getOrder = "https://m.lvmama.com/api/router/rest.do?method=api.com.order.getOrderList&page=1&pageSize=15&queryType=WAIT_APPROVE&version=1.0.0&lvsessionid=" + x
+		getOrder1 = "https://m.lvmama.com/api/router/rest.do?method=api.com.order.getOrderList&page=1&pageSize=15&queryType=WAIT_PAY&version=1.0.0&lvsessionid=" + x
 		canOrder = 'https://m.lvmama.com/api/router/rest.do?method=api.com.order.cancellOrder&version=1.0.0&firstChannel=ANDROID&osVersion=6.0.1&lvversion=7.10.1&lvsessionid=' + x
 		r = requests.get(getOrder, headers=header)
 		rr = requests.get(getOrder1, headers=header)
 		result = r.json()
-		for y in result['data']['list']:
-			orderNo.append(y['orderId'])
-		result1 = rr.json()
-		for y in result1['data']['list']:
-			orderNo.append(y['orderId'])
+		print(result)
+		try:
+			for y in result['data']['list']:
+				orderNo.append(y['orderId'])
+			result1 = rr.json()
+			for y in result1['data']['list']:
+				orderNo.append(y['orderId'])
 			
-		for z in orderNo:
-			url = canOrder + '&orderId=%s' % z
-			r = requests.get(url, headers=header)
-			print(z,r.status_code)
-
+			for z in orderNo:
+				url = canOrder + '&orderId=%s' % z
+				r = requests.get(url, headers=header)
+				print(z,r.status_code)
+		except:
+			print('request error!')
 
 cancelOrder()

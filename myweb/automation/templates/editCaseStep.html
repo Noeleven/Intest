@@ -33,7 +33,7 @@
                     <div class="col-sm-10 form-inline">
                         <select class="form-control input-sm" name='type' required="required">
                             {% for x in type_list %}
-                            <option {% if x.type_name == json_dict.type_field_id %}selected{% endif %}>{{ x.type_name }}</option>
+                            <option {% if x.type_name == json_dict.type_field_id %}selected{% endif %} value='{{x.id}}'>{{ x.type_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -108,8 +108,8 @@
                     <div class="col-sm-10">
                         <table class='table table-condensed table-responsive'>
                             <thead>
-                                <tr class="info">
-                                    <th>序号</th>
+                                <tr>
+                                    <th># </th>
                                     <th>用例步骤</th>
                                     <th>操作</th>
                                 </tr>
@@ -144,13 +144,13 @@
                                                 <table class='table table-condensed table-responsive'>
                                                     <thead>
                                                         <tr class="default">
-                                                            <th class="col-sm-1">## <strong class="text-danger">*</strong> </th>
-                                                            <th class="col-sm-3">做什么动作 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="标记需要配置元素的选型，一定要配置元素，除此之外都可以不要"></span></th>
-                                                            <th class="col-sm-3">什么元素
+                                                            <th class="col-sm-1">#<strong class="text-danger">*</strong> </th>
+                                                            <th class="col-sm-3">动作 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="标记需要配置元素的选型，一定要配置元素，除此之外都可以不要"></span></th>
+                                                            <th class="col-sm-3">元素
                                                                 <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="选择或输入, 页面上可见的图标、文字、按钮都是元素. 元素分2类, 1 带文字的, 如首页'门票频道', 直接写门票频道;2 不带文字的, 如首页搜索框, 下拉选择 3 图标类, 如小人,电话图标 下拉选择    ."></span>
                                                             </th>
-                                                            <th>要不要输入</th>
-                                                            <th>是否等待 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="该步骤执行完毕, 经常要转圈的, 建议等待, 增加用例稳定性;"></span></th>
+                                                            <th>输入</th>
+                                                            <th>等待 <strong class="text-danger">*</strong> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="该步骤执行完毕, 经常要转圈的, 建议等待, 增加用例稳定性;"></span></th>
                                                             <th></th>
                                                         </tr>
                                                     </thead>
@@ -158,43 +158,35 @@
                                                         {% for y in BG.action %}
                                                         <tr id='L2TR{{ y.index|slice:"2:" }}' class="index_tr">
                                                             <td>
-                                                                <div class="form-group">
-                                                                    <input type="text" class="index_step form-control input-sm" name="index_step" value="{{ y.index }}" required="required">
-                                                                </div>
+                                                                <input type="text" class="index_step form-control input-sm" name="index_step" value="{{ y.index }}" required="required">
                                                             </td>
                                                             <td>
-                                                                <div class="form-group">
-                                                                    <select class="form-control input-sm" name="actionCode" required="required">
-                                                                      {% for x in control_list %}
-                                                                      <option {% if x.controlName == y.actionCode %}selected="True"{% endif %}>{{ x.controlName }}</option>
-                                                                      {% endfor %}
-                                                                  </select>
-                                                                </div>
+                                                                <select class="form-control input-sm" name="actionCode" required="required">
+                                                                  {% for x in control_list %}
+                                                                  <option {% if x.controlName == y.actionCode %}selected="True"{% endif %}>{{ x.controlName }}</option>
+                                                                  {% endfor %}
+                                                                </select>
                                                             </td>
                                                             <td>
-                                                                <div class="form-group">
-                                                                    <select class="form-control editable-select-e input-sm" name="targetName" placeholder="选择或输入">
-                                                                      {% for x in target_list %}
-                                                                      <option {% if x.controlName == y.target.targetName %}selected{% endif %}>{{ x.controlName }}</option>
-                                                                      {% endfor %}
-                                                                  </select>
-                                                                </div>
+                                                                <select class="form-control editable-select-e input-sm" name="targetName" placeholder="选择或输入">
+                                                                  {% for x in target_list %}
+                                                                  <option {% if x.controlName == y.target.targetName %}selected{% endif %}>{{ x.controlName }}</option>
+                                                                  {% endfor %}
+                                                              </select>
                                                             </td>
                                                             <td>
-                                                                <div class="form-group">
-                                                                    <textarea class="form-control input-sm" name="inputValue" placeholder="如果元素是input输入框，就输入内容，否则留空" rows="3">{{ y.behaviorPara.inputValue }}</textarea>
-                                                                </div>
+                                                                <textarea class="form-control input-sm" name="inputValue" placeholder="如果元素是input输入框，就输入内容，否则留空" rows="3">{{ y.behaviorPara.inputValue }}</textarea>
                                                             </td>
                                                             <td>
-                                                                <div class="form-group">
-                                                                    <select class="form-control input-sm" name="needWait">
-                                                                      {% for x in wait_list %}
-                                                                      <option {% if x == y.needWait %}selected{% endif %}>{{ x }}</option>
-                                                                      {% endfor %}
-                                                                  </select>
-                                                                </div>
+                                                                <select class="form-control input-sm" name="needWait">
+                                                                  {% for x in wait_list %}
+                                                                  <option {% if x == y.needWait %}selected{% endif %}>{{ x }}</option>
+                                                                  {% endfor %}
+                                                              </select>
                                                             </td>
-                                                            <td><button type="button" class="btn-success btn btn-xs" onclick="ActionAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button><button type="button" class="btn-danger btn btn-xs"
+                                                            <td>
+                                                                <button type="button" class="btn-success btn btn-xs" onclick="ActionAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                                                                <button type="button" class="btn-danger btn btn-xs"
                                                                     data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>
                                                         </tr>
                                                         {% endfor %}
@@ -282,7 +274,7 @@
             <!-- 提交返回 -->
             <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
-                    <input id='toClose' type="submit" class="btn btn-success btn-sm" name='yes' value="提交">
+                    <input id='toClose' type="submit" class="btn ztbtn btn-success btn-sm" name='yes' value="提交">
 
                     <a type="submit" class="btn btn-default btn-sm" href='/auto/'>返回</a>
                 </div>
@@ -356,41 +348,30 @@
                                     <tbody id='L2TB'>
                                         <tr id='L2Model' class="index_tr">
                                             <td>
-                                                <div class="form-group">
-                                                    <input type="text" class="index_step form-control input-sm" name="index_step" required="required" value='1-1'>
-                                                </div>
+                                                <input type="text" class="index_step form-control input-sm" name="index_step" required="required" value='1-1'>
                                             </td>
                                             <td>
-                                                <div class="form-group">
-                                                    <select class="form-control input-sm" name="actionCode">
-                                                        {% for x in control_list %}
-                                                        <option>{{ x.controlName }}</option>
-                                                        {% endfor %}
-                                                    </select>
-                                                </div>
+                                                <select class="form-control input-sm" name="actionCode">
+                                                    {% for x in control_list %}
+                                                    <option>{{ x.controlName }}</option>
+                                                    {% endfor %}
+                                                </select>
                                             </td>
                                             <td>
-                                                <div class="form-group">
-                                                    <select class="form-control input-sm" name="targetName" placeholder="选择或输入">
-                                                        {% for x in target_list %}
-                                                        <option>{{ x.controlName }}</option>
-                                                        {% endfor %}
-                                                    </select>
-                                                </div>
+                                                <select class="form-control input-sm" name="targetName" placeholder="选择或输入">
+                                                    {% for x in target_list %}
+                                                    <option>{{ x.controlName }}</option>
+                                                    {% endfor %}
+                                                </select>
                                             </td>
                                             <td>
-                                                <div class="form-group">
-                                                    <textarea class="form-control input-sm" name="inputValue" placeholder="如果元素是input输入框，就输入内容，否则留空" rows="3"></textarea>
-                                                </div>
+                                                <textarea class="form-control input-sm" name="inputValue" placeholder="如果元素是input输入框，就输入内容，否则留空" rows="3"></textarea>
                                             </td>
                                             <td>
-                                                <div class="form-group">
-                                                    <!-- <label for="elementName"></label> -->
-                                                    <select class="form-control input-sm" name="needWait">
-                                                        <option>等待</option>
-                                                        <option>不等待</option>
-                                                    </select>
-                                                </div>
+                                                <select class="form-control input-sm" name="needWait">
+                                                    <option>等待</option>
+                                                    <option>不等待</option>
+                                                </select>
                                             </td>
                                             <td><button type="button" class="btn-success btn btn-xs" onclick="ActionAdd(this)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button><button type="button" class="btn-danger btn btn-xs"
                                                     data-toggle="modal" onclick="myDel(this)"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>

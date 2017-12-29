@@ -26,28 +26,14 @@
                         </select>
                     </div>
                 </div>
-                <!-- <div class="form-group">
-                    <label for="caseTag" class="col-sm-3 control-label">标签 <strong class="text-danger">*</strong> </label>
-                    <div class="col-sm-6">
-                        <select multiple class="form-control input-sm selectMulti" name='caseTag' multiple="multiple" placeholder='支持关键字筛选'>
-                            {% for x in case_tag %}
-                            <option value={{x.tagName}}>{{ x.tagName }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div> -->
                 <div class="form-group">
                     <label for="plantform" class="col-sm-3 control-label">平台 <strong class="text-danger">*</strong> </label>
                     <div class="col-sm-6">
+                        {% for x in plat %}
                         <label class="radio-inline">
-                          <input type="radio" name="plantform" id="Android" value="Android" checked="True"> Android
+                          <input type="radio" name="plantform" id="{{x}}" value="{{x}}" {%if x == 'Android' %}checked="True"{%endif%}> {{x}}
                         </label>
-                        <label class="radio-inline">
-                          <input type="radio" name="plantform" id="iOS" value="iOS"> iOS
-                        </label>
-                        <label class="radio-inline">
-                          <input type="radio" name="plantform" id="M" value="M"> M
-                        </label>
+                        {% endfor %}
                     </div>
                 </div>
                 <div class="form-group">
@@ -55,7 +41,7 @@
                     <div class="col-sm-6">
                         <select class="form-control input-sm" name='version'>
                             {% for x in versionList %}
-                            <option>{{ x }}</option>
+                            <option {% if x.versionStr == '7.9.6' %}selected{%endif%}>{{ x.versionStr }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -86,7 +72,7 @@
                     <div class="col-sm-6">
                         <select class="form-control input-sm" name='owner'>
                             {% for x in user_list %}
-                            <option>{{ x }}</option>
+                            <option>{{ x.userName }}</option>
                             {% endfor %}
                         </select>
                     </div>

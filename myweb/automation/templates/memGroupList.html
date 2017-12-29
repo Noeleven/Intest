@@ -1,5 +1,6 @@
 {% extends "auto_base.html" %}
 {% block content %}
+{% load staticfiles %}
 <div class="row">
     <div class="panel panel-black">
         <div class="panel-heading"> 小组管理 </div>
@@ -44,5 +45,5 @@
 		</table>
 	</div>
 </div>
-
+{% include "baseTable.html" %}
 {% endblock content %}

@@ -32,7 +32,7 @@
 
                                 <select class="form-control input-sm" name='type' required="required">
                                     {% for x in type_list %}
-                                    <option {% if x.type_name == json_dict.type_field_id %}selected{% endif %}>{{ x.type_name }}</option>
+                                    <option {% if x.type_name == json_dict.type_field_id %}selected{% endif %} value='{{x.id}}'>{{ x.type_name }}</option>
                                     {% endfor %}
                                 </select>
                             </div>

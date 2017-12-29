@@ -1,5 +1,6 @@
 {% extends "auto_base.html" %}
 {% block content %}
+{% load staticfiles %}
 <div class="row">
     <div class="panel panel-black">
         <div class="panel-heading">
@@ -60,16 +61,6 @@
                 {% endif %}
             </div>
             <hr>
-            <!-- {% if tag_list %}
-            <div class="row">
-                <div class="btn-group btn-group-sm col-md-6">
-                    <p><b>[标签筛选]</b></p>
-                    {% for x in tag_list %}
-                    <button id='{{my_type}}_{{x.tagName}}' type='button' class='btn btn-default tagger'>{{x.tagName}}</button>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %} -->
 
             {% if userGroupList %}
             <div class="row">
@@ -179,201 +170,88 @@
 
 	</div>
 </div>
+
+{% include "baseTable.html" %}
 <script>
     // single build
-    $(document).ready(function(){
-        $(".getCases").click(function(){
-            var valArr = new Array;
-                plantArr = new Array;
-                verArr = new Array;
-                device = $(this).html().split('#')[0];  // 所选设备
-                plat = $(this).attr('name');    // 所选设备平台
-                ver = $(this).html().split('#')[1];    // 所选设备版本
+    $(".getCases").click(function(){
+        var valArr = new Array;
+            plantArr = new Array;
+            verArr = new Array;
+            device = $(this).html().split('#')[0];  // 所选设备
+            plat = $(this).attr('name');    // 所选设备平台
+            ver = $(this).html().split('#')[1];    // 所选设备版本
 
-            $('input[name="btSelectItem"]:checked').each(function(i){
-                valArr[i] = $(this).parent().next().text(); // 所选用例的id
-                plantArr[i] = $(this).parent().next().next().next().next().next().text();   // 所选用例的平台
-                verArr[i] = $(this).parent().next().next().next().next().text();   // 所选用例的版本
-            });
+        $('input[name="btSelectItem"]:checked').each(function(i){
+            valArr[i] = $(this).parent().next().text(); // 所选用例的id
+            plantArr[i] = $(this).parent().next().next().next().next().next().text();   // 所选用例的平台
+            verArr[i] = $(this).parent().next().next().next().next().text();   // 所选用例的版本
+        });
 
-            var vals = valArr.join(',');    //转换为逗号隔开的字符串
+        var vals = valArr.join(',');    //转换为逗号隔开的字符串
 
-            $('#delconfirm').fadeIn(1000);
-            // 遍历检查所选是否合规
-            for(var i=0;i<plantArr.length;i++){
-                if(plantArr[i]!=plat){
-                    var pass = 'noplat';
-                    break;
-                }else if(verArr[i]!=ver){
-                    var pass = 'nover';
-                    break;
-                }else{
-                    var pass = 'pass';
-                }
-            }
-            // console.log(device, vals, plantArr, plat)
-            if(vals){
-                if(pass=='pass'){
-                    $.get("/auto/auto_config",
-                        {'vals':vals,'device':device,'type':'single','timeStamp':'','isDay':''},
-                        function(ret){
-                            $('#titleee').text('构建确认');
-                            $('#del_mess').html(ret)
-                            $('#del_butt').fadeOut(0);
-                    })
-                }else if(pass=='nover'){
-                    $('#titleee').text('构建确认');
-                    $("#del_mess").text('错误！所选用例版本 与 所选设备版本不一致！');
-                    $('#del_butt').fadeOut(0);
-                }else{
-                    $('#titleee').text('构建确认');
-                    $("#del_mess").text('错误！所选用例平台 与 所选设备平台不一致！');
-                    $('#del_butt').fadeOut(0);
-                }
+        $('#delconfirm').fadeIn(1000);
+        // 遍历检查所选是否合规
+        for(var i=0;i<plantArr.length;i++){
+            if(plantArr[i]!=plat){
+                var pass = 'noplat';
+                break;
+            }else if(verArr[i]!=ver){
+                var pass = 'nover';
+                break;
             }else{
-                // 提示并隐藏button
+                var pass = 'pass';
+            }
+        }
+        // console.log(device, vals, plantArr, plat)
+        if(vals){
+            if(pass=='pass'){
+                $.getJSON("/auto/auto_config",
+                    {'vals':vals,'device':device},
+                    function(data){
+                        $('#titleee').text('构建确认');
+                        $('#del_mess').html(data.message)
+                        $('#del_butt').fadeOut(0);
+                })
+            }else if(pass=='nover'){
                 $('#titleee').text('构建确认');
-                $("#del_mess").text('错误！请先选择用例！');
+                $("#del_mess").text('错误！所选用例版本 与 所选设备版本不一致！');
+                $('#del_butt').fadeOut(0);
+            }else{
+                $('#titleee').text('构建确认');
+                $("#del_mess").text('错误！所选用例平台 与 所选设备平台不一致！');
                 $('#del_butt').fadeOut(0);
             }
-        });
+        }else{
+            // 提示并隐藏button
+            $('#titleee').text('构建确认');
+            $("#del_mess").text('错误！请先选择用例！');
+            $('#del_butt').fadeOut(0);
+        }
     });
     // group build
-    $(document).ready(function(){
-        $("#getGroup").click(function(){
-            var vals = {{ group.id|safe }}
+    $("#getGroup").click(function(){
+        var vals = {{ group.id|safe }}
 
-            $.get("/auto/auto_config", {'vals':vals,'type':'group','timeStamp':'','isDay':'','device':''}, function(ret){
-                $('#titleee').text('Ready To Build ...');
-                $('#del_mess').html(ret)
-                $('#del_butt').fadeOut(0);
-            })
-            $('#delconfirm').fadeIn(2000)
-            $("#del_mess").text('Building, Wait For A Minite To Check The Report');
-            // $('#delconfirm').fadeOut(3000);
-        });
+        $.getJSON("/auto/auto_config", {'vals':vals,'type':'group'}, function(data){
+            $('#titleee').text('Ready To Build ...');
+            $('#del_mess').html(data.message)
+            $('#del_butt').fadeOut(0);
+        })
+        $('#delconfirm').fadeIn(2000)
+        $("#del_mess").text('Building, Wait For A Minite To Check The Report');
+        // $('#delconfirm').fadeOut(3000);
     });
-
-    // delete
-    $(document).ready(function(){
-        $("#delCases").click(function(){
-            var valArr = new Array;
-                valArr1 = new Array;
-            $('input[name="btSelectItem"]:checked').each(function(i){
-                valArr[i] = $(this).parent().next().text();
-                valArr1[i] = $(this).parent().next().next().text();
-            });
-            var vals = valArr.join(','); // 转换为逗号隔开的字符串
-            var vals1 = valArr1.join('<br/>');
-            $('#delconfirm').fadeIn(1000);
-            if(vals){
-                // 提示要删除的用例，并显示button
-                message = '删除:<br/>' + vals1;
-                $("#del_mess").html(message);
-                $('#del_butt').fadeIn(500);
-                $("#delSure").click(function(){
-                    $.get("/auto/auto_del",{'id':vals}, function(data,status){
-                        if (status == 'success' && data == 'success') {
-                            $("#del_mess").text('删除成功');
-                        //提交失败的操作
-                        } else {
-                            $("#del_mess").text('已删除或删除失败，请联系管理员');
-                        };
-                    window.location.reload();
-                    // $('#delconfirm').fadeOut(3000);
-                    });
-                })
-            }else{
-                // 提示并隐藏button
-                $("#del_mess").text('请先选择用例');
-                $('#del_butt').fadeOut(0);
-                $('#delconfirm').fadeOut(1000);
-            }
-        });
-    });
-    // change to ex
-    $(document).ready(function(){
-        $("#exCases").click(function(){
-            var valArr = new Array;
-                valArr1 = new Array;
-            $('input[name="btSelectItem"]:checked').each(function(i){
-                valArr[i] = $(this).parent().next().text();
-                valArr1[i] = $(this).parent().next().next().text();
-            });
-            var vals = valArr.join(','); // 转换为逗号隔开的字符串
-            var vals1 = valArr1.join('<br/>');
-            $('#delconfirm').fadeIn(1000);
-            if(vals){
-                // 提示要删除的用例，并显示button
-                message = '<h3>置为过期:</h3><br/>' + vals1;
-                $("#del_mess").html(message);
-                $('#del_butt').fadeIn(500);
-                $("#delSure").click(function(){
-                    $.get("/auto/auto_ex",{'id':vals}, function(data,status){
-                        if (status == 'success' && data == 'success') {
-                            $("#del_mess").text('重置成功');
-                        //提交失败的操作
-                        } else {
-                            $("#del_mess").text('重置失败');
-                        };
-                    window.location.reload();
-                    });
-                })
-            }else{
-                // 提示并隐藏button
-                $("#del_mess").text('请先选择用例');
-                $('#del_butt').fadeOut(0);
-                $('#delconfirm').fadeOut(1000);
-            }
-        });
-    });
-    // cancle
-    $(document).ready(function(){
-        $("#cancle").click(function(){
-            $('#delconfirm').fadeOut(500)
-        });
-    });
-
-    $(document).ready(function(){
-        // 处理跨域
-        $.ajaxSetup({
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
-        });
-        // post请求
-        $(".tagger").click(function(){
-            var memGroupId = $(this).attr('id')
-            $.post("/auto/tagSearch",{'memGroupId':memGroupId,'show_list_id':{{show_list_id|safe}}}, function(ret){
-                $('#page_down').html(ret)
-            })
-        });
+    // post请求
+    $(".tagger").click(function(){
+        var memGroupId = $(this).attr('id')
+        $.post("/auto/tagSearch",{'memGroupId':memGroupId,'show_list_id':{{show_list_id|safe}}}, function(ret){
+            $('#page_down').html(ret)
+        })
     });
 </script>
-<script>
-    // change status color
-    var $table = $('#tableList');
 
-    $(function () {
-        $table.on('click-row.bs.table', function (e, row, $element) {
-                $($element).toggleClass('success');
-        });
-    });
-</script>
-<script>
-	$('#tableList').bootstrapTable('destroy').bootstrapTable({
-        showExport: true,//显示导出按钮
-        exportDataType: "basic",//导出类型
-        toolbarAlign: 'right',//toolbar位置
-    });
-</script>
 {% if group  %}
-<script>
-    function getDeviceStatus() {
-      $.get("/auto/getDeviceStatus", function(ret){
-        $("#getMyDevice").html(ret)
-      });
-    };
-
-    getDeviceStatus();
-</script>
+<script src="{% static 'js/getDeviceStatus.js' %}"></script>
 {% endif %}
 {% endblock content %}

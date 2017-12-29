@@ -1,0 +1,94 @@
+{% load staticfiles %}
+<script src="{% static 'js/bootstrap-table.min.js' %}"></script>
+<script src="{% static 'js/bootstrap-table-zh-CN.min.js' %}"></script>
+<script src="{% static 'js/bootstrap-table-export.js' %}"></script>
+<script src="{% static 'js/tableExport.js' %}"></script>
+<script>
+    // change status color
+    var $table = $('#tableList');
+    $(function () {
+        $table.on('click-row.bs.table', function (e, row, $element) {
+            $($element).toggleClass('success');
+        });
+    });
+    // 导出
+	$('#tableList').bootstrapTable('destroy').bootstrapTable({
+        showExport: true,//显示导出按钮
+        exportDataType: "basic",//导出类型
+        toolbarAlign: 'right',//toolbar位置
+    });
+
+    // delete
+    $("#delCases").click(function(){
+        var valArr = new Array;
+            valArr1 = new Array;
+        $('input[name="btSelectItem"]:checked').each(function(i){
+            valArr[i] = $(this).parent().next().text();
+            valArr1[i] = $(this).parent().next().next().text();
+        });
+        var vals = valArr.join(','); // 转换为逗号隔开的字符串
+        var vals1 = valArr1.join('<br/>');
+        $('#delconfirm').fadeIn(1000);
+        if(vals){
+            // 提示要删除的用例，并显示button
+            message = '删除:<br/>' + vals1;
+            $("#del_mess").html(message);
+            $('#del_butt').fadeIn(500);
+            $("#delSure").click(function(){
+                $.get("/auto/auto_del",{'id':vals}, function(data,status){
+                    if (status == 'success' && data == 'success') {
+                        $("#del_mess").text('删除成功');
+                    //提交失败的操作
+                    } else {
+                        $("#del_mess").text('已删除或删除失败，请联系管理员');
+                    };
+                $('#Search').click()
+                });
+            })
+        }else{
+            // 提示并隐藏button
+            $("#del_mess").text('请先选择用例');
+            $('#del_butt').fadeOut(0);
+            $('#delconfirm').fadeOut(1000);
+        }
+    });
+    // change to ex
+    $("#exCases").click(function(){
+        var valArr = new Array;
+            valArr1 = new Array;
+        $('input[name="btSelectItem"]:checked').each(function(i){
+            valArr[i] = $(this).parent().next().text();
+            valArr1[i] = $(this).parent().next().next().text();
+        });
+        var vals = valArr.join(','); // 转换为逗号隔开的字符串
+        var vals1 = valArr1.join('<br/>');
+        $('#delconfirm').fadeIn(1000);
+        if(vals){
+            // 提示要删除的用例，并显示button
+            message = '<h3>置为过期:</h3><br/>' + vals1;
+            $("#del_mess").html(message);
+            $('#del_butt').fadeIn(500);
+            $("#delSure").click(function(){
+                $.get("/auto/auto_ex",{'id':vals}, function(data,status){
+                    if (status == 'success' && data == 'success') {
+                        $("#del_mess").text('重置成功');
+                    //提交失败的操作
+                    } else {
+                        $("#del_mess").text('重置失败');
+                    };
+                $('#Search').click()
+                });
+            })
+        }else{
+            // 提示并隐藏button
+            $("#del_mess").text('请先选择用例');
+            $('#del_butt').fadeOut(0);
+            $('#delconfirm').fadeOut(1000);
+        }
+    });
+    // cancle
+    $("#cancle").click(function(){
+        $('#delconfirm').fadeOut(500)
+    });
+
+</script>

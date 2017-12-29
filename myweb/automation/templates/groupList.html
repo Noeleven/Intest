@@ -1,13 +1,13 @@
 {% extends "auto_base.html" %}
 {% block content %}
+{% load staticfiles %}
 <div class="row">
     <div class="panel panel-black">
         <div class="panel-heading"> 用例集 </div>
 		<div class="panel-body">
             <div class="btn-group btn-group-sm">
                 <a type='submit' class="btn btn-sm btn-danger getCases">构建</a>
-                <a href="/auto/reportList" type='button' class='btn btn-default btn-sm' target="_blank"><i class="fa fa-bullhorn xwcms"></i> 测试报告</a>
-                <button type="button" class="btn btn-default" id="getHistory"><i class="fa fa-history  xwcms"></i> 用例集操作历史</a>
+                <button type="button" class="btn btn-default" id="getHistory"><i class="fa fa-history  xwcms"></i> 操作历史</a>
             </div>
             <span class='label label-warning pull-right'>警告 : 一个用例集里不要出现不同版本的用例;</span>
             <hr>
@@ -73,12 +73,10 @@
 			</tbody>
 		</table>
 
-        <div id='history'>
-
-        </div>
+        <div id='history'></div>
 	</div>
 </div>
-
+{% include "baseTable.html" %}
 <script>
     $(document).ready(function(){
         $(".getCases").click(function(){
@@ -91,10 +89,10 @@
             console.log(valArr)
             if(valArr.length>0){
                 for (var i=0;i<valArr.length;i++){
-                    $.get("/auto/auto_config",
-                        {'vals':valArr[i][0],'type':'group','isDay':'','timeStamp':'','device':''},function(ret){
+                    $.getJSON("/auto/auto_config",
+                        {'vals':valArr[i][0],'type':'group'},function(data){
                             $('#titleee').text('构建确认');
-                            $('#del_mess').html(ret);
+                            $('#del_mess').html(data.message)
                             $('#del_butt').fadeOut(0);
                         })
                     }
@@ -108,32 +106,13 @@
                 $("#del_mess").text('你都没没没没没没没没没没选');
                 $('#del_butt').fadeOut(0);
             }
-            // $('#delconfirm').fadeOut(3000);
         });
     });
 
-    $(document).ready(function(){
-        $("#cancle").click(function(){
-            $('#delconfirm').fadeOut(500)
-        });
-    });
-
-    $(document).ready(function(){
-        $("#getHistory").click(function(){
-            $.get("/auto/getGroupHistory",function(ret){
-                $('#history').html(ret)
-            })
-        });
-    });
-</script>
-
-<script>
-    var $table = $('#tableList');
-
-    $(function () {
-        $table.on('click-row.bs.table', function (e, row, $element) {
-                $($element).toggleClass('success');
-        });
+    $("#getHistory").click(function(){
+        $.get("/auto/getGroupHistory",function(ret){
+            $('#history').html(ret)
+        })
     });
 </script>
 {% endblock content %}

@@ -22,8 +22,6 @@
                     <button class='btn btn-sm btn-danger' disabled>排队中</button>
                 </div>
                 <br><br>
-                <li class="list-group-item list-group-item-warning"> 设备状态更新中...
-                </li>
                 <ul class="nav nav-tabs" role="tablist">
                   <li role="presentation" class="active"><a href="#ad" aria-controls="ad" role="tab" data-toggle="tab">Android 测试机</a></li>
                   <li role="presentation"><a href="#ios" aria-controls="ios" role="tab" data-toggle="tab">iOS 测试机</a></li>
@@ -76,7 +74,7 @@
             <div class="btn-group btn-group-sm pull-right">
                 {% if group %}
                 <a href='/auto/addCase?groupId={{group.id}}' type='button' class='btn btn-primary'><span class="glyphicon glyphicon-plus xwcms"></span> 新增用例 → 当前用例集</a>
-                <button type="submit" class="btn btn-default" id="getGroup"><span class="glyphicon glyphicon-rocket xwcms getCases" aria-hidden="true"></span> 构建当前用例集</button>
+                <button type="submit" class="btn btn-default" id="getGroup"><span class="glyphicon glyphicon-rocket xwcms" aria-hidden="true"></span> 构建当前用例集</button>
                 <button type="submit" class="btn btn-warning" id="exCases"><span class="glyphicon glyphicon-flag xwcms" aria-hidden="true"></span> 置为过期</button>
                 {% endif %}
                 <button type="submit" class="btn btn-danger" id="delCases"><span class="glyphicon glyphicon-remove xwcms" aria-hidden="true"></span> 批量删除</button>
@@ -175,6 +173,7 @@
 <script>
     // single build
     $(".getCases").click(function(){
+        console.log(1)
         var valArr = new Array;
             plantArr = new Array;
             verArr = new Array;
@@ -240,8 +239,8 @@
         })
         $('#delconfirm').fadeIn(2000)
         $("#del_mess").text('Building, Wait For A Minite To Check The Report');
-        // $('#delconfirm').fadeOut(3000);
     });
+
     // post请求
     $(".tagger").click(function(){
         var memGroupId = $(this).attr('id')
@@ -249,9 +248,9 @@
             $('#page_down').html(ret)
         })
     });
-</script>
 
-{% if group  %}
-<script src="{% static 'js/getDeviceStatus.js' %}"></script>
-{% endif %}
+    $("#cancle").click(function(){
+        $('#delconfirm').fadeOut(500)
+    });
+</script>
 {% endblock content %}

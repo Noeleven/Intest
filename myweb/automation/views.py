@@ -125,12 +125,16 @@ def stopJenkins(request):
 		# 取消当前构建
 		runNum = server.get_running_builds()
 		for y in runNum:
-			server.stop_build(x.job_name, y['number'])	# 有异常！
-		stopList.append(x.deviceName)
+			try:
+				server.stop_build(x.job_name, int(y['number']))	# 有异常！
+				stopList.append(x.deviceName)
+			except:
+				print(x.deviceName)
 	result = {
 		'message':'停止jenkins任务完成',
 		'deviceList':stopList
 	}
+	
 	return HttpResponse(json.dumps(result), content_type="application/json")
 
 # 邮件格式化地址

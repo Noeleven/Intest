@@ -8,8 +8,9 @@
     <br><br>
     <ul class="nav nav-tabs" role="tablist">
       <li role="presentation" class="active"><a href="#ad" aria-controls="ad" role="tab" data-toggle="tab">Android 测试机</a></li>
-      <li role="presentation"><a href="#ios" aria-controls="ios" role="tab" data-toggle="tab">iOS 测试机</a></li>
+      <!-- <li role="presentation"><a href="#ios" aria-controls="ios" role="tab" data-toggle="tab">iOS 测试机</a></li> -->
       <li role="presentation"><a href="#mm" aria-controls="mm" role="tab" data-toggle="tab">M站 测试机</a></li>
+      <!-- <li role="presentation"><a href="#pc" aria-controls="pc" role="tab" data-toggle="tab">PC 测试机</a></li> -->
     </ul>
     <div class="tab-content">
       <div role="tabpanel" class="tab-pane fade in active" id="ad">
@@ -39,8 +40,76 @@
               {%endif%}
           {% endfor %}
       </div>
-    </div><hr>
-    <script>
+      <div role="tabpanel" class="tab-pane fade" id="pc">
+          <br>
+          {% for x in device_list %}
+              {% if x.platformName == 'PC'%}
+              <a type='submit' name='{{x.platformName}}' class='btn btn-sm {% if x.queue %}btn-danger{% elif x.status %}btn-warning{% elif x.broken %}btn-default{% else %}btn-success
+              {% endif %} getCases' {% if x.broken %}disabled="disabled"{% endif %}>{{ x.deviceName }}#{{ x.appVersion }}</a>
+              {%endif%}
+          {% endfor %}
+      </div>
+    </div>
+    <script type="text/javascript">
+        // 构建
+        $(".getCases").click(function(){
+            console.log(1)
+            var valArr = new Array;
+                plantArr = new Array;
+                verArr = new Array;
+                device = $(this).html().split('#')[0];  // 所选设备
+                plat = $(this).attr('name');    // 所选设备平台
+                ver = $(this).html().split('#')[1];    // 所选设备版本
+
+            $('input[name="btSelectItem"]:checked').each(function(i){
+                valArr[i] = $(this).parent().next().text(); // 所选用例的id
+                plantArr[i] = $(this).parent().next().next().next().next().next().text();   // 所选用例的平台
+                verArr[i] = $(this).parent().next().next().next().next().text();   // 所选用例的版本
+            });
+
+            var vals = valArr.join(',');    //转换为逗号隔开的字符串
+
+            $('#delconfirm').fadeIn(1000);
+            // 遍历检查所选是否合规
+            for(var i=0;i<plantArr.length;i++){
+                if(plantArr[i]!=plat){
+                    var pass = 'noplat';
+                    break;
+                }else if(verArr[i]!=ver){
+                    var pass = 'nover';
+                    break;
+                }else{
+                    var pass = 'pass';
+                }
+            }
+
+            if(vals){
+                if(pass=='pass'){
+                    $.getJSON("/auto/auto_config",
+                        {'vals':vals,'device':device},
+                        function(data){
+                            $('#titleee').text('构建确认');
+                            $('#del_mess').html(data.message)
+                            $('#del_butt').fadeOut(0);
+                    })
+                }else if(pass=='nover'){
+                    $('#titleee').text('构建确认');
+                    $("#del_mess").text('错误！所选用例版本 与 所选设备版本不一致！');
+                    $('#del_butt').fadeOut(0);
+                }else{
+                    $('#titleee').text('构建确认');
+                    $("#del_mess").text('错误！所选用例平台 与 所选设备平台不一致！');
+                    $('#del_butt').fadeOut(0);
+                }
+            }else{
+                // 提示并隐藏button
+                $('#titleee').text('构建确认');
+                $("#del_mess").text('错误！请先选择用例！');
+                $('#del_butt').fadeOut(0);
+            }
+        }
+        );
+
         $(document).ready(function(){
             $("#cancle").click(function(){
                 $('#delconfirm').fadeOut(500)

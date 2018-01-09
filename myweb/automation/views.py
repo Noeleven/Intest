@@ -134,7 +134,7 @@ def stopJenkins(request):
 		'message':'停止jenkins任务完成',
 		'deviceList':stopList
 	}
-	
+
 	return HttpResponse(json.dumps(result), content_type="application/json")
 
 # 邮件格式化地址
@@ -1364,6 +1364,7 @@ def testProgress(request):
 			else:
 				num = 100
 				code = '-2'
+				preNum, nowNum = 0, 0
 				message = '测试未启动，可能发生了异常'
 
 			result = {'progress':num, 'message': message, 'preNum':preNum, 'code': code, 'nowNum': nowNum}
@@ -1485,13 +1486,13 @@ def autoMakeGroup(request):
 		group.save()
 
 	# create tagId, 由于同一个版本可能有多个用例集，使用version会查出多个用例集，故使用用例集name，对应在编辑用例集时，改名字时同步更改tag就好了
-	if caseTag.objects.filter(tagName=groupName).exists():
-		tagId = caseTag.objects.get(tagName=groupName).id
-	else:
-		newTag = caseTag(tagName=groupName)
-		newTag.type_field = caseType.objects.get(type_field='other')
-		newTag.save()
-		tagId = caseTag.objects.get(tagName=groupName).id
+	# if caseTag.objects.filter(tagName=groupName).exists():
+	# 	tagId = caseTag.objects.get(tagName=groupName).id
+	# else:
+	# 	newTag = caseTag(tagName=groupName)
+	# 	newTag.type_field = caseType.objects.get(type_field='other')
+	# 	newTag.save()
+	# 	tagId = caseTag.objects.get(tagName=groupName).id
 
 	# 给所选用例增加标签id，增加用例集id
 	cases = [caseList.objects.get(id=x) for x in ids]

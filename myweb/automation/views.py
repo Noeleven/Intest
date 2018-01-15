@@ -688,7 +688,7 @@ def auto_config(request):
 				if timeList:
 					preTime = max(timeList)
 					message += '装弹完毕，准备发射, 预计需要%s分钟<br/>' % (round(preTime/60,1))
-					message += '<a class="btn btn-sm btn-default" href="/auto/reportDetail?timeStamp=%s" target=_blank>测试报告</a><br/>' % TimeTime
+					message += "<a class='btn btn-sm btn-default' href='/auto/reportDetail?timeStamp=%s' target=_blank>测试报告</a><br/>" % TimeTime
 					code = '1'
 				else:
 					code = '-1'
@@ -712,7 +712,7 @@ def auto_response(request):
 		return HttpResponse(jsonStr, content_type="application/json")
 	except:
 		try:
-			jsonStr = myConfig.objects.filter(device=deviceNa).order_by('-modify_time')[0].caseStr
+			jsonStr = myConfig.objects.filter(device=deviceNa).order_by('-create_time')[0].caseStr
 			return HttpResponse(jsonStr, content_type="application/json")
 		except:
 			return HttpResponse('No Such Device')
@@ -770,7 +770,6 @@ def auto_copy(request):
 def addCase(request):
 	# 各选项list
 	type_list = caseType.objects.all().order_by('type_name')
-	# case_tag = caseTag.objects.all()
 	user_list = caseUser.objects.filter(userStatus=1).order_by('userName')
 	versionList = caseVersion.objects.order_by('-versionStr')
 	plat = ['Android', 'iOS', 'M', 'PC']
@@ -1344,32 +1343,37 @@ def testProgress(request):
 				# 实际记录的数量
 				nowNum = len(set([x.caseID for x in allBookRecording.objects.filter(timeStamp=tt)]))
 
+				# passRate
+				recordNum = allBookRecording.objects.filter(timeStamp=tt)
+				passNum = recordNum.filter(status='success')
+				if passNum.count() == 0:
+					passRate = 0
+				else:
+					passRate = passNum.count() * 100 // recordNum.count()
 				# 对于重跑的情况 肯定会大于100
 				code = '2'
 				if nowNum == 0:
 					num = 0
-					message = '测试未完成'
+					status = message = '未完成'
 				else:
 					if preNum == 0:
 						num = 100
 						message = '没有能够测试的用例'
+						status = '未完成'
 					else:
 						num = round(((nowNum / preNum) * 100), 2)
 						if num >= 100:
 							num = 100
 							code = '1'
-							message = '完成'
+							status = message = '已完成'
 						else:
-							message = '未完成'
-			else:
-				num = 100
-				code = '-2'
-				preNum, nowNum = 0, 0
-				message = '测试未启动，可能发生了异常'
+							status = message = '未完成'
 
-			result = {'progress':num, 'message': message, 'preNum':preNum, 'code': code, 'nowNum': nowNum}
+				result = {'progress':num, 'message': message, 'preNum':preNum, 'code': code, 'nowNum': nowNum, 'passRate':passRate,'status':status}
+			else:
+				result = {'progress':100, 'message': '没找到测试记录', 'code': '-1'}
 		else:
-			result = {'progress':100, 'message': '缺少参数值', 'preNum':100, 'code': '-1', 'nowNum': 0}
+			result = {'progress':100, 'message': '缺少参数', 'code': '-1'}
 
 	return HttpResponse(json.dumps(result), content_type="application/json")
 

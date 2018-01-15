@@ -89,3 +89,4 @@ ENV/
 .ropeproject
 .ftpconfig
 appDecode.py
+myweb/yy.py

@@ -1230,7 +1230,7 @@ def reportList(request):
 	nav_list = navList()
 
 	# 用例集报告
-	groupReports = testRecording.objects.order_by('-create_time').values('timeStamp', 'Version', 'create_time', 'groupId', 'flag').distinct()[:20]
+	groupReports = testRecording.objects.order_by('-modify_time').values('timeStamp', 'Version', 'create_time', 'groupId', 'flag').distinct()[:20]
 
 	for x in groupReports:
 		x['url'] = '/auto/reportDetail?timeStamp=' + x['timeStamp']
@@ -1851,5 +1851,7 @@ def memGroupSave(request):
 		if request.POST.get('groupListBox'):
 			groupUser = request.POST.getlist('groupListBox')
 			r.groupUser = json.dumps(groupUser)
+		else:
+			r.groupUser = ''
 		r.save()
 	return HttpResponseRedirect('/auto/memGroupList')
